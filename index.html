@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Morel Mushroom Locator</title>
+  <title>Melody's Morels</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f3ee; color: #1a1a1a; height: 100dvh; display: flex; flex-direction: column; }
     header { display: flex; align-items: center; gap: 10px; padding: 11px 18px; background: #fff; border-bottom: 1px solid #e4e1d8; flex-shrink: 0; }
     header h1 { font-size: 16px; font-weight: 600; color: #2d2d2d; }
-    header .zone-count { font-size: 12px; color: #aaa; margin-left: 4px; }
-    header span { font-size: 13px; color: #888; }
+    .hcount { font-size: 12px; color: #bbb; font-weight: 400; margin-left: 4px; }
+    header span { font-size: 13px; color: #888; margin-left: auto; }
     #app { display: flex; flex: 1; overflow: hidden; }
     #sidebar { width: 252px; flex-shrink: 0; background: #fff; border-right: 1px solid #e4e1d8; display: flex; flex-direction: column; overflow-y: auto; padding: 14px 13px 20px; gap: 16px; }
     .sec-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: #bbb; margin-bottom: 7px; }
@@ -39,7 +39,7 @@
     .hab-toggle.active .hab-check::after { content: "✓"; color: #fff; font-size: 9px; font-weight: 700; }
     .legend-rows { display: flex; flex-direction: column; gap: 5px; }
     .leg-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #555; }
-    .leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid rgba(255,255,255,0.8); }
+    .leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
     .elev-rows { display: flex; flex-direction: column; gap: 4px; }
     .elev-row { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #666; }
     .elev-ring { width: 9px; height: 9px; border-radius: 50%; border: 2px solid; flex-shrink: 0; }
@@ -58,24 +58,81 @@
     .hmatch { font-size: 10px; padding: 2px 7px; border-radius: 99px; background: #edf7f1; color: #1a5c3a; border: 1px solid #b6e4cb; }
     #map { flex: 1; height: 100%; }
     .leaflet-control-attribution { font-size: 10px; }
-    @media (max-width: 640px) {
-      #app { flex-direction: column; }
-      #sidebar { width: 100%; max-height: 300px; padding: 10px; gap: 10px; overflow-y: auto; }
-      #map { min-height: 360px; }
+
+    /* ── Tabs ── */
+    #tab-bar { display:flex; background:#fff; border-bottom:1px solid #e4e1d8; flex-shrink:0; padding:0 18px; gap:2px; }
+    .tab-btn { padding:10px 16px; font-size:13px; font-weight:500; color:#888; background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+    .tab-btn:hover { color:#444; }
+    .tab-btn.active { color:#2d6a4f; border-bottom-color:#2d6a4f; }
+    .tab-panel { display:none; flex:1; overflow:hidden; }
+    .tab-panel.active { display:flex; }
+    .tab-panel-scroll { flex:1; overflow-y:auto; background:#f5f3ee; }
+
+    /* ── Guide / Contact pages ── */
+    .page-wrap { max-width:860px; margin:0 auto; padding:36px 24px 60px; }
+    .page-hero { text-align:center; margin-bottom:40px; }
+    .page-hero h2 { font-size:26px; font-weight:600; color:#1a1a1a; margin-bottom:10px; }
+    .page-hero p { font-size:15px; color:#666; line-height:1.7; max-width:560px; margin:0 auto; }
+    .badge-pill { display:inline-block; background:#edf7f1; color:#1a5c3a; font-size:12px; font-weight:600; padding:4px 12px; border-radius:99px; border:1px solid #b6e4cb; margin-bottom:14px; }
+    .guide-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px; margin-bottom:40px; }
+    .guide-card { background:#fff; border:1px solid #e4e1d8; border-radius:12px; overflow:hidden; }
+    .guide-card-img { height:160px; background:linear-gradient(135deg,#2d6a4f 0%,#1b4332 100%); display:flex; align-items:center; justify-content:center; font-size:52px; }
+    .guide-card-body { padding:18px; }
+    .guide-card-body h3 { font-size:16px; font-weight:600; margin-bottom:3px; }
+    .guide-loc { font-size:12px; color:#2d6a4f; font-weight:500; margin-bottom:8px; }
+    .guide-card-body p { font-size:13px; color:#666; line-height:1.6; margin-bottom:12px; }
+    .guide-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px; }
+    .guide-tag { font-size:11px; padding:2px 8px; border-radius:99px; background:#f5f3ee; color:#555; border:1px solid #e4e1d8; }
+    .guide-btn { display:block; text-align:center; background:#2d6a4f; color:#fff; border:none; border-radius:8px; padding:9px 16px; font-size:13px; font-weight:500; cursor:pointer; width:100%; transition:background 0.15s; text-decoration:none; }
+    .guide-btn:hover { background:#1b4332; }
+    .coming-soon-box { background:#fff; border:1.5px dashed #c8e6d0; border-radius:12px; padding:32px; text-align:center; margin-bottom:40px; }
+    .coming-soon-box h3 { font-size:18px; font-weight:600; margin-bottom:8px; }
+    .coming-soon-box p { font-size:14px; color:#666; line-height:1.7; max-width:500px; margin:0 auto 16px; }
+    .state-pills { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:18px; }
+    .state-pill { font-size:11px; padding:3px 10px; border-radius:99px; background:#f5f3ee; color:#666; border:1px solid #e4e1d8; }
+    .state-pill.soon { background:#edf7f1; color:#2d6a4f; border-color:#b6e4cb; }
+    .divider { border:none; border-top:1px solid #e4e1d8; margin:32px 0; }
+    .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+    .contact-card { background:#fff; border:1px solid #e4e1d8; border-radius:12px; padding:24px; }
+    .contact-card h3 { font-size:16px; font-weight:600; margin-bottom:6px; }
+    .cc-sub { font-size:13px; color:#666; margin-bottom:20px; line-height:1.6; }
+    .form-row { margin-bottom:14px; }
+    .form-row label { display:block; font-size:12px; font-weight:500; color:#444; margin-bottom:5px; }
+    .form-row input,.form-row textarea,.form-row select { width:100%; padding:9px 12px; border:1px solid #ddd; border-radius:8px; font-size:13px; color:#222; background:#fafaf8; outline:none; font-family:inherit; transition:border-color 0.12s; }
+    .form-row input:focus,.form-row textarea:focus,.form-row select:focus { border-color:#2d6a4f; background:#fff; }
+    .form-row textarea { resize:vertical; min-height:90px; }
+    .submit-btn { width:100%; padding:11px; background:#2d6a4f; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; transition:background 0.15s; font-family:inherit; }
+    .submit-btn:hover { background:#1b4332; }
+    .success-msg { display:none; background:#edf7f1; border:1px solid #b6e4cb; border-radius:8px; padding:16px; text-align:center; font-size:14px; color:#1a5c3a; font-weight:500; margin-top:12px; }
+    .ci-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:14px; font-size:13px; color:#555; line-height:1.5; }
+    .ci-icon { font-size:18px; flex-shrink:0; }
+
+    @media (max-width:640px) {
+      .tab-panel.active { flex-direction:column; }
+      #sidebar { width:100%; max-height:300px; padding:10px; gap:10px; overflow-y:auto; }
+      #map { min-height:360px; }
+      .contact-grid { grid-template-columns:1fr; }
+      .page-wrap { padding:20px 16px 40px; }
     }
   </style>
 </head>
 <body>
-
 <header>
   <span style="font-size:20px">🍄</span>
-  <h1>Morel Locator <span class="zone-count" id="zone-count"></span></h1>
-  <span style="margin-left:auto">Toggle habitat · click a spot</span>
+  <h1>Melody's Morels <span class="hcount" id="hcount"></span></h1>
+  <span>Toggle habitat · click a spot</span>
 </header>
 
+<nav id="tab-bar">
+  <button class="tab-btn active" data-tab="map">🗺 Morel Map</button>
+  <button class="tab-btn" data-tab="guides">🧭 Guided Hunts</button>
+  <button class="tab-btn" data-tab="contact">✉️ Contact Us</button>
+</nav>
+
+<!-- ── Map Tab ── -->
+<div id="tab-map" class="tab-panel active">
 <div id="app">
   <div id="sidebar">
-
     <div>
       <p class="sec-title">Season</p>
       <div class="season-grid">
@@ -84,7 +141,6 @@
         <button class="sbtn" data-s="late">Jun<small>Elevation</small></button>
       </div>
     </div>
-
     <div>
       <p class="sec-title">Conditions</p>
       <div class="slider-row">
@@ -96,33 +152,15 @@
         <input type="range" id="rain" min="0" max="3" value="1.2" step="0.1" />
       </div>
     </div>
-
     <div>
       <p class="sec-title">Habitat — toggle what you see</p>
       <div class="hab-grid">
-        <div class="hab-toggle" data-hab="southSlope">
-          <span class="hab-icon">⛰️</span>
-          <div class="hab-text"><strong>South-facing slope</strong><small>Ridge or hill facing midday sun — warms faster</small></div>
-          <div class="hab-check"></div>
-        </div>
-        <div class="hab-toggle" data-hab="woodLine">
-          <span class="hab-icon">🌲</span>
-          <div class="hab-text"><strong>Wood line / field edge</strong><small>South-facing treeline meeting open ground</small></div>
-          <div class="hab-check"></div>
-        </div>
-        <div class="hab-toggle" data-hab="water">
-          <span class="hab-icon">💧</span>
-          <div class="hab-text"><strong>Water nearby</strong><small>Creek, pond, or wet drainage in the stand</small></div>
-          <div class="hab-check"></div>
-        </div>
-        <div class="hab-toggle" data-hab="oak">
-          <span class="hab-icon">🌳</span>
-          <div class="hab-text"><strong>Oak trees present</strong><small>White oak especially — top local indicator</small></div>
-          <div class="hab-check"></div>
-        </div>
+        <div class="hab-toggle" data-hab="ss"><span class="hab-icon">⛰️</span><div class="hab-text"><strong>South-facing slope</strong><small>Ridge or hill facing midday sun</small></div><div class="hab-check"></div></div>
+        <div class="hab-toggle" data-hab="wl"><span class="hab-icon">🌲</span><div class="hab-text"><strong>Wood line / field edge</strong><small>South-facing treeline meets open ground</small></div><div class="hab-check"></div></div>
+        <div class="hab-toggle" data-hab="w"><span class="hab-icon">💧</span><div class="hab-text"><strong>Water nearby</strong><small>Creek, pond, or wet drainage in the stand</small></div><div class="hab-check"></div></div>
+        <div class="hab-toggle" data-hab="o"><span class="hab-icon">🌳</span><div class="hab-text"><strong>Oak trees present</strong><small>White oak especially — top local indicator</small></div><div class="hab-check"></div></div>
       </div>
     </div>
-
     <div>
       <p class="sec-title">Likelihood</p>
       <div class="legend-rows">
@@ -131,7 +169,6 @@
         <div class="leg-item"><span class="leg-dot" style="background:#dc2626"></span>Low &lt; 40%</div>
       </div>
     </div>
-
     <div>
       <p class="sec-title">Elevation (ring)</p>
       <div class="elev-rows">
@@ -140,7 +177,6 @@
         <div class="elev-row"><span class="elev-ring" style="border-color:#22c55e"></span>Lowlands</div>
       </div>
     </div>
-
     <div id="zone-info">
       <button class="close-zi" id="close-zi">×</button>
       <h3 id="zi-name">—</h3>
@@ -148,245 +184,667 @@
       <p class="zi-row"><strong>Region:</strong> <span id="zi-region">—</span></p>
       <p class="zi-row"><strong>Trees:</strong> <span id="zi-trees">—</span></p>
       <p class="zi-row"><strong>Terrain:</strong> <span id="zi-topo">—</span></p>
-      <p class="zi-note" id="zi-note">—</p>
+      <p class="zi-note" id="zi-note"></p>
       <div class="hab-matches" id="zi-hab-matches"></div>
     </div>
-
   </div>
   <div id="map"></div>
+</div>
+</div><!-- end tab-map -->
+
+<!-- ── Guided Hunts Tab ── -->
+<div id="tab-guides" class="tab-panel">
+  <div class="tab-panel-scroll">
+    <div class="page-wrap">
+      <div class="page-hero">
+        <span class="badge-pill">🌿 Now Booking — Clay County, MO</span>
+        <h2>Guided Morel Mushroom Hunts</h2>
+        <p>Local guides who know the land, the trees, and the timing. Learn to read south-facing slopes, wood lines, and creek drainages — then find your own spots for years to come.</p>
+      </div>
+
+      <div class="guide-grid">
+        <div class="guide-card">
+          <div class="guide-card-img">🍄</div>
+          <div class="guide-card-body">
+            <h3>Melody's Clay County Hunt</h3>
+            <div class="guide-loc">📍 Clay County, Missouri</div>
+            <p>Half-day guided hunt along the Missouri River bluffs in Clay County. We cover south-facing draws, creek-edge timber, and wood lines bordering farm fields — the classic NW Missouri habitat. Great for beginners and experienced hunters alike.</p>
+            <div class="guide-tags">
+              <span class="guide-tag">Half day · 4 hrs</span>
+              <span class="guide-tag">Up to 6 guests</span>
+              <span class="guide-tag">All skill levels</span>
+              <span class="guide-tag">Peak: mid April</span>
+            </div>
+            <button class="guide-btn" onclick="document.querySelector('[data-tab=contact]').click()">Book this hunt →</button>
+          </div>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-img">🌿</div>
+          <div class="guide-card-body">
+            <h3>Bluff & Timber Full Day</h3>
+            <div class="guide-loc">📍 Clay County, Missouri</div>
+            <p>Full-day immersive hunt covering multiple habitat types — river bluff faces, south-slope timber, old field edges, and creek drainages. Includes habitat education so you leave knowing exactly what to look for on your own.</p>
+            <div class="guide-tags">
+              <span class="guide-tag">Full day · 8 hrs</span>
+              <span class="guide-tag">Up to 4 guests</span>
+              <span class="guide-tag">Lunch included</span>
+              <span class="guide-tag">Peak: April 15–25</span>
+            </div>
+            <button class="guide-btn" onclick="document.querySelector('[data-tab=contact]').click()">Book this hunt →</button>
+          </div>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-img">🌲</div>
+          <div class="guide-card-body">
+            <h3>Private Group Hunt</h3>
+            <div class="guide-loc">📍 Clay County, Missouri</div>
+            <p>Book a private hunt for your group — family outings, corporate teams, or friend groups. We customize the route, pace, and focus to your group's experience level and goals. Ask about multi-day packages.</p>
+            <div class="guide-tags">
+              <span class="guide-tag">Flexible duration</span>
+              <span class="guide-tag">Private group</span>
+              <span class="guide-tag">Custom route</span>
+              <span class="guide-tag">All season</span>
+            </div>
+            <button class="guide-btn" onclick="document.querySelector('[data-tab=contact]').click()">Request a quote →</button>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="coming-soon-box">
+        <h3>🗺 Guides Coming Across the USA</h3>
+        <p>We're partnering with experienced local hunters and naturalists to bring guided morel hunts to the best regions in the country. If you know the land in your area, we'd love to hear from you.</p>
+        <div class="state-pills">
+          <span class="state-pill soon">Missouri ✓</span>
+          <span class="state-pill">Southern Illinois</span>
+          <span class="state-pill">Indiana</span>
+          <span class="state-pill">Michigan</span>
+          <span class="state-pill">Ohio</span>
+          <span class="state-pill">Kentucky</span>
+          <span class="state-pill">Tennessee</span>
+          <span class="state-pill">Arkansas Ozarks</span>
+          <span class="state-pill">Wisconsin</span>
+          <span class="state-pill">Minnesota</span>
+          <span class="state-pill">West Virginia</span>
+          <span class="state-pill">Pennsylvania</span>
+          <span class="state-pill">Virginia</span>
+          <span class="state-pill">North Carolina</span>
+          <span class="state-pill">Oregon</span>
+          <span class="state-pill">More coming soon…</span>
+        </div>
+        <button class="guide-btn" style="max-width:280px;margin:0 auto;display:block" onclick="document.querySelector('[data-tab=contact]').click()">Inquire about your region →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Contact Tab ── -->
+<div id="tab-contact" class="tab-panel">
+  <div class="tab-panel-scroll">
+    <div class="page-wrap">
+      <div class="page-hero">
+        <span class="badge-pill">📬 Get in Touch</span>
+        <h2>Contact Melody's Morels</h2>
+        <p>Questions about guided hunts, becoming a guide in your area, or anything else — we'd love to hear from you.</p>
+      </div>
+
+      <div class="contact-grid">
+
+        <div class="contact-card">
+          <h3>🧭 Book a Guided Hunt</h3>
+          <p class="cc-sub">Ready to get out in the field? Fill out the form and we'll get back to you within 24 hours with availability and pricing.</p>
+          <form id="hunt-form" onsubmit="submitForm(event,'hunt-success','HUNT_FORM_ID')">
+            <div class="form-row">
+              <label>Your name</label>
+              <input type="text" name="name" placeholder="First and last name" required />
+            </div>
+            <div class="form-row">
+              <label>Email address</label>
+              <input type="email" name="email" placeholder="you@email.com" required />
+            </div>
+            <div class="form-row">
+              <label>Phone (optional)</label>
+              <input type="tel" name="phone" placeholder="(555) 000-0000" />
+            </div>
+            <div class="form-row">
+              <label>Hunt type</label>
+              <select name="hunt_type">
+                <option>Clay County Half Day</option>
+                <option>Clay County Full Day</option>
+                <option>Private Group Hunt</option>
+                <option>Not sure — help me choose</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>Preferred dates / questions</label>
+              <textarea name="message" placeholder="When are you hoping to go? Group size? Any questions?"></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Send booking request</button>
+          </form>
+          <div class="success-msg" id="hunt-success">✅ Request sent! We'll be in touch within 24 hours.</div>
+        </div>
+
+        <div class="contact-card">
+          <h3>✉️ General Inquiry</h3>
+          <p class="cc-sub">Questions about the map, becoming a guide in your region, partnerships, or anything else — reach out any time.</p>
+          <form id="general-form" onsubmit="submitForm(event,'general-success','GENERAL_FORM_ID')">
+            <div class="form-row">
+              <label>Your name</label>
+              <input type="text" name="name" placeholder="First and last name" required />
+            </div>
+            <div class="form-row">
+              <label>Email address</label>
+              <input type="email" name="email" placeholder="you@email.com" required />
+            </div>
+            <div class="form-row">
+              <label>I'm interested in…</label>
+              <select name="interest">
+                <option>Guided hunts in my area</option>
+                <option>Becoming a guide</option>
+                <option>Partnership or media</option>
+                <option>Map feedback or corrections</option>
+                <option>Something else</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>Message</label>
+              <textarea name="message" placeholder="Tell us what's on your mind…" style="min-height:120px"></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Send message</button>
+          </form>
+          <div class="success-msg" id="general-success">✅ Message received! We'll get back to you soon.</div>
+
+          <hr class="divider" style="margin:24px 0">
+
+          <div class="ci-row"><span class="ci-icon">📍</span><div><strong>Based in</strong><br>Clay County, Missouri</div></div>
+          <div class="ci-row"><span class="ci-icon">🍄</span><div><strong>Hunt season</strong><br>March – June (varies by region)</div></div>
+          <div class="ci-row"><span class="ci-icon">🌿</span><div><strong>We follow</strong><br>Leave No Trace principles on all hunts</div></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// habitat: 0=absent, 1=present, 2=prime/defining feature
-const SPOTS = [
+// ── Region profiles ───────────────────────────────────────────
+const RP = {
+  "Missouri Ozarks":   ["White oak, ash, elm, sycamore",      "South-facing limestone hollows, creek draws",    [2,2,2,2]],
+  "NW Missouri":       ["Elm, ash, cottonwood, hackberry",     "Missouri River bluffs, south-facing draws",      [2,2,2,1]],
+  "NE Missouri":       ["Elm, ash, cottonwood, red oak",       "River bottoms, south-facing timber edges",       [1,2,2,1]],
+  "Central Missouri":  ["Elm, ash, sycamore, white oak",       "Creek drainages, south-facing slopes",           [1,2,2,1]],
+  "SW Missouri":       ["White oak, red oak, ash, elm",        "South-facing Ozark ridge hollows",               [2,1,2,2]],
+  "Southern Illinois": ["Elm, ash, tulip poplar",              "River bottoms, south-facing limestone bluffs",   [1,2,2,1]],
+  "Central Illinois":  ["Cottonwood, elm, ash, silver maple",  "River bottom timber, south wood lines",          [1,2,2,0]],
+  "Indiana":           ["Tulip poplar, ash, white oak, elm",   "South-facing ridge faces, creek bottoms",        [2,1,2,2]],
+  "Ohio":              ["Elm, ash, tulip poplar, white oak",   "South-facing hardwood slopes, gorge rims",       [2,1,2,1]],
+  "SE Ohio":           ["Elm, ash, tulip poplar, white oak",   "Ohio River valley, south-facing slopes",         [1,2,2,1]],
+  "Michigan":          ["Ash, poplar, old apple orchards",     "Sandy loam, south-facing orchard edges",         [1,2,1,1]],
+  "Michigan UP":       ["Ash, aspen, mixed hardwoods",         "Sandy soils, south-facing creek edges",          [1,1,2,0]],
+  "Driftless Area":    ["Red oak, ash, elm, basswood",         "South-facing coulee bluffs, trout streams",      [2,1,2,1]],
+  "Wisconsin":         ["White oak, bur oak, elm, ash",        "South-facing glacial hills, oak openings",       [1,2,1,2]],
+  "Minnesota":         ["Elm, ash, red oak, basswood",         "South-facing bluffs, creek bottoms",             [2,1,2,1]],
+  "Iowa":              ["Bur oak, elm, cottonwood, hackberry", "South-facing loess bluffs, creek draws",         [2,2,1,1]],
+  "Kansas":            ["Bur oak, elm, hackberry, persimmon",  "Creek drainages, south-facing woody draws",      [1,2,1,2]],
+  "Nebraska":          ["Cottonwood, elm, hackberry",          "River corridors, south-facing loess bluffs",     [1,1,2,0]],
+  "Arkansas Ozarks":   ["White oak, ash, elm, redbud",         "South-facing limestone hollows, creek bottoms",  [2,1,2,2]],
+  "Oklahoma":          ["White oak, post oak, elm, ash",       "South-facing rocky creek drainages",             [2,1,1,2]],
+  "Kentucky":          ["Tulip poplar, white oak, ash",        "South-facing hollows, ridge noses near water",   [2,1,2,2]],
+  "Tennessee":         ["Tulip poplar, ash, white oak",        "South-facing ridges, cove hardwoods near water", [2,1,2,2]],
+  "Texas":             ["Water oak, willow oak, sweet gum",    "Bottomland hardwood drainages",                  [1,1,2,1]],
+  "West Virginia":     ["Tulip poplar, basswood, ash",         "South-facing gorge walls, hollow heads",         [2,1,2,1]],
+  "Virginia":          ["Tulip poplar, ash, white oak",        "South-facing coves, ridge hollows",              [2,2,1,2]],
+  "NC Smokies":        ["Tulip poplar, buckeye, white oak",    "South-facing cove hardwood forest",              [2,1,2,2]],
+  "Alabama Georgia":   ["White oak, tulip poplar, hickory",    "South-facing mountain coves, stream drainages",  [2,1,2,2]],
+  "Pennsylvania":      ["Elm, ash, apple, white oak",          "South-facing hillsides, old farmsteads",         [2,2,2,1]],
+  "New York":          ["Elm, ash, apple, red oak",            "South-facing hillsides, old orchard edges",      [1,2,1,1]],
+  "New England":       ["Ash, elm, old apple orchards",        "South-facing hillsides, river bottomlands",      [1,2,1,1]],
+  "Oregon":            ["Oregon ash, big-leaf maple, cottonwood","South-facing river terraces, wood line edges", [1,2,2,0]],
+  "Pacific NW":        ["Post-fire conifers, cottonwood, alder","South-facing burn scars near streams",          [1,1,1,0]],
+  "Oregon Siskiyou":   ["Oregon white oak, ponderosa, madrone","South-facing oak woodland edges",                [2,2,1,2]],
+  "Rockies":           ["Aspen, cottonwood, ponderosa",        "South-facing slopes, creek drainages",           [2,1,1,0]],
+  "California":        ["Blue oak, valley oak, ponderosa",     "South-facing oak woodland, post-fire slopes",    [2,2,1,2]],
+};
 
-  // ── MISSOURI RIVER CORRIDOR & KC ──────────────────────────────
-  { name:"Missouri City — River Bluffs",            lat:39.245, lng:-94.290, base:78, elev:"low",  region:"NW Missouri",      trees:"Elm, ash, cottonwood, hackberry",       topo:"South-facing Missouri River bluffs, timbered draws",        notes:"Sitting right on the Missouri River bluff edge in Clay County. South-facing draws where bluff timber breaks toward the bottoms — wood lines against farm fields, creek drainages feeding the river. Elm and ash on south aspects. Peak: mid–late April.",        habitat:{southSlope:2,woodLine:2,water:2,oak:1} },
-  { name:"Fishing River Hollows",                   lat:39.320, lng:-94.150, base:74, elev:"low",  region:"NW Missouri",      trees:"Elm, ash, walnut, red oak",             topo:"South-facing creek hollows, field-edge timber",             notes:"Fishing River drainage off the Missouri bluffs. South-facing hollows where creek timber meets crop ground produce reliably. Mature elms along the creek edges. Peak: mid April.",                                                                              habitat:{southSlope:2,woodLine:2,water:2,oak:1} },
-  { name:"Little Platte River Timber",              lat:39.400, lng:-94.480, base:70, elev:"low",  region:"NW Missouri",      trees:"Cottonwood, elm, ash, bur oak",         topo:"River bottom timber, south-facing bluff edges",             notes:"Little Platte River bottomland timber with south-facing bluff edges on the south side of draws. Bur oak on drier south slopes, cottonwood and ash in the bottoms. Peak: mid April.",                                                                        habitat:{southSlope:1,woodLine:2,water:2,oak:1} },
-  { name:"Rush Creek — Clay County",                lat:39.180, lng:-94.420, base:72, elev:"low",  region:"NW Missouri",      trees:"Elm, ash, hackberry",                   topo:"South-facing creek draws, field-edge wood lines",           notes:"Rush Creek drainage cutting south through Clay County timber. Wood lines on south exposures adjacent to open pasture. Classic mid-April morel country. Peak: April 15–25.",                                                                               habitat:{southSlope:2,woodLine:2,water:2,oak:0} },
-  { name:"Gasconade River Bluffs",                  lat:37.960, lng:-91.990, base:84, elev:"mid",  region:"Missouri Ozarks",  trees:"White oak, ash, elm, sycamore",         topo:"South-facing limestone bluffs above river",                 notes:"Gasconade River bluff faces with south exposure and creek draws feeding the river. White oak mixed with ash on the south slopes is the defining combo. One of the most reliable spots in the Ozarks. Peak: late April.",                                     habitat:{southSlope:2,woodLine:2,water:2,oak:2} },
-  { name:"Big Piney River Corridor",                lat:37.510, lng:-92.100, base:82, elev:"mid",  region:"Missouri Ozarks",  trees:"Elm, ash, sycamore, white oak",         topo:"South-facing river hollows, limestone outcrops",            notes:"Big Piney River with south-facing timbered hollows. The confluence zones where tributaries enter from the south are prime. Lots of dying ash and elm. Peak: late April.",                                                                                    habitat:{southSlope:2,woodLine:1,water:2,oak:2} },
-  { name:"Current River — South Hollows",           lat:37.090, lng:-91.550, base:80, elev:"mid",  region:"Missouri Ozarks",  trees:"Elm, ash, white oak, basswood",         topo:"South-facing hollow faces, creek bottoms",                  notes:"Current River country with south-facing hollow faces above the creek. Look for the heads of hollows where south-facing slopes hold warmth and leaf litter accumulates above seeps. Peak: late April.",                                                        habitat:{southSlope:2,woodLine:1,water:2,oak:2} },
-  { name:"Bryant Creek Bottoms",                    lat:36.850, lng:-92.300, base:76, elev:"mid",  region:"Missouri Ozarks",  trees:"White oak, ash, elm, red oak",          topo:"Creek bottoms, south-facing ridge noses",                   notes:"Bryant Creek drainage in Douglas County. South-facing ridge noses above the creek bottoms with white oak. Field-edge timber on south aspects on private ground produces year after year. Peak: late April.",                                                  habitat:{southSlope:2,woodLine:2,water:2,oak:2} },
-  { name:"Salt River Bottoms (NE MO)",              lat:39.450, lng:-91.600, base:70, elev:"low",  region:"NE Missouri",      trees:"Elm, ash, cottonwood, hackberry",       topo:"River bottoms, south-facing timber edges",                  notes:"Salt River and North Fork Missouri timber in northeast Missouri. South-facing timber edges above the river bottom. Mark Twain lake area holds good populations in season. Peak: late April.",                                                               habitat:{southSlope:1,woodLine:2,water:2,oak:1} },
-  { name:"Cuivre River Timber",                     lat:38.960, lng:-91.150, base:72, elev:"low",  region:"NE Missouri",      trees:"Elm, ash, silver maple, red oak",       topo:"South-facing creek timber, wood line edges",                notes:"Cuivre River State Park and surrounding timber has classic south-facing creek hollow morel habitat. Wood lines bordering south-facing slopes above the creek bottoms. Peak: late April.",                                                                   habitat:{southSlope:2,woodLine:2,water:2,oak:1} },
-
-  // ── ILLINOIS / INDIANA / OHIO ──────────────────────────────────
-  { name:"Cache River Bottoms (IL)",                lat:37.150, lng:-89.100, base:80, elev:"low",  region:"Southern Illinois", trees:"Bald cypress, elm, ash, tupelo",        topo:"River bottoms, south-facing bluff bases",                   notes:"Cache River wetlands with south-facing bluff bases above the bottomland. The timber edge between the bluff and the cypress swamp is the precise zone to hunt. Peak: mid-April.",                                                                            habitat:{southSlope:1,woodLine:2,water:2,oak:0} },
-  { name:"LaRue-Pine Hills (IL)",                   lat:37.580, lng:-89.370, base:78, elev:"low",  region:"Southern Illinois", trees:"Elm, ash, tulip poplar, white oak",     topo:"South-facing bluff face, swamp edge timber",                notes:"LaRue-Pine Hills is one of the most ecologically diverse spots in the Midwest. South-facing bluff timber above the swamp with a distinct wood line. Dying elm and ash are everywhere. Peak: mid-April.",                                                    habitat:{southSlope:2,woodLine:2,water:2,oak:2} },
-  { name:"Garden of the Gods (IL)",                 lat:37.580, lng:-88.700, base:74, elev:"mid",  region:"Southern Illinois", trees:"Ash, tulip poplar, red oak",            topo:"Sandstone ridges, south-facing hollows",                    notes:"Shawnee National Forest sandstone ridges with south-facing hollows below the outcrops. The protected micro-climate in the hollows retains moisture. Peak: mid-April.",                                                                                     habitat:{southSlope:2,woodLine:1,water:1,oak:1} },
-  { name:"Illinois River Bottoms (Cass Co.)",       lat:39.900, lng:-90.350, base:68, elev:"low",  region:"Central Illinois",  trees:"Cottonwood, elm, ash, silver maple",    topo:"River bottom timber, wood lines against crop ground",       notes:"Illinois River bottomland timber in Cass and Morgan counties. Wood lines where riparian forest meets farm ground on south-facing banks. Cottonwood bottoms holding dying elm. Peak: mid-April.",                                                           habitat:{southSlope:1,woodLine:2,water:2,oak:0} },
-  { name:"Mackinaw River Timber (IL)",              lat:40.400, lng:-89.100, base:65, elev:"low",  region:"Central Illinois",  trees:"Elm, ash, walnut, red oak",             topo:"Creek timber, south-facing field edges",                    notes:"Mackinaw River corridor in McLean and Tazewell counties with south-facing timber edges bordering farm fields. Classic central Illinois morel habitat — walk the south side of the timber. Peak: late April.",                                               habitat:{southSlope:1,woodLine:2,water:2,oak:1} },
-  { name:"Brown County (IN) Ridges",                lat:39.200, lng:-86.200, base:75, elev:"mid",  region:"Indiana",           trees:"Tulip poplar, ash, white oak, elm",     topo:"South-facing ridge faces, hollow heads",                    notes:"Brown County hill country with classic south-facing ridge faces and hollow heads. The terrain creates many micro-exposures — work the south sides of ridges systematically. Peak: late April–early May.",                                                    habitat:{southSlope:2,woodLine:1,water:2,oak:2} },
-  { name:"Hocking Hills (OH)",                      lat:39.440, lng:-82.530, base:70, elev:"mid",  region:"Central Ohio",      trees:"Elm, ash, tulip poplar, white oak",     topo:"Sandstone gorge rims, south-facing mixed hardwood slopes",  notes:"Hocking Hills sandstone gorge country. Hunt the south-facing mixed hardwood slopes above the gorge rims and the hollow faces leading down to creeks. Mature elm and ash near the water. Peak: late April–early May.",                                        habitat:{southSlope:2,woodLine:1,water:2,oak:1} },
-  { name:"Mohican Country (OH)",                    lat:40.570, lng:-82.270, base:68, elev:"mid",  region:"Central Ohio",      trees:"Elm, ash, sugar maple, white oak",      topo:"South-facing valley walls, stream hollows",                 notes:"Mohican State Forest and surrounding land in Ashland County. South-facing valley walls above the Clear Fork of the Mohican River. Sugar maple and ash on south-facing slopes. Peak: late April–early May.",                                                habitat:{southSlope:2,woodLine:1,water:2,oak:1} },
-
-  // ── MICHIGAN / WISCONSIN / MINNESOTA ──────────────────────────
-  { name:"Muskegon River Corridor (MI)",            lat:43.650, lng:-85.800, base:74, elev:"low",  region:"Michigan",          trees:"Old apple orchards, ash, poplar",       topo:"Sandy loam, south-facing orchard edges",                    notes:"Muskegon River corridor with old apple orchards on south-facing sandy loam banks. Classic Michigan morel country — orchard edges backed by second-growth forest. The National Morel Mushroom Festival is nearby in Boyne City. Peak: early May.",            habitat:{southSlope:1,woodLine:2,water:1,oak:0} },
-  { name:"Sleeping Bear Dunes Hinterlands (MI)",    lat:44.890, lng:-86.000, base:70, elev:"low",  region:"Michigan",          trees:"Ash, poplar, old orchards, birch",      topo:"Sandy south-facing forest edges, orchard remnants",         notes:"Leelands and Benzie County orchard remnants on south-facing dune slopes. The sandy well-drained soils and abandoned orchards on south aspects produce consistently. Peak: early–mid May.",                                                                  habitat:{southSlope:1,woodLine:2,water:0,oak:0} },
-  { name:"Driftless Coulee Country (WI/MN)",        lat:43.810, lng:-91.230, base:68, elev:"low",  region:"Driftless Area",    trees:"Red oak, ash, elm, basswood",           topo:"South-facing coulee bluffs, creek bottoms",                 notes:"Classic Driftless Area south-facing coulee bluffs above meandering trout streams. The bluff face where timber transitions to open field above the creek is the prime zone. Peak: late April–mid May.",                                                      habitat:{southSlope:2,woodLine:1,water:2,oak:1} },
-  { name:"Trempealeau River Bluffs (WI)",           lat:44.210, lng:-91.420, base:66, elev:"low",  region:"Driftless Area",    trees:"Elm, ash, red oak, basswood",           topo:"South-facing bluffs, open wood lines above river",          notes:"Trempealeau River bluffs in Jackson and Trempealeau counties. South-facing bluff timber above the valley with clean wood lines where the forest meets open bluff faces. Peak: late April–early May.",                                                         habitat:{southSlope:2,woodLine:2,water:2,oak:1} },
-  { name:"Kettle Moraine Oak Openings (WI)",        lat:43.180, lng:-88.400, base:65, elev:"low",  region:"Wisconsin",         trees:"White oak, bur oak, elm",               topo:"South-facing glacial hills, oak savanna edges",             notes:"Kettle Moraine State Forest south unit with south-facing glacial hills and oak openings. Bur oak and white oak savanna edges bordering the glacial kettles. Peak: late April–early May.",                                                                  habitat:{southSlope:1,woodLine:2,water:1,oak:2} },
-  { name:"Chequamegon Forest (WI)",                 lat:45.900, lng:-90.700, base:58, elev:"low",  region:"Wisconsin",         trees:"Ash, aspen, yellow birch",              topo:"South-facing creek edges, alder-edged openings",            notes:"Chequamegon-Nicolet National Forest in northern Wisconsin. South-facing creek edges and alder thicket openings. Season runs later than southern WI. Peak: mid–late May.",                                                                                  habitat:{southSlope:1,woodLine:1,water:2,oak:0} },
-
-  // ── SOUTH: TENNESSEE / KENTUCKY / ARKANSAS ────────────────────
-  { name:"Buffalo River Corridor (AR)",             lat:36.030, lng:-92.890, base:80, elev:"mid",  region:"Arkansas Ozarks",   trees:"White oak, ash, elm, redbud",           topo:"South-facing limestone hollows, river bluffs",              notes:"Buffalo National River corridor with exceptional south-facing limestone hollow habitat. White oak and ash on south aspects, redbud on the bluff edges. One of the finest morel landscapes in the South. Peak: late March–mid April.",                       habitat:{southSlope:2,woodLine:1,water:2,oak:2} },
-  { name:"Mulberry River Hollows (AR)",             lat:35.650, lng:-93.850, base:74, elev:"mid",  region:"Arkansas Ozarks",   trees:"White oak, red oak, elm, ash",          topo:"South-facing ridge hollows, creek bottoms",                 notes:"Mulberry River drainage in Franklin and Crawford counties. South-facing hollow heads with white oak and elm above creek bottoms. Redbud blooming along the creek = start hunting upslope. Peak: late March–early April.",                                   habitat:{southSlope:2,woodLine:1,water:2,oak:2} },
-  { name:"Land Between the Lakes (KY/TN)",          lat:36.900, lng:-87.990, base:72, elev:"low",  region:"Kentucky/Tennessee", trees:"White oak, tulip poplar, ash",          topo:"South-facing ridge faces, lake coves",                      notes:"Land Between the Lakes peninsula with south-facing ridge faces dropping to the lake coves. White oak above tulip poplar below — work the transition zone on south aspects in early season. Peak: late March–mid April.",                                     habitat:{southSlope:2,woodLine:1,water:2,oak:2} },
-  { name:"Red River Gorge (KY)",                    lat:37.770, lng:-83.680, base:74, elev:"mid",  region:"Kentucky",          trees:"Tulip poplar, white oak, hemlock, ash",  topo:"South-facing sandstone hollows, gorge walls",               notes:"Red River Gorge Geological Area with dramatic south-facing sandstone hollow faces. The hollow heads above the rock arches retain moisture and warmth on south aspects. Among the most beautiful morel country in the East. Peak: mid–late April.",          habitat:{southSlope:2,woodLine:1,water:2,oak:2} },
-  { name:"Cumberland River Bluffs (KY)",            lat:36.800, lng:-84.900, base:70, elev:"mid",  region:"Kentucky",          trees:"Tulip poplar, ash, white oak, sycamore", topo:"River bluff hollows, south-facing ridge noses",             notes:"Cumberland River country in south-central Kentucky. South-facing ridge noses and bluff hollows above the river. Sycamore and tulip poplar in the bottoms, white oak and ash on the south-facing upper slopes. Peak: late March–mid April.",               habitat:{southSlope:2,woodLine:1,water:2,oak:2} },
-  { name:"Natchez Trace Corridor (TN)",             lat:35.430, lng:-88.020, base:68, elev:"low",  region:"Tennessee",         trees:"Tulip poplar, ash, white oak, pecan",   topo:"South-facing hollow faces, creek bottom wood lines",        notes:"Natchez Trace Parkway corridor in western Tennessee. South-facing hollow timber above bottomland creeks with tulip poplar and ash. Wood lines at the base of south-facing slopes. Peak: late March–early April.",                                           habitat:{southSlope:2,woodLine:2,water:2,oak:1} },
-  { name:"Bankhead National Forest (AL)",           lat:34.270, lng:-87.230, base:64, elev:"mid",  region:"Alabama",           trees:"White oak, tulip poplar, ash, hickory",  topo:"South-facing coves, creek drainages",                       notes:"William B. Bankhead National Forest in Lawrence County. South-facing coves with white oak and tulip poplar near creek drainages. Among the earliest morel habitat in the East — sometimes late February. Peak: late March.",                                habit:{southSlope:2,woodLine:1,water:2,oak:2} },
-  { name:"Sipsey Wilderness (AL)",                  lat:34.370, lng:-87.450, base:63, elev:"mid",  region:"Alabama",           trees:"White oak, tulip poplar, beech, ash",   topo:"South-facing sandstone canyon walls, creek hollows",        notes:"Sipsey River canyons with south-facing sandstone walls and creek hollows. White oak above, tulip poplar in the bottoms. Protected canyon micro-climate extends moisture. Peak: late March–early April.",                                                    habitat:{southSlope:2,woodLine:1,water:2,oak:2} },
-
-  // ── SOUTH: APPALACHIAN ─────────────────────────────────────────
-  { name:"Breaks Interstate Park (VA/KY)",          lat:37.280, lng:-82.300, base:70, elev:"mid",  region:"Appalachians",      trees:"Tulip poplar, basswood, ash, white oak",topo:"South-facing canyon walls, hollow heads",                   notes:"Russell Fork Gorge canyon walls with exceptional south-facing habitat. The hollow heads above the gorge create concentrated morel pockets. Very under-hunted relative to the terrain quality. Peak: mid April.",                                           habitat:{southSlope:2,woodLine:1,water:2,oak:1} },
-  { name:"New River Gorge (WV)",                    lat:37.900, lng:-81.080, base:72, elev:"mid",  region:"West Virginia",     trees:"Tulip poplar, basswood, ash, sugar maple",topo:"South-facing gorge walls, tributary hollows",              notes:"New River Gorge National Park gorge walls and tributary hollow faces. The gorge creates extreme south-facing aspects. Mixed mesophytic forest in the hollows with tulip poplar and ash. Peak: mid–late April.",                                            habitat:{southSlope:2,woodLine:1,water:2,oak:1} },
-  { name:"Greenbrier River Corridor (WV)",          lat:38.200, lng:-80.300, base:68, elev:"mid",  region:"West Virginia",     trees:"Tulip poplar, sugar maple, ash, white oak",topo:"South-facing valley walls, hollow drainages",             notes:"Greenbrier River valley with south-facing valley wall timber. The hollow drainages feeding the river from the south produce best. Sugar maple and tulip poplar with ash on south aspects. Peak: late April–early May.",                                     habitat:{southSlope:2,woodLine:1,water:2,oak:1} },
-  { name:"Shenandoah Valley Floor (VA)",            lat:38.700, lng:-78.500, base:64, elev:"mid",  region:"Virginia",          trees:"Elm, ash, white oak, walnut",           topo:"South-facing limestone hillsides, old orchard edges",       notes:"Shenandoah Valley limestone hills on south-facing aspects with old farmstead trees. Elm and white oak on south-facing hillsides above the valley floor. Walnut and ash along the creek drainages. Peak: late April.",                                      habitat:{southSlope:2,woodLine:2,water:1,oak:2} },
-  { name:"Nantahala Gorge (NC)",                    lat:35.320, lng:-83.740, base:67, elev:"high", region:"Western NC",        trees:"Tulip poplar, yellow buckeye, ash, white oak",topo:"South-facing gorge walls, cove hardwood hollows",        notes:"Nantahala River Gorge with south-facing cove hardwood forest. The gorge walls create intense south-facing micro-climates. Tulip poplar and buckeye with white oak near seeps and streams. Peak: mid–late April.",                                         habitat:{southSlope:2,woodLine:1,water:2,oak:2} },
-
-  // ── EAST ───────────────────────────────────────────────────────
-  { name:"Laurel Highlands (PA)",                   lat:40.040, lng:-79.250, base:67, elev:"mid",  region:"Pennsylvania",      trees:"Ash, elm, white oak, sugar maple",     topo:"South-facing ridge hollows, old farmstead edges",           notes:"Laurel Highlands ridge and valley country in southwest PA. South-facing ridge hollows with old farmstead tree remnants. Ash and elm on south aspects above creek drainages. Peak: late April–early May.",                                                  habitat:{southSlope:2,woodLine:2,water:2,oak:1} },
-  { name:"Susquehanna River Hollow (PA)",           lat:41.500, lng:-76.400, base:65, elev:"mid",  region:"Pennsylvania",      trees:"Elm, ash, white oak, apple",            topo:"South-facing hillside timber, creek hollows",               notes:"Susquehanna River valley in Bradford and Sullivan counties. South-facing hillside timber above creek hollows. Old farmstead apple trees on south aspects. Peak: early–mid May.",                                                                           habitat:{southSlope:1,woodLine:2,water:2,oak:1} },
-  { name:"Hudson Valley Orchards (NY)",             lat:41.800, lng:-73.850, base:63, elev:"mid",  region:"New York",          trees:"Apple, ash, elm, red oak",              topo:"South-facing hillsides, abandoned orchard edges",           notes:"Hudson Valley abandoned orchard land on south-facing hillsides. Old farmsteads with mature apple trees backing up to mixed hardwood forest. Wood lines where orchard meets timber on south aspects. Peak: early–mid May.",                                  habitat:{southSlope:1,woodLine:2,water:1,oak:1} },
-  { name:"Delaware Water Gap (NJ/PA)",              lat:41.050, lng:-74.960, base:61, elev:"mid",  region:"East",              trees:"Tulip poplar, ash, elm, white oak",     topo:"South-facing ridge slopes, creek hollows",                  notes:"Delaware Water Gap National Recreation Area with south-facing Kittatinny Ridge slopes and creek hollows. Tulip poplar and ash on the south-facing slopes above the creek drainages. Peak: early–mid May.",                                               habitat:{southSlope:2,woodLine:1,water:2,oak:1} },
-  { name:"Green Mountains (VT)",                    lat:43.920, lng:-72.770, base:57, elev:"mid",  region:"New England",       trees:"Ash, elm, sugar maple, old apple",     topo:"South-facing hillside woodlands, valley floor edges",       notes:"Green Mountain foothills with south-facing hillside woodlands and abandoned farmstead orchards. The valley floors where south-facing slopes descend to farm fields. Ash and elm near streams. Peak: late April–mid May.",                                   habitat:{southSlope:1,woodLine:2,water:1,oak:0} },
-
-  // ── GREAT PLAINS ───────────────────────────────────────────────
-  { name:"Loess Hills (IA)",                        lat:41.900, lng:-95.820, base:63, elev:"low",  region:"Iowa",              trees:"Bur oak, elm, cottonwood, hackberry",   topo:"South-facing loess bluffs, creek draws",                    notes:"Loess Hills State Forest on the western Iowa bluffs above the Missouri River. South-facing loess bluff faces with bur oak and elm above creek draws. Wood lines at the bluff edges. Peak: late April–early May.",                                         habitat:{southSlope:2,woodLine:2,water:1,oak:1} },
-  { name:"Flint Hills (KS)",                        lat:38.520, lng:-96.480, base:54, elev:"low",  region:"Kansas",            trees:"Bur oak, chinkapin oak, elm, hackberry", topo:"Creek drainages, south-facing woody draws",                notes:"Flint Hills creek drainages with bur oak and chinkapin oak on south-facing draws. The transition from tallgrass prairie to wooded creek draws is the zone to hunt. Peak: mid April.",                                                                    habitat:{southSlope:1,woodLine:2,water:1,oak:2} },
-  { name:"Platte River Timber (NE)",                lat:41.130, lng:-98.310, base:52, elev:"low",  region:"Nebraska",          trees:"Cottonwood, elm, hackberry",            topo:"Riparian timber strips, south-facing bluff edges",          notes:"Platte River cottonwood-hackberry riparian timber. South-facing bluff edges above the valley with elm and cottonwood in the bottoms. Best years follow wet springs. Peak: late April–early May.",                                                          habitat:{southSlope:1,woodLine:1,water:2,oak:0} },
-
-  // ── PACIFIC NORTHWEST ──────────────────────────────────────────
-  { name:"Willamette Valley South (OR)",            lat:44.180, lng:-123.100, base:62, elev:"low", region:"Oregon",            trees:"Oregon ash, big-leaf maple, cottonwood", topo:"South-facing river terraces, wood line edges",             notes:"Southern Willamette Valley south-facing river terraces with Oregon ash near water. Wood lines where riparian forest edges open farm ground on south aspects. Peak: March–April.",                                                                          habitat:{southSlope:1,woodLine:2,water:2,oak:0} },
-  { name:"Rogue Valley / Siskiyou (OR)",            lat:42.380, lng:-122.880, base:55, elev:"mid", region:"Oregon",            trees:"Oregon white oak, ponderosa, madrone",  topo:"South-facing oak woodland edges",                           notes:"Oregon white oak on south-facing slopes in the Rogue Valley and Siskiyou foothills. Oak woodland edges meeting open ground on south aspects — a distinct habitat type from the rest of the PNW. Peak: March–May.",                                         habitat:{southSlope:2,woodLine:2,water:1,oak:2} },
-  { name:"Cascades Post-Fire (OR/WA)",              lat:46.100, lng:-121.700, base:52, elev:"high",region:"Pacific NW",        trees:"Post-fire conifers, cottonwood, alder",  topo:"South-facing burn scars near streams",                     notes:"Post-fire Cascade slopes on south-facing aspects near creeks. Check USFS fire history maps for 1–2 year old burns. Productive for 1-2 seasons post-fire. Peak: May–June.",                                                                               habitat:{southSlope:1,woodLine:1,water:1,oak:0} },
-
-  // ── ROCKY MOUNTAINS ────────────────────────────────────────────
-  { name:"Bighorn Mountains (WY)",                  lat:44.580, lng:-107.410, base:48, elev:"high",region:"Wyoming",           trees:"Aspen, cottonwood, ponderosa edges",    topo:"South-facing aspen groves, creek drainages",                notes:"South-facing aspen groves above creek drainages in the Bighorns. Less fire-dependent than further west. Mature aspen edges with seeps and south exposure. Peak: May–June.",                                                                               habitat:{southSlope:2,woodLine:1,water:1,oak:0} },
-  { name:"Colorado Front Range (CO)",               lat:39.720, lng:-105.280, base:50, elev:"high",region:"Colorado",          trees:"Gambel oak, aspen, ponderosa pine",     topo:"South-facing foothills, oak brush zones",                   notes:"Gambel oak on south-facing Front Range foothills. Post-fire ponderosa zones and Gambel oak brushfields on south aspects. The westernmost reliable oak-associated morel habitat in the US. Peak: May–June.",                                              habitat:{southSlope:2,woodLine:1,water:1,oak:2} },
-  { name:"Idaho Snake River Breaks",                lat:46.090, lng:-116.600, base:50, elev:"high",region:"Idaho",             trees:"Cottonwood, aspen, ponderosa, post-fire",topo:"South-facing canyon slopes, river bottoms",                 notes:"Snake River canyon breaks with south-facing slopes and cottonwood river bottoms. Canyon geometry creates focused south exposure. Post-fire areas especially productive. Peak: May–June.",                                                                  habitat:{southSlope:2,woodLine:1,water:2,oak:0} },
-
-  // ── CALIFORNIA ─────────────────────────────────────────────────
-  { name:"Sierra Nevada Foothills (CA)",            lat:38.420, lng:-120.860, base:52, elev:"mid", region:"California",        trees:"Blue oak, valley oak, ponderosa",       topo:"South-facing oak woodland, post-fire slopes",               notes:"Blue oak and valley oak on south-facing Sierra foothills. Post-fire ponderosa zones produce burn morels. Not well documented but consistent finds reported in the oak-pine transition. Peak: February–April.",                                            habitat:{southSlope:2,woodLine:2,water:1,oak:2} },
-  { name:"Shasta-Trinity (CA)",                     lat:40.920, lng:-122.480, base:50, elev:"high",region:"California",        trees:"Big-leaf maple, Oregon white oak, post-fire conifers",topo:"Post-fire mixed conifer, stream terraces",           notes:"Post-fire mixed conifer zones and riparian big-leaf maple near streams. South-facing aspects in the Trinity Alps and Shasta foothills are the target. Peak: March–May.",                                                                                 habitat:{southSlope:1,woodLine:1,water:2,oak:1} },
+// ── Curated premium spots ─────────────────────────────────────
+const CURATED = [
+  {name:"Missouri City — River Bluffs",         lat:39.245,lng:-94.290,base:78,elev:"low", rk:"NW Missouri",    notes:"Sitting right on the Missouri River bluff edge in Clay County. South-facing draws where bluff timber breaks toward the bottoms — wood lines against farm fields, creek drainages feeding the river. Elm and ash on south aspects. Peak: mid–late April."},
+  {name:"Fishing River Hollows",                lat:39.320,lng:-94.150,base:74,elev:"low", rk:"NW Missouri",    notes:"Fishing River drainage off the Missouri bluffs. South-facing hollows where creek timber meets crop ground produce reliably. Mature elms along the creek edges. Peak: mid April."},
+  {name:"Little Platte River Timber",           lat:39.400,lng:-94.480,base:70,elev:"low", rk:"NW Missouri",    notes:"Little Platte River bottomland timber with south-facing bluff edges. Bur oak on drier south slopes, cottonwood and ash in the bottoms. Peak: mid April."},
+  {name:"Rush Creek — Clay County",             lat:39.180,lng:-94.420,base:72,elev:"low", rk:"NW Missouri",    notes:"Rush Creek drainage cutting south through Clay County timber. Wood lines on south exposures adjacent to open pasture. Classic mid-April morel country. Peak: April 15–25."},
+  {name:"Gasconade River Bluffs",               lat:37.960,lng:-91.990,base:84,elev:"mid", rk:"Missouri Ozarks",notes:"Gasconade River bluff faces with south exposure and creek draws. White oak mixed with ash on the south slopes is the defining combo. One of the most reliable spots in the Ozarks. Peak: late April."},
+  {name:"Big Piney River Corridor",             lat:37.510,lng:-92.100,base:82,elev:"mid", rk:"Missouri Ozarks",notes:"Big Piney River with south-facing timbered hollows. Confluence zones where tributaries enter from the south are prime. Lots of dying ash and elm. Peak: late April."},
+  {name:"Current River — South Hollows",        lat:37.090,lng:-91.550,base:80,elev:"mid", rk:"Missouri Ozarks",notes:"Current River country with south-facing hollow faces above the creek. Look for hollow heads where south-facing slopes hold warmth above seeps. Peak: late April."},
+  {name:"Bryant Creek Bottoms",                 lat:36.850,lng:-92.300,base:76,elev:"mid", rk:"Missouri Ozarks",notes:"Bryant Creek drainage in Douglas County. South-facing ridge noses above creek bottoms with white oak. Field-edge timber on south aspects produces year after year. Peak: late April."},
+  {name:"Salt River Bottoms (NE MO)",           lat:39.450,lng:-91.600,base:70,elev:"low", rk:"NE Missouri",    notes:"Salt River and North Fork Missouri timber in northeast Missouri. South-facing timber edges above the river bottom. Mark Twain lake area holds good populations. Peak: late April."},
+  {name:"Cuivre River Timber",                  lat:38.960,lng:-91.150,base:72,elev:"low", rk:"NE Missouri",    notes:"Cuivre River State Park with classic south-facing creek hollow morel habitat. Wood lines bordering south-facing slopes above creek bottoms. Peak: late April."},
+  {name:"Cache River Bottoms (IL)",             lat:37.150,lng:-89.100,base:80,elev:"low", rk:"Southern Illinois",notes:"Cache River wetlands with south-facing bluff bases above the bottomland. Timber edge between bluff and cypress swamp is the precise zone. Peak: mid-April."},
+  {name:"LaRue-Pine Hills (IL)",                lat:37.580,lng:-89.370,base:78,elev:"low", rk:"Southern Illinois",notes:"South-facing bluff timber above the swamp with a distinct wood line. Dying elm and ash are everywhere. One of the most ecologically diverse spots in the Midwest. Peak: mid-April."},
+  {name:"Illinois River Bottoms (Cass Co.)",    lat:39.900,lng:-90.350,base:68,elev:"low", rk:"Central Illinois",notes:"Illinois River bottomland timber in Cass and Morgan counties. Wood lines where riparian forest meets farm ground on south-facing banks. Peak: mid-April."},
+  {name:"Brown County (IN) Ridges",             lat:39.200,lng:-86.200,base:75,elev:"mid", rk:"Indiana",        notes:"Brown County hill country with classic south-facing ridge faces and hollow heads. Work the south sides of ridges systematically. Peak: late April–early May."},
+  {name:"Hocking Hills (OH)",                   lat:39.440,lng:-82.530,base:70,elev:"mid", rk:"Ohio",           notes:"Hunt the south-facing mixed hardwood slopes above the gorge rims and hollow faces leading down to creeks. Mature elm and ash near the water. Peak: late April–early May."},
+  {name:"Muskegon River Corridor (MI)",         lat:43.650,lng:-85.800,base:74,elev:"low", rk:"Michigan",       notes:"Classic Michigan morel country — orchard edges backed by second-growth forest on south-facing sandy loam banks. National Morel Mushroom Festival nearby. Peak: early May."},
+  {name:"Driftless Coulee Country (WI/MN)",     lat:43.810,lng:-91.230,base:68,elev:"low", rk:"Driftless Area", notes:"Classic south-facing coulee bluffs above meandering trout streams. Bluff face where timber transitions to open field above the creek is the prime zone. Peak: late April–mid May."},
+  {name:"Kettle Moraine Oak Openings (WI)",     lat:43.180,lng:-88.400,base:65,elev:"low", rk:"Wisconsin",      notes:"South-facing oak openings on the glacial hills. Wood lines bordering agricultural kettles hold morels reliably. Peak: late April–early May."},
+  {name:"Buffalo River Corridor (AR)",          lat:36.030,lng:-92.890,base:80,elev:"mid", rk:"Arkansas Ozarks",notes:"Buffalo National River corridor with exceptional south-facing limestone hollow habitat. White oak and ash on south aspects, redbud on the bluff edges. One of the finest morel landscapes in the South. Peak: late March–mid April."},
+  {name:"Land Between the Lakes (KY/TN)",       lat:36.900,lng:-87.990,base:72,elev:"low", rk:"Kentucky",       notes:"South-facing ridge faces dropping to the lake coves. White oak above tulip poplar below — work the transition zone on south aspects in early season. Peak: late March–mid April."},
+  {name:"Red River Gorge (KY)",                 lat:37.770,lng:-83.680,base:74,elev:"mid", rk:"Kentucky",       notes:"Dramatic south-facing sandstone hollow faces. Hollow heads above the rock arches retain moisture and warmth. Among the most beautiful morel country in the East. Peak: mid–late April."},
+  {name:"New River Gorge (WV)",                 lat:37.900,lng:-81.080,base:72,elev:"mid", rk:"West Virginia",  notes:"Gorge walls and tributary hollow faces. The gorge creates extreme south-facing aspects. Mixed mesophytic forest in the hollows with tulip poplar and ash. Peak: mid–late April."},
+  {name:"Nantahala Gorge (NC)",                 lat:35.320,lng:-83.740,base:67,elev:"high",rk:"NC Smokies",     notes:"South-facing cove hardwood forest with intense micro-climates. Tulip poplar and buckeye with white oak near seeps and streams. Peak: mid–late April."},
+  {name:"Bankhead National Forest (AL)",        lat:34.270,lng:-87.230,base:64,elev:"mid", rk:"Alabama Georgia",notes:"South-facing coves with white oak and tulip poplar near creek drainages. Among the earliest regions in the East — sometimes late February. Peak: late March."},
+  {name:"Hudson Valley Orchards (NY)",          lat:41.800,lng:-73.850,base:63,elev:"mid", rk:"New York",       notes:"Old orchard land on south-facing hillsides. Old farmsteads with mature apple trees backing up to mixed hardwood forest. Wood lines where orchard meets timber. Peak: early–mid May."},
+  {name:"Laurel Highlands (PA)",                lat:40.040,lng:-79.250,base:67,elev:"mid", rk:"Pennsylvania",   notes:"South-facing ridge hollows in southwest PA with old farmstead tree remnants. Ash and elm on south aspects above creek drainages. Peak: late April–early May."},
+  {name:"Willamette Valley South (OR)",         lat:44.180,lng:-123.100,base:62,elev:"low",rk:"Oregon",         notes:"South-facing river terraces with Oregon ash near water. Wood lines where riparian forest edges open farm ground on south aspects. Peak: March–April."},
+  {name:"Rogue Valley / Siskiyou (OR)",         lat:42.380,lng:-122.880,base:55,elev:"mid",rk:"Oregon Siskiyou",notes:"Oregon white oak on south-facing slopes in the Rogue Valley and Siskiyou foothills. A distinct habitat type from the rest of the PNW. Peak: March–May."},
+  {name:"Colorado Front Range (CO)",            lat:39.720,lng:-105.280,base:50,elev:"high",rk:"Rockies",       notes:"Gambel oak on south-facing Front Range foothills and post-fire ponderosa zones. The westernmost reliable oak-associated morel habitat in the US. Peak: May–June."},
+  {name:"Sierra Nevada Foothills (CA)",         lat:38.420,lng:-120.860,base:52,elev:"mid",rk:"California",     notes:"Blue oak and valley oak on south-facing Sierra foothills. Post-fire ponderosa zones produce burn morels. Peak: February–April."},
 ];
 
-const HAB_LABELS = {
-  southSlope: "South-facing slope",
-  woodLine:   "Wood line / edge",
-  water:      "Water nearby",
-  oak:        "Oak trees"
-};
+// ── Seeded PRNG (deterministic = same spots every load) ───────
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
-const SEASON_ELEV_BONUS = {
-  early: { low: 14, mid:  2, high: -20 },
-  peak:  { low:  2, mid:  9, high:  -4 },
-  late:  { low:-16, mid:  5, high:  18 },
-};
-const SEASON_FACTOR = { early: 0.76, peak: 1.0, late: 0.82 };
-const HAB_BONUS     = { 0: 0, 1: 6, 2: 14 };
+// ── Generated name pools ───────────────────────────────────────
+const NP=["North","South","East","West","Upper","Lower","Big","Little","Long","Deep","Cedar","Hickory","Walnut","Elm","Ash","Oak","Sugar","Black","White","Clear","Rock","Dry","Sand","Deer","Bear","Wolf","Coon","Turkey","Goose","Hawk"];
+const NF=["Fork","Run","Branch","Creek","Hollow","Draw","Ridge","Bottom","Bend","Cove","Gap","Knob","Bluff","Flat","Holler","Branch","Slough"];
+const NT=["Timber","Bottoms","Bluff","Draw","Drainage","Hollow","Cove","Ridge","Slope","Wood Line","Seep","Ravine","Flat","Bend","Run"];
+function gn(r){const t=~~(r()*3);if(t===0)return NP[~~(r()*NP.length)]+" "+NF[~~(r()*NF.length)];if(t===1)return NF[~~(r()*NF.length)]+" "+NT[~~(r()*NT.length)];return NP[~~(r()*NP.length)]+" "+NF[~~(r()*NF.length)]+" "+NT[~~(r()*NT.length)]}
 
-let currentSeason = "peak";
-let activeHab = new Set();
-let layers = [];
+// ── Seed zones: [lat, lng, spread, count, base, elev, regionKey] ──
+const SEEDS = [
+  // Missouri Ozarks
+  [37.90,-92.00,0.55,13,82,"mid","Missouri Ozarks"],
+  [37.10,-91.55,0.45,13,80,"mid","Missouri Ozarks"],
+  [37.55,-92.20,0.45,13,79,"mid","Missouri Ozarks"],
+  [36.90,-93.00,0.45,12,76,"mid","Missouri Ozarks"],
+  [36.62,-91.30,0.40,12,74,"mid","Missouri Ozarks"],
+  [38.05,-91.25,0.45,11,72,"mid","Missouri Ozarks"],
+  // NW Missouri / KC corridor
+  [39.22,-94.28,0.28,12,75,"low","NW Missouri"],
+  [39.10,-94.02,0.28,11,72,"low","NW Missouri"],
+  [39.42,-94.65,0.28,11,70,"low","NW Missouri"],
+  [39.62,-95.12,0.28,10,66,"low","NW Missouri"],
+  // SW Missouri
+  [36.62,-93.80,0.40,10,72,"mid","SW Missouri"],
+  [36.80,-93.20,0.40,10,70,"mid","SW Missouri"],
+  // NE / Central Missouri
+  [39.52,-91.72,0.38,10,68,"low","NE Missouri"],
+  [38.88,-91.20,0.38,10,70,"low","NE Missouri"],
+  [38.62,-92.22,0.40,10,66,"low","Central Missouri"],
+  [38.40,-92.62,0.45,10,64,"low","Central Missouri"],
+  // Southern Illinois
+  [37.22,-89.12,0.38,12,78,"low","Southern Illinois"],
+  [37.60,-89.40,0.28,12,76,"low","Southern Illinois"],
+  [37.52,-88.32,0.38,11,72,"low","Southern Illinois"],
+  [37.82,-88.92,0.38,11,70,"low","Southern Illinois"],
+  // Central / Northern Illinois
+  [40.02,-90.28,0.45,9,66,"low","Central Illinois"],
+  [39.92,-89.52,0.45,9,64,"low","Central Illinois"],
+  [40.52,-90.32,0.38,9,62,"low","Central Illinois"],
+  // Indiana
+  [39.22,-86.22,0.38,10,74,"mid","Indiana"],
+  [38.62,-86.42,0.38,10,70,"mid","Indiana"],
+  [40.72,-86.52,0.38,9,64,"low","Indiana"],
+  [39.52,-87.02,0.38,9,68,"low","Indiana"],
+  // Ohio
+  [39.52,-82.52,0.38,9,70,"mid","Ohio"],
+  [40.62,-82.22,0.38,9,68,"mid","Ohio"],
+  [39.22,-82.02,0.35,9,66,"mid","Ohio"],
+  [38.62,-82.52,0.30,9,64,"low","SE Ohio"],
+  // Michigan Lower Peninsula
+  [43.72,-85.82,0.45,10,74,"low","Michigan"],
+  [44.22,-85.92,0.45,10,72,"low","Michigan"],
+  [43.82,-86.12,0.38,10,70,"low","Michigan"],
+  [44.88,-86.02,0.38,10,68,"low","Michigan"],
+  [44.72,-85.52,0.38,10,66,"low","Michigan"],
+  // Michigan Upper Peninsula
+  [46.22,-85.52,0.55,8,60,"low","Michigan UP"],
+  [46.72,-88.52,0.55,8,58,"low","Michigan UP"],
+  // Wisconsin Driftless
+  [43.82,-91.22,0.38,9,68,"low","Driftless Area"],
+  [44.22,-91.42,0.28,9,66,"low","Driftless Area"],
+  [43.22,-90.92,0.38,9,64,"low","Driftless Area"],
+  [43.52,-90.42,0.38,9,62,"low","Driftless Area"],
+  // Wisconsin Other
+  [43.22,-88.42,0.38,8,65,"low","Wisconsin"],
+  [45.92,-90.72,0.48,8,58,"low","Wisconsin"],
+  [45.52,-89.52,0.48,8,56,"low","Wisconsin"],
+  // Minnesota
+  [43.92,-91.52,0.28,8,65,"low","Minnesota"],
+  [44.42,-93.02,0.38,8,60,"low","Minnesota"],
+  [44.12,-91.92,0.28,8,62,"low","Driftless Area"],
+  // Iowa
+  [41.92,-95.82,0.38,8,63,"low","Iowa"],
+  [42.62,-91.62,0.38,8,60,"low","Iowa"],
+  [41.82,-92.02,0.38,8,58,"low","Iowa"],
+  [40.62,-91.92,0.28,8,60,"low","Iowa"],
+  // Kansas / Nebraska
+  [38.52,-96.52,0.48,8,54,"low","Kansas"],
+  [37.52,-95.82,0.38,8,50,"low","Kansas"],
+  [41.12,-98.32,0.48,8,50,"low","Nebraska"],
+  // Arkansas Ozarks
+  [36.02,-92.92,0.45,13,78,"mid","Arkansas Ozarks"],
+  [35.72,-93.82,0.38,13,74,"mid","Arkansas Ozarks"],
+  [36.32,-92.02,0.45,12,72,"mid","Arkansas Ozarks"],
+  [36.12,-93.52,0.38,12,70,"mid","Arkansas Ozarks"],
+  [36.32,-93.82,0.38,11,70,"mid","Arkansas Ozarks"],
+  [36.22,-94.12,0.28,10,68,"mid","Arkansas Ozarks"],
+  // Oklahoma
+  [36.32,-94.52,0.38,8,58,"mid","Oklahoma"],
+  [34.72,-94.72,0.45,8,52,"mid","Oklahoma"],
+  // Kentucky
+  [37.82,-83.72,0.38,11,74,"mid","Kentucky"],
+  [36.92,-88.02,0.38,11,70,"low","Kentucky"],
+  [36.82,-84.92,0.38,11,68,"mid","Kentucky"],
+  [37.52,-83.52,0.45,11,66,"mid","Kentucky"],
+  // Tennessee
+  [35.72,-84.82,0.45,11,70,"mid","Tennessee"],
+  [35.42,-88.02,0.38,11,66,"low","Tennessee"],
+  [35.22,-84.52,0.38,11,66,"mid","Tennessee"],
+  [35.52,-87.52,0.38,11,64,"low","Tennessee"],
+  // Texas
+  [31.62,-94.62,0.38,6,45,"low","Texas"],
+  [33.52,-95.02,0.38,6,42,"low","Texas"],
+  // West Virginia
+  [37.92,-81.12,0.38,8,70,"mid","West Virginia"],
+  [38.22,-80.32,0.38,8,66,"mid","West Virginia"],
+  [38.52,-79.82,0.38,8,64,"mid","West Virginia"],
+  // Virginia
+  [38.72,-78.52,0.38,8,64,"mid","Virginia"],
+  [38.12,-79.22,0.38,8,66,"mid","Virginia"],
+  [37.22,-80.42,0.38,8,64,"mid","Virginia"],
+  // North Carolina / Smokies
+  [35.32,-83.72,0.38,8,67,"high","NC Smokies"],
+  [35.52,-82.82,0.38,8,64,"high","NC Smokies"],
+  [36.02,-81.52,0.28,8,60,"mid","NC Smokies"],
+  // Georgia / Alabama
+  [34.82,-84.32,0.38,8,60,"mid","Alabama Georgia"],
+  [34.32,-87.22,0.38,8,62,"mid","Alabama Georgia"],
+  [33.52,-86.02,0.38,8,56,"mid","Alabama Georgia"],
+  // Pennsylvania
+  [40.02,-79.22,0.38,8,66,"mid","Pennsylvania"],
+  [41.52,-76.42,0.38,8,64,"mid","Pennsylvania"],
+  [41.62,-79.12,0.38,8,60,"mid","Pennsylvania"],
+  // New York / New England
+  [41.82,-73.92,0.38,7,60,"mid","New York"],
+  [43.92,-72.82,0.38,7,57,"mid","New England"],
+  [42.52,-72.22,0.38,7,55,"mid","New England"],
+  // Pacific NW / Oregon
+  [44.22,-123.12,0.45,7,60,"low","Oregon"],
+  [42.42,-122.92,0.38,7,53,"mid","Oregon Siskiyou"],
+  [45.72,-121.82,0.45,7,52,"high","Pacific NW"],
+  [47.52,-120.52,0.55,7,50,"high","Pacific NW"],
+  // Rockies
+  [39.72,-105.32,0.45,6,48,"high","Rockies"],
+  [44.62,-107.42,0.45,6,46,"high","Rockies"],
+  [46.12,-116.62,0.45,6,48,"high","Rockies"],
+  [46.52,-114.32,0.45,6,46,"high","Rockies"],
+  // California
+  [38.42,-120.92,0.45,6,50,"mid","California"],
+  [40.92,-122.52,0.45,6,48,"high","California"],
+  // Mississippi bluffs
+  [38.82,-90.32,0.28,10,66,"low","Central Missouri"],
+  // SE Indiana
+  [39.12,-84.92,0.28,8,66,"low","Indiana"],
+  // NW Arkansas extra
+  [36.42,-93.92,0.28,8,68,"mid","Arkansas Ozarks"],
 
-function computeScore(spot) {
-  const temp = parseInt(document.getElementById("temp").value);
-  const rain = parseFloat(document.getElementById("rain").value);
-  let s = spot.base;
-  s += (SEASON_ELEV_BONUS[currentSeason][spot.elev] || 0);
-  s *= SEASON_FACTOR[currentSeason];
-  const tf = (temp>=55&&temp<=75)?1.0:(temp>=50&&temp<=80)?0.85:0.62;
-  const rf = (rain>=0.5&&rain<=2.5)?1.0:(rain>=0.2)?0.85:(rain>2.5)?0.75:0.50;
-  s *= tf * rf;
-  activeHab.forEach(key => { s += HAB_BONUS[(spot.habitat||{})[key] || 0]; });
-  return Math.round(Math.min(99, Math.max(5, s)));
+  // ── 500 more ─────────────────────────────────────────────────
+  // Missouri — more river systems
+  [38.35,-91.05,0.38,10,74,"mid","Missouri Ozarks"],  // Meramec River
+  [38.20,-91.40,0.35,10,72,"mid","Missouri Ozarks"],  // Bourbeuse River
+  [37.70,-92.90,0.38,10,76,"mid","Missouri Ozarks"],  // Niangua River
+  [36.82,-90.82,0.38,10,72,"mid","Missouri Ozarks"],  // Black River MO
+  [37.62,-91.22,0.32,10,78,"mid","Missouri Ozarks"],  // Courtois Creek
+  [38.28,-93.22,0.42,10,66,"low","Central Missouri"],  // Osage River
+  // Illinois — more river systems
+  [38.52,-89.52,0.38,10,65,"low","Southern Illinois"], // Kaskaskia River
+  [39.22,-88.32,0.38,10,62,"low","Central Illinois"],  // Embarras River
+  [38.82,-87.92,0.32,10,64,"low","Indiana"],           // Wabash River IL side
+  [41.82,-89.52,0.38,10,60,"low","Central Illinois"],  // Rock River IL
+  [41.62,-88.42,0.32,10,58,"low","Central Illinois"],  // Fox River IL
+  // Iowa — more river corridors
+  [41.32,-93.82,0.42,10,60,"low","Iowa"],              // Des Moines River
+  [41.92,-91.72,0.38,10,62,"low","Iowa"],              // Cedar River
+  [42.12,-91.22,0.32,10,60,"low","Iowa"],              // Maquoketa River
+  [42.12,-91.82,0.38,10,58,"low","Iowa"],              // Wapsipinicon River
+  // Wisconsin — more river systems
+  [43.52,-90.72,0.32,10,64,"low","Driftless Area"],    // Kickapoo River
+  [44.82,-88.92,0.38,10,58,"low","Wisconsin"],         // Wolf River
+  [44.32,-90.82,0.32,10,62,"low","Driftless Area"],    // Black River WI
+  [45.92,-91.82,0.38,10,56,"low","Wisconsin"],         // Namekagon River
+  // Minnesota — more bluff country
+  [43.65,-91.92,0.32,10,65,"low","Driftless Area"],    // Root River MN
+  [44.02,-92.02,0.28,10,63,"low","Minnesota"],         // Whitewater River
+  [44.52,-92.52,0.32,10,60,"low","Minnesota"],         // Mississippi Bluffs MN
+  // Michigan — more river systems
+  [44.42,-84.52,0.42,10,68,"low","Michigan"],          // Au Sable River
+  [42.92,-85.72,0.38,10,66,"low","Michigan"],          // Grand River MI
+  [43.22,-85.52,0.32,10,64,"low","Michigan"],          // Rogue River MI
+  // Ohio — more river systems
+  [39.82,-83.12,0.38,10,64,"mid","Ohio"],              // Scioto River
+  [40.02,-81.92,0.38,10,62,"mid","Ohio"],              // Muskingum River
+  [39.52,-81.32,0.28,10,64,"mid","SE Ohio"],           // Little Muskingum
+  // Indiana — more river systems
+  [41.02,-86.72,0.38,10,60,"low","Indiana"],           // Tippecanoe River
+  [39.92,-86.22,0.32,10,66,"low","Indiana"],           // White River upper IN
+  [38.62,-86.22,0.28,10,68,"mid","Indiana"],           // Blue River IN
+  // Kentucky — more river systems
+  [38.22,-84.02,0.38,10,66,"mid","Kentucky"],          // Licking River
+  [37.22,-85.82,0.42,10,68,"mid","Kentucky"],          // Green River KY
+  [36.52,-84.72,0.32,10,70,"mid","Kentucky"],          // Big South Fork
+  [37.32,-84.32,0.28,10,68,"mid","Kentucky"],          // Rockcastle River
+  // Tennessee — more river systems
+  [35.62,-87.12,0.38,10,66,"mid","Tennessee"],         // Duck River
+  [35.12,-86.42,0.38,10,64,"mid","Tennessee"],         // Elk River TN
+  [35.12,-84.52,0.32,10,64,"mid","Tennessee"],         // Hiwassee River
+  [36.12,-85.72,0.32,10,62,"mid","Tennessee"],         // Caney Fork
+  // Arkansas — more river systems
+  [36.22,-93.62,0.32,10,72,"mid","Arkansas Ozarks"],   // Kings River AR
+  [35.92,-94.52,0.35,10,68,"mid","Arkansas Ozarks"],   // Illinois River AR
+  [35.42,-92.42,0.38,10,66,"mid","Arkansas Ozarks"],   // Little Red River
+  // Virginia — more river systems
+  [37.02,-80.52,0.38,10,64,"mid","Virginia"],          // New River VA
+  [36.82,-82.32,0.32,10,62,"mid","Virginia"],          // Clinch River
+  [37.62,-79.52,0.38,10,62,"mid","Virginia"],          // James River VA
+  // Pennsylvania — more coverage
+  [41.72,-79.12,0.42,10,60,"mid","Pennsylvania"],      // Allegheny NF
+  [41.12,-75.32,0.32,10,58,"mid","Pennsylvania"],      // Delaware River PA
+  // Georgia/Alabama — more Appalachian foothills
+  [34.92,-83.42,0.32,10,60,"mid","Alabama Georgia"],   // Chattooga River
+  [35.10,-84.62,0.28,10,62,"mid","Tennessee"],         // Ocoee area
+  // Pacific NW — Umpqua & Klamath
+  [43.42,-123.42,0.42,10,55,"low","Oregon"],           // Umpqua River
+  [43.22,-122.62,0.38,10,52,"mid","Oregon"],           // North Umpqua
+  [41.82,-123.02,0.42,10,50,"low","Oregon"],           // Klamath River corridor
+];
+
+// ── Generate spots from seeds ─────────────────────────────────
+const rng = mulberry32(2024);
+const GENERATED = [];
+SEEDS.forEach(function(z){
+  var lat=z[0],lng=z[1],sp=z[2],n=z[3],base=z[4],elev=z[5],rk=z[6];
+  for(var i=0;i<n;i++){
+    var a=rng()*2*Math.PI, d=rng()*sp;
+    var slat=+(lat+d*Math.cos(a)).toFixed(4);
+    var slng=+(lng+d*Math.sin(a)/Math.cos(lat*Math.PI/180)).toFixed(4);
+    var b=Math.round(base+(rng()-0.5)*10);
+    GENERATED.push({name:gn(rng),lat:slat,lng:slng,base:b,elev:elev,rk:rk,notes:""});
+  }
+});
+
+// ── All spots ─────────────────────────────────────────────────
+const ALL = CURATED.concat(GENERATED);
+document.getElementById("hcount").textContent = ALL.length.toLocaleString()+" spots";
+
+// ── Scoring ───────────────────────────────────────────────────
+const SEL = {early:{low:14,mid:2,high:-20},peak:{low:2,mid:9,high:-4},late:{low:-16,mid:5,high:18}};
+const SF  = {early:0.76,peak:1.0,late:0.82};
+const HB  = [0,6,14];
+
+var season="peak";
+var hab={ss:false,wl:false,w:false,o:false};
+
+// When any toggle is on, only show spots that have that feature (h[i] >= 1).
+// All active toggles must match — toggle on = filter to matching spots only.
+function visible(s){
+  var anyOn=hab.ss||hab.wl||hab.w||hab.o;
+  if(!anyOn) return true;
+  var h=(RP[s.rk]||["","", [0,0,0,0]])[2];
+  if(hab.ss && (h[0]||0)<1) return false;
+  if(hab.wl && (h[1]||0)<1) return false;
+  if(hab.w  && (h[2]||0)<1) return false;
+  if(hab.o  && (h[3]||0)<1) return false;
+  return true;
 }
 
-function scoreColor(score) { return score>=70?"#1b7a56":score>=40?"#d97706":"#dc2626"; }
-function elevColor(elev)   { return elev==="high"?"#8b5cf6":elev==="mid"?"#3b82f6":"#22c55e"; }
+function score(s){
+  var rp=RP[s.rk]||["","", [0,0,0,0]];
+  var h=rp[2];
+  var v=s.base;
+  v+=(SEL[season][s.elev]||0);
+  v*=SF[season];
+  var temp=parseInt(document.getElementById("temp").value);
+  var rain=parseFloat(document.getElementById("rain").value);
+  var tf=(temp>=55&&temp<=75)?1.0:(temp>=50&&temp<=80)?0.85:0.62;
+  var rf=(rain>=0.5&&rain<=2.5)?1.0:(rain>=0.2)?0.85:(rain>2.5)?0.75:0.50;
+  v*=tf*rf;
+  if(hab.ss) v+=HB[h[0]||0];
+  if(hab.wl) v+=HB[h[1]||0];
+  if(hab.w)  v+=HB[h[2]||0];
+  if(hab.o)  v+=HB[h[3]||0];
+  return Math.round(Math.min(99,Math.max(5,v)));
+}
 
-const osmLayer  = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom:19 });
-const topoLayer = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",   { attribution:'&copy; <a href="https://opentopomap.org">OpenTopoMap</a>', maxZoom:17 });
+function scoreCol(sc){ return sc>=70?"#1b7a56":sc>=40?"#d97706":"#dc2626"; }
+function elevCol(e)  { return e==="high"?"#8b5cf6":e==="mid"?"#3b82f6":"#22c55e"; }
 
-const map = L.map("map", { layers:[osmLayer] }).setView([38.5, -92], 5);
+// ── Map ───────────────────────────────────────────────────────
+var osmLayer=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',maxZoom:19});
+var topoLayer=L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{attribution:'&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',maxZoom:17});
+var map=L.map("map",{layers:[osmLayer]}).setView([38.5,-92],5);
 L.control.layers({"Streets":osmLayer,"Terrain + Contours":topoLayer},{},{position:"topright"}).addTo(map);
 
-document.getElementById("zone-count").textContent = SPOTS.length + " spots";
+// Canvas renderer for performance with 1000+ markers
+var renderer=L.canvas({padding:0.5});
 
-function renderSpots() {
-  layers.forEach(l => map.removeLayer(l));
-  layers = [];
+var layers=[];
+function render(){
+  layers.forEach(function(l){map.removeLayer(l);});
+  layers=[];
+  ALL.forEach(function(s){
+    if(!visible(s)) return;   // hide spots that don't match active toggles
+    var sc=score(s);
+    var fc=scoreCol(sc);
+    var ec=elevCol(s.elev);
+    var r=sc>=70?9:sc>=40?7:6;
 
-  SPOTS.forEach(spot => {
-    const score = computeScore(spot);
-    const fill  = scoreColor(score);
-    const ring  = elevColor(spot.elev);
-    const r     = score >= 70 ? 9 : score >= 40 ? 7 : 6;
-
-    // outer glow ring for high-score spots
-    if (score >= 70) {
-      const glow = L.circleMarker([spot.lat, spot.lng], {
-        radius: r + 6,
-        weight: 0,
-        fillColor: fill,
-        fillOpacity: 0.18,
-        interactive: false,
-      }).addTo(map);
-      layers.push(glow);
+    if(sc>=74){
+      var glow=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r+7,weight:0,fillColor:fc,fillOpacity:0.14,interactive:false});
+      glow.addTo(map);layers.push(glow);
     }
+    var ring=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r+2.5,weight:1.8,color:ec,opacity:0.65,fillOpacity:0,interactive:false});
+    ring.addTo(map);layers.push(ring);
 
-    // elevation ring
-    const ring2 = L.circleMarker([spot.lat, spot.lng], {
-      radius: r + 2.5,
-      weight: 2,
-      color: ring,
-      opacity: 0.7,
-      fillOpacity: 0,
-      interactive: false,
-    }).addTo(map);
-    layers.push(ring2);
-
-    // main dot
-    const dot = L.circleMarker([spot.lat, spot.lng], {
-      radius: r,
-      weight: 1.5,
-      color: "#fff",
-      opacity: 0.9,
-      fillColor: fill,
-      fillOpacity: 0.92,
-    }).addTo(map);
-
-    dot.on("click", () => showInfo(spot));
-    layers.push(dot);
+    var dot=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r,weight:1.5,color:"#fff",opacity:0.85,fillColor:fc,fillOpacity:0.90});
+    dot.on("click",function(){showInfo(s);});
+    dot.addTo(map);layers.push(dot);
   });
 }
 
-function showInfo(spot) {
-  const score   = computeScore(spot);
-  const cls     = score>=70?"high":score>=40?"med":"low";
-  const lbl     = score>=70?"High likelihood":score>=40?"Moderate":"Low likelihood";
-  const elevTxt = {low:"Lowlands",mid:"Mid-elevation",high:"High elevation"}[spot.elev];
+function showInfo(s){
+  var sc=score(s);
+  var cls=sc>=70?"high":sc>=40?"med":"low";
+  var lbl=sc>=70?"High likelihood":sc>=40?"Moderate":"Low likelihood";
+  var et={low:"Lowlands",mid:"Mid-elevation",high:"High elevation"}[s.elev];
+  var rp=RP[s.rk]||["Unknown","Unknown",[0,0,0,0]];
 
-  document.getElementById("zi-name").innerHTML =
-    spot.name + '<span class="elev-pill">'+elevTxt+'</span>';
-  const badge = document.getElementById("zi-badge");
-  badge.textContent = score+"% — "+lbl;
-  badge.className   = "zi-badge "+cls;
-  document.getElementById("zi-region").textContent = spot.region;
-  document.getElementById("zi-trees").textContent  = spot.trees;
-  document.getElementById("zi-topo").textContent   = spot.topo;
-  document.getElementById("zi-note").textContent   = spot.notes;
+  document.getElementById("zi-name").innerHTML=s.name+'<span class="elev-pill">'+et+'</span>';
+  var b=document.getElementById("zi-badge");
+  b.textContent=sc+"% — "+lbl; b.className="zi-badge "+cls;
+  document.getElementById("zi-region").textContent=s.rk||"—";
+  document.getElementById("zi-trees").textContent=rp[0];
+  document.getElementById("zi-topo").textContent=rp[1];
+  document.getElementById("zi-note").textContent=s.notes||"";
 
-  const matchesEl = document.getElementById("zi-hab-matches");
-  matchesEl.innerHTML = "";
-  Object.entries(spot.habitat||{}).forEach(([key, val]) => {
-    if (val >= 1) {
-      const chip = document.createElement("span");
-      chip.className   = "hmatch";
-      chip.textContent = (val===2?"★ ":"")+HAB_LABELS[key];
-      matchesEl.appendChild(chip);
-    }
+  var hLabels={ss:"South-facing slope",wl:"Wood line / edge",w:"Water nearby",o:"Oak trees"};
+  var hKeys=["ss","wl","w","o"];
+  var me=document.getElementById("zi-hab-matches");
+  me.innerHTML="";
+  rp[2].forEach(function(v,i){
+    if(v>=1){var c=document.createElement("span");c.className="hmatch";c.textContent=(v===2?"★ ":"")+hLabels[hKeys[i]];me.appendChild(c);}
   });
 
-  const panel = document.getElementById("zone-info");
+  var panel=document.getElementById("zone-info");
   panel.classList.add("visible");
-  panel.scrollIntoView({ behavior:"smooth", block:"nearest" });
+  panel.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 
-document.getElementById("close-zi").addEventListener("click", () => {
-  document.getElementById("zone-info").classList.remove("visible");
-});
-document.getElementById("temp").addEventListener("input", function() {
-  document.getElementById("temp-val").textContent = this.value+"°F";
-  renderSpots();
-});
-document.getElementById("rain").addEventListener("input", function() {
-  document.getElementById("rain-val").textContent = parseFloat(this.value).toFixed(1)+"\"";
-  renderSpots();
-});
-document.querySelectorAll(".sbtn").forEach(btn => {
-  btn.addEventListener("click", function() {
-    document.querySelectorAll(".sbtn").forEach(b => b.classList.remove("active"));
-    this.classList.add("active");
-    currentSeason = this.dataset.s;
-    renderSpots();
+document.getElementById("close-zi").addEventListener("click",function(){document.getElementById("zone-info").classList.remove("visible");});
+
+var debounce=null;
+function debouncedRender(){clearTimeout(debounce);debounce=setTimeout(render,80);}
+
+document.getElementById("temp").addEventListener("input",function(){document.getElementById("temp-val").textContent=this.value+"°F";debouncedRender();});
+document.getElementById("rain").addEventListener("input",function(){document.getElementById("rain-val").textContent=parseFloat(this.value).toFixed(1)+"\"";debouncedRender();});
+document.querySelectorAll(".sbtn").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    document.querySelectorAll(".sbtn").forEach(function(b){b.classList.remove("active");});
+    this.classList.add("active"); season=this.dataset.s; render();
   });
 });
-document.querySelectorAll(".hab-toggle").forEach(el => {
-  el.addEventListener("click", function() {
-    const key = this.dataset.hab;
-    if (activeHab.has(key)) { activeHab.delete(key); this.classList.remove("active"); }
-    else                     { activeHab.add(key);    this.classList.add("active");    }
-    renderSpots();
+document.querySelectorAll(".hab-toggle").forEach(function(el){
+  el.addEventListener("click",function(){
+    var k=this.dataset.hab;
+    hab[k]=!hab[k];
+    this.classList.toggle("active",hab[k]);
+    render();
   });
 });
 
-renderSpots();
+render();
+
+// ── Tab switching ─────────────────────────────────────────────
+document.querySelectorAll(".tab-btn").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    document.querySelectorAll(".tab-btn").forEach(function(b){b.classList.remove("active");});
+    document.querySelectorAll(".tab-panel").forEach(function(p){p.classList.remove("active");});
+    this.classList.add("active");
+    document.getElementById("tab-"+this.dataset.tab).classList.add("active");
+    if(this.dataset.tab==="map") setTimeout(function(){map.invalidateSize();},50);
+  });
+});
+
+// ── Contact form handler (Formspree) ─────────────────────────
+// Replace HUNT_FORM_ID and GENERAL_FORM_ID with your IDs from formspree.io
+function submitForm(e, sid, formId){
+  e.preventDefault();
+  var form = e.target;
+  var btn  = form.querySelector(".submit-btn");
+  btn.textContent = "Sending…";
+  btn.disabled = true;
+  fetch("https://formspree.io/f/" + formId, {
+    method: "POST",
+    body: new FormData(form),
+    headers: { "Accept": "application/json" }
+  })
+  .then(function(r){
+    if(r.ok){
+      form.style.display = "none";
+      document.getElementById(sid).style.display = "block";
+    } else {
+      btn.textContent = "Error — please try again";
+      btn.disabled = false;
+    }
+  })
+  .catch(function(){
+    btn.textContent = "Error — please try again";
+    btn.disabled = false;
+  });
+}
 </script>
 </body>
 </html>
