@@ -1,0 +1,19 @@
+# wrangler.toml — Cloudflare Pages configuration
+# Deploy with: npx wrangler pages deploy .
+# Or connect your GitHub repo at dash.cloudflare.com → Pages → Create project
+
+name = "melodys-morels"
+compatibility_date = "2024-01-01"
+
+# Pages Functions live in /functions — auto-deployed, no extra config needed
+
+# Environment variables — set SECRETS in the Cloudflare dashboard, not here
+# dash.cloudflare.com → Pages → melodys-morels → Settings → Environment Variables
+#
+# Required variables (set as Encrypted secrets):
+#   CF_ACCOUNT_ID   — Cloudflare account ID
+#   CF_IMAGES_TOKEN — API token with "Cloudflare Images: Edit" permission
+#
+# Optional (only needed if keeping Firebase Functions for Stripe):
+#   STRIPE_SECRET_KEY
+#   STRIPE_WEBHOOK_SECRET

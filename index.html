@@ -4,6 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Melody's Morels</title>
+  <link rel="icon" type="image/png" href="logo.png"/>
+  <link rel="apple-touch-icon" href="logo.png"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -282,7 +284,7 @@
 
 <!-- ── Header ── -->
 <header>
-  <span style="font-size:20px">🍄</span>
+  <img src="logo.png" alt="Melody's Morels" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0"/>
   <h1>Melody's Morels <span class="hcount" id="hcount"></span></h1>
   <div class="header-right">
     <button class="notif-btn" id="notif-btn" onclick="toggleNotifications()" title="Get alerts">🔔<span class="notif-dot" id="notif-dot"></span></button>
@@ -309,7 +311,7 @@
   <span class="ad-label">Advertisement</span>
   <ins class="adsbygoogle"
     style="display:inline-block;width:728px;max-width:100%;height:90px"
-    data-ad-client="ca-pub-YOUR_ADSENSE_ID"
+    data-ad-client="ca-pub-4020636702596747"
     data-ad-slot="YOUR_LEADERBOARD_SLOT_ID"></ins>
 </div>
 
@@ -559,7 +561,7 @@
         <div class="contact-card">
           <h3>🧭 Book a Guided Hunt</h3>
           <p class="cc-sub">Fill out the form and we'll get back to you within 24 hours with availability and pricing.</p>
-          <form id="hunt-form" onsubmit="submitForm(event,'hunt-success','HUNT_FORM_ID')">
+          <form id="hunt-form" onsubmit="submitForm(event,'hunt-success','xgoqygvv')">
             <div class="form-row"><label>Your name</label><input type="text" name="name" placeholder="First and last name" required/></div>
             <div class="form-row"><label>Email</label><input type="email" name="email" placeholder="you@email.com" required/></div>
             <div class="form-row"><label>Phone (optional)</label><input type="tel" name="phone" placeholder="(555) 000-0000"/></div>
@@ -572,7 +574,7 @@
         <div class="contact-card">
           <h3>✉️ General Inquiry</h3>
           <p class="cc-sub">Becoming a guide, partnerships, map feedback, or anything else.</p>
-          <form id="general-form" onsubmit="submitForm(event,'general-success','GENERAL_FORM_ID')">
+          <form id="general-form" onsubmit="submitForm(event,'general-success','xkoebdgj')">
             <div class="form-row"><label>Your name</label><input type="text" name="name" placeholder="First and last name" required/></div>
             <div class="form-row"><label>Email</label><input type="email" name="email" placeholder="you@email.com" required/></div>
             <div class="form-row"><label>I'm interested in…</label><select name="interest"><option>Guided hunts in my area</option><option>Becoming a guide</option><option>Partnership or media</option><option>Map feedback</option><option>Something else</option></select></div>
@@ -906,10 +908,10 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "912284861913",
   appId:             "1:912284861913:web:d8a7307626c6d68a6545c8"
 };
-const STRIPE_KEY           = "pk_live_YOUR_STRIPE_PUBLISHABLE_KEY";
-const STRIPE_PRICE_MONTHLY = "price_YOUR_MONTHLY_PRICE_ID";
+const STRIPE_KEY = "pk_test_51Ta6a4KeAOFXKQHi7GNxW6MtAkxeY02ensvAUAxkVM91WVBR9Va6wRjBd7lgKXuvOuNPgzAYT6wAehFP9hAeZJkv00IwlbkeCK";
+const STRIPE_PRICE_MONTHLY = "price_1Ta6dhKeAOFXKQHi8t0yUuTJ";
 const STRIPE_PRICE_YEARLY  = "price_YOUR_YEARLY_PRICE_ID";
-const ADSENSE_PUB_ID       = "ca-pub-YOUR_ADSENSE_ID";        // web only — adsense.google.com
+const ADSENSE_PUB_ID = "ca-pub-4020636702596747";
 const ADMOB_APP_ID_IOS     = "ca-app-pub-XXXX~YOUR_IOS_APP_ID";     // AdMob dashboard
 const ADMOB_APP_ID_ANDROID = "ca-app-pub-XXXX~YOUR_ANDROID_APP_ID"; // AdMob dashboard
 const ADMOB_BANNER_IOS     = "ca-app-pub-XXXX/YOUR_IOS_BANNER_UNIT";
