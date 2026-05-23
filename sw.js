@@ -6,13 +6,13 @@ importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-comp
 
 // PASTE YOUR FIREBASE CONFIG HERE (same as in index.html)
 firebase.initializeApp({
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  databaseURL:       "YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId:         "YOUR_PROJECT",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey:            "AIzaSyDyJFh0wNs3CtuvCGcXA5DC42HIzO-fEfA",
+  authDomain:        "melodys-morels.firebaseapp.com",
+  databaseURL:       "https://melodys-morels-default-rtdb.firebaseio.com",
+  projectId:         "melodys-morels",
+  storageBucket:     "melodys-morels.firebasestorage.app",
+  messagingSenderId: "912284861913",
+  appId:             "1:912284861913:web:d8a7307626c6d68a6545c8"
 });
 
 const messaging = firebase.messaging();

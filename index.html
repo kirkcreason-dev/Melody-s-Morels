@@ -898,13 +898,13 @@
 // CONFIG — REPLACE ALL "YOUR_..." VALUES
 // ══════════════════════════════════════════════════════════════
 const FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  databaseURL:       "YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId:         "YOUR_PROJECT",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey:            "AIzaSyDyJFh0wNs3CtuvCGcXA5DC42HIzO-fEfA",
+  authDomain:        "melodys-morels.firebaseapp.com",
+  databaseURL:       "https://melodys-morels-default-rtdb.firebaseio.com",
+  projectId:         "melodys-morels",
+  storageBucket:     "melodys-morels.firebasestorage.app",
+  messagingSenderId: "912284861913",
+  appId:             "1:912284861913:web:d8a7307626c6d68a6545c8"
 };
 const STRIPE_KEY           = "pk_live_YOUR_STRIPE_PUBLISHABLE_KEY";
 const STRIPE_PRICE_MONTHLY = "price_YOUR_MONTHLY_PRICE_ID";
@@ -916,8 +916,7 @@ const ADMOB_BANNER_IOS     = "ca-app-pub-XXXX/YOUR_IOS_BANNER_UNIT";
 const ADMOB_BANNER_ANDROID = "ca-app-pub-XXXX/YOUR_ANDROID_BANNER_UNIT";
 const ADMOB_INTERSTITIAL_IOS     = "ca-app-pub-XXXX/YOUR_IOS_INTER_UNIT";
 const ADMOB_INTERSTITIAL_ANDROID = "ca-app-pub-XXXX/YOUR_ANDROID_INTER_UNIT";
-const CLOUDINARY_CLOUD  = "YOUR_CLOUD_NAME";
-const CLOUDINARY_PRESET = "YOUR_UPLOAD_PRESET";
+// Photos stored in Firebase Storage — free 5GB on Spark plan (already set up)
 const FCM_VAPID_KEY     = "YOUR_VAPID_KEY";
 
 // Detect platform: 'ios' | 'android' | 'web'
@@ -1252,10 +1251,12 @@ async function submitFind(e){
   var btn=document.getElementById("find-submit-btn"); btn.disabled=true; btn.textContent="Posting…";
   var photoFile=document.getElementById("f-photo").files[0];
   var photoUrl=null;
-  if(photoFile&&CLOUDINARY_CLOUD!=="YOUR_CLOUD_NAME"){
-    var fd=new FormData(); fd.append("file",photoFile); fd.append("upload_preset",CLOUDINARY_PRESET);
-    var r=await fetch("https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD+"/image/upload",{method:"POST",body:fd});
-    var d=await r.json(); photoUrl=d.secure_url||null;
+  if(photoFile && storage){
+    try{
+      var ref=storage.ref("photos/"+Date.now()+"_"+photoFile.name.replace(/[^a-z0-9.]/gi,"_"));
+      var snap=await ref.put(photoFile);
+      photoUrl=await snap.ref.getDownloadURL();
+    }catch(e){ console.warn("Photo upload error:",e); }
   }
   var qty=document.querySelector('input[name="fqty"]:checked');
   var find={
@@ -1592,10 +1593,12 @@ async function submitListing(e){
   var btn=document.getElementById("listing-submit-btn"); btn.disabled=true; btn.textContent="Publishing…";
   var photoFile=document.getElementById("l-photo").files[0];
   var photoUrl=null;
-  if(photoFile&&CLOUDINARY_CLOUD!=="YOUR_CLOUD_NAME"){
-    var fd=new FormData(); fd.append("file",photoFile); fd.append("upload_preset",CLOUDINARY_PRESET);
-    var r=await fetch("https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD+"/image/upload",{method:"POST",body:fd});
-    var d=await r.json(); photoUrl=d.secure_url||null;
+  if(photoFile && storage){
+    try{
+      var ref=storage.ref("photos/"+Date.now()+"_"+photoFile.name.replace(/[^a-z0-9.]/gi,"_"));
+      var snap=await ref.put(photoFile);
+      photoUrl=await snap.ref.getDownloadURL();
+    }catch(e){ console.warn("Photo upload error:",e); }
   }
   var habitats=[];
   document.querySelectorAll("#listing-form input[type=checkbox]:not(#l-terms)").forEach(function(cb){ if(cb.checked) habitats.push(cb.value); });
