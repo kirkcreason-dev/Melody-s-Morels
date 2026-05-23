@@ -1381,236 +1381,134 @@ const NP=["North","South","East","West","Upper","Lower","Big","Little","Long","D
 const NF=["Fork","Run","Branch","Creek","Hollow","Draw","Ridge","Bottom","Bend","Cove","Gap","Knob","Bluff","Flat","Holler","Slough"];
 const NT=["Timber","Bottoms","Bluff","Draw","Drainage","Hollow","Cove","Ridge","Slope","Wood Line","Seep","Ravine","Flat","Bend"];
 function gn(r){var t=~~(r()*3);if(t===0)return NP[~~(r()*NP.length)]+" "+NF[~~(r()*NF.length)];if(t===1)return NF[~~(r()*NF.length)]+" "+NT[~~(r()*NT.length)];return NP[~~(r()*NP.length)]+" "+NF[~~(r()*NF.length)]+" "+NT[~~(r()*NT.length)]}
-const SEEDS=[
-  [37.90,-92.00,0.55,13,82,"mid","Missouri Ozarks"],[37.10,-91.55,0.45,13,80,"mid","Missouri Ozarks"],[37.55,-92.20,0.45,13,79,"mid","Missouri Ozarks"],[36.90,-93.00,0.45,12,76,"mid","Missouri Ozarks"],[36.62,-91.30,0.40,12,74,"mid","Missouri Ozarks"],[38.05,-91.25,0.45,11,72,"mid","Missouri Ozarks"],
-  [39.22,-94.28,0.28,12,75,"low","NW Missouri"],[39.10,-94.02,0.28,11,72,"low","NW Missouri"],[39.42,-94.65,0.28,11,70,"low","NW Missouri"],[39.62,-95.12,0.28,10,66,"low","NW Missouri"],
-  [36.62,-93.80,0.40,10,72,"mid","SW Missouri"],[36.80,-93.20,0.40,10,70,"mid","SW Missouri"],
-  [39.52,-91.72,0.38,10,68,"low","NE Missouri"],[38.88,-91.20,0.38,10,70,"low","NE Missouri"],[38.62,-92.22,0.40,10,66,"low","Central Missouri"],[38.40,-92.62,0.45,10,64,"low","Central Missouri"],
-  [37.22,-89.12,0.38,12,78,"low","Southern Illinois"],[37.60,-89.40,0.28,12,76,"low","Southern Illinois"],[37.52,-88.32,0.38,11,72,"low","Southern Illinois"],[37.82,-88.92,0.38,11,70,"low","Southern Illinois"],
-  [40.02,-90.28,0.45,9,66,"low","Central Illinois"],[39.92,-89.52,0.45,9,64,"low","Central Illinois"],[40.52,-90.32,0.38,9,62,"low","Central Illinois"],
-  [39.22,-86.22,0.38,10,74,"mid","Indiana"],[38.62,-86.42,0.38,10,70,"mid","Indiana"],[40.72,-86.52,0.38,9,64,"low","Indiana"],[39.52,-87.02,0.38,9,68,"low","Indiana"],
-  [39.52,-82.52,0.38,9,70,"mid","Ohio"],[40.62,-82.22,0.38,9,68,"mid","Ohio"],[39.22,-82.02,0.35,9,66,"mid","Ohio"],[38.62,-82.52,0.30,9,64,"low","SE Ohio"],
-  [43.72,-85.82,0.45,10,74,"low","Michigan"],[44.22,-85.92,0.45,10,72,"low","Michigan"],[43.82,-86.12,0.38,10,70,"low","Michigan"],[44.88,-86.02,0.38,10,68,"low","Michigan"],[44.72,-85.52,0.38,10,66,"low","Michigan"],
-  [46.22,-85.52,0.55,8,60,"low","Michigan UP"],[46.72,-88.52,0.55,8,58,"low","Michigan UP"],
-  [43.82,-91.22,0.38,9,68,"low","Driftless Area"],[44.22,-91.42,0.28,9,66,"low","Driftless Area"],[43.22,-90.92,0.38,9,64,"low","Driftless Area"],[43.52,-90.42,0.38,9,62,"low","Driftless Area"],
-  [43.22,-88.42,0.38,8,65,"low","Wisconsin"],[45.92,-90.72,0.48,8,58,"low","Wisconsin"],[45.52,-89.52,0.48,8,56,"low","Wisconsin"],
-  [43.92,-91.52,0.28,8,65,"low","Minnesota"],[44.42,-93.02,0.38,8,60,"low","Minnesota"],[44.12,-91.92,0.28,8,62,"low","Driftless Area"],
-  [41.92,-95.82,0.38,8,63,"low","Iowa"],[42.62,-91.62,0.38,8,60,"low","Iowa"],[41.82,-92.02,0.38,8,58,"low","Iowa"],[40.62,-91.92,0.28,8,60,"low","Iowa"],
-  [38.52,-96.52,0.48,8,54,"low","Kansas"],[37.52,-95.82,0.38,8,50,"low","Kansas"],[41.12,-98.32,0.48,8,50,"low","Nebraska"],
-  [36.02,-92.92,0.45,13,78,"mid","Arkansas Ozarks"],[35.72,-93.82,0.38,13,74,"mid","Arkansas Ozarks"],[36.32,-92.02,0.45,12,72,"mid","Arkansas Ozarks"],[36.12,-93.52,0.38,12,70,"mid","Arkansas Ozarks"],[36.32,-93.82,0.38,11,70,"mid","Arkansas Ozarks"],[36.22,-94.12,0.28,10,68,"mid","Arkansas Ozarks"],
-  [36.32,-94.52,0.38,8,58,"mid","Oklahoma"],[34.72,-94.72,0.45,8,52,"mid","Oklahoma"],
-  [37.82,-83.72,0.38,11,74,"mid","Kentucky"],[36.92,-88.02,0.38,11,70,"low","Kentucky"],[36.82,-84.92,0.38,11,68,"mid","Kentucky"],[37.52,-83.52,0.45,11,66,"mid","Kentucky"],
-  [35.72,-84.82,0.45,11,70,"mid","Tennessee"],[35.42,-88.02,0.38,11,66,"low","Tennessee"],[35.22,-84.52,0.38,11,66,"mid","Tennessee"],[35.52,-87.52,0.38,11,64,"low","Tennessee"],
-  [31.62,-94.62,0.38,6,45,"low","Texas"],[33.52,-95.02,0.38,6,42,"low","Texas"],
-  [37.92,-81.12,0.38,8,70,"mid","West Virginia"],[38.22,-80.32,0.38,8,66,"mid","West Virginia"],[38.52,-79.82,0.38,8,64,"mid","West Virginia"],
-  [38.72,-78.52,0.38,8,64,"mid","Virginia"],[38.12,-79.22,0.38,8,66,"mid","Virginia"],[37.22,-80.42,0.38,8,64,"mid","Virginia"],
-  [35.32,-83.72,0.38,8,67,"high","NC Smokies"],[35.52,-82.82,0.38,8,64,"high","NC Smokies"],[36.02,-81.52,0.28,8,60,"mid","NC Smokies"],
-  [34.82,-84.32,0.38,8,60,"mid","Alabama Georgia"],[34.32,-87.22,0.38,8,62,"mid","Alabama Georgia"],[33.52,-86.02,0.38,8,56,"mid","Alabama Georgia"],
-  [40.02,-79.22,0.38,8,66,"mid","Pennsylvania"],[41.52,-76.42,0.38,8,64,"mid","Pennsylvania"],[41.62,-79.12,0.38,8,60,"mid","Pennsylvania"],
-  [41.82,-73.92,0.38,7,60,"mid","New York"],[43.92,-72.82,0.38,7,57,"mid","New England"],[42.52,-72.22,0.38,7,55,"mid","New England"],
-  [44.22,-123.12,0.45,7,60,"low","Oregon"],[42.42,-122.92,0.38,7,53,"mid","Oregon Siskiyou"],[45.72,-121.82,0.45,7,52,"high","Pacific NW"],[47.52,-120.52,0.55,7,50,"high","Pacific NW"],
-  [39.72,-105.32,0.45,6,48,"high","Rockies"],[44.62,-107.42,0.45,6,46,"high","Rockies"],[46.12,-116.62,0.45,6,48,"high","Rockies"],[46.52,-114.32,0.45,6,46,"high","Rockies"],
-  [38.42,-120.92,0.45,6,50,"mid","California"],[40.92,-122.52,0.45,6,48,"high","California"],
-  [38.82,-90.32,0.28,10,66,"low","Central Missouri"],[39.12,-84.92,0.28,8,66,"low","Indiana"],[36.42,-93.92,0.28,8,68,"mid","Arkansas Ozarks"],
-  [38.35,-91.05,0.38,10,74,"mid","Missouri Ozarks"],[38.20,-91.40,0.35,10,72,"mid","Missouri Ozarks"],[37.70,-92.90,0.38,10,76,"mid","Missouri Ozarks"],[36.82,-90.82,0.38,10,72,"mid","Missouri Ozarks"],[37.62,-91.22,0.32,10,78,"mid","Missouri Ozarks"],[38.28,-93.22,0.42,10,66,"low","Central Missouri"],
-  [38.52,-89.52,0.38,10,65,"low","Southern Illinois"],[39.22,-88.32,0.38,10,62,"low","Central Illinois"],[38.82,-87.92,0.32,10,64,"low","Indiana"],[41.82,-89.52,0.38,10,60,"low","Central Illinois"],[41.62,-88.42,0.32,10,58,"low","Central Illinois"],
-  [41.32,-93.82,0.42,10,60,"low","Iowa"],[41.92,-91.72,0.38,10,62,"low","Iowa"],[42.12,-91.22,0.32,10,60,"low","Iowa"],[42.12,-91.82,0.38,10,58,"low","Iowa"],
-  [43.52,-90.72,0.32,10,64,"low","Driftless Area"],[44.82,-88.92,0.38,10,58,"low","Wisconsin"],[44.32,-90.82,0.32,10,62,"low","Driftless Area"],[45.92,-91.82,0.38,10,56,"low","Wisconsin"],
-  [43.65,-91.92,0.32,10,65,"low","Driftless Area"],[44.02,-92.02,0.28,10,63,"low","Minnesota"],[44.52,-92.52,0.32,10,60,"low","Minnesota"],
-  [44.42,-84.52,0.42,10,68,"low","Michigan"],[42.92,-85.72,0.38,10,66,"low","Michigan"],[43.22,-85.52,0.32,10,64,"low","Michigan"],
-  [39.82,-83.12,0.38,10,64,"mid","Ohio"],[40.02,-81.92,0.38,10,62,"mid","Ohio"],[39.52,-81.32,0.28,10,64,"mid","SE Ohio"],
-  [41.02,-86.72,0.38,10,60,"low","Indiana"],[39.92,-86.22,0.32,10,66,"low","Indiana"],[38.62,-86.22,0.28,10,68,"mid","Indiana"],
-  [38.22,-84.02,0.38,10,66,"mid","Kentucky"],[37.22,-85.82,0.42,10,68,"mid","Kentucky"],[36.52,-84.72,0.32,10,70,"mid","Kentucky"],[37.32,-84.32,0.28,10,68,"mid","Kentucky"],
-  [35.62,-87.12,0.38,10,66,"mid","Tennessee"],[35.12,-86.42,0.38,10,64,"mid","Tennessee"],[35.12,-84.52,0.32,10,64,"mid","Tennessee"],[36.12,-85.72,0.32,10,62,"mid","Tennessee"],
-  [36.22,-93.62,0.32,10,72,"mid","Arkansas Ozarks"],[35.92,-94.52,0.35,10,68,"mid","Arkansas Ozarks"],[35.42,-92.42,0.38,10,66,"mid","Arkansas Ozarks"],
-  [37.02,-80.52,0.38,10,64,"mid","Virginia"],[36.82,-82.32,0.32,10,62,"mid","Virginia"],[37.62,-79.52,0.38,10,62,"mid","Virginia"],
-  [41.72,-79.12,0.42,10,60,"mid","Pennsylvania"],[41.12,-75.32,0.32,10,58,"mid","Pennsylvania"],
-  [34.92,-83.42,0.32,10,60,"mid","Alabama Georgia"],[35.10,-84.62,0.28,10,62,"mid","Tennessee"],
-  [43.42,-123.42,0.42,10,55,"low","Oregon"],[43.22,-122.62,0.38,10,52,"mid","Oregon"],[41.82,-123.02,0.42,10,50,"low","Oregon"],
+// ── Grid-based spot generator — covers every county in morel range ──
+// Produces ~50,000 spots algorithmically. Compact source, computed at runtime.
 
-  // ── 500 MORE ─────────────────────────────────────────────────
-  // Missouri — additional creek systems
-  [37.42,-91.82,0.32,10,76,"mid","Missouri Ozarks"],  // Jacks Fork River
-  [37.22,-90.92,0.32,10,74,"mid","Missouri Ozarks"],  // Black River lower
-  [38.62,-91.82,0.32,10,68,"low","Central Missouri"],  // Moreau River
-  [38.12,-92.42,0.38,10,70,"mid","Missouri Ozarks"],  // Osage Fork
-  [37.32,-92.82,0.32,10,74,"mid","Missouri Ozarks"],  // North Fork White River
-  [36.72,-91.12,0.32,10,72,"mid","Missouri Ozarks"],  // Spring River MO
-  [38.92,-93.52,0.38,10,64,"low","Central Missouri"],  // Blackwater River
-  [39.72,-94.82,0.28,10,68,"low","NW Missouri"],      // One Hundred and Two River
-  [39.82,-93.92,0.32,10,66,"low","NW Missouri"],      // Grand River MO
-  // Illinois — more systems
-  [37.72,-89.22,0.28,10,72,"low","Southern Illinois"], // Big Muddy River
-  [38.12,-88.62,0.32,10,66,"low","Southern Illinois"], // Little Wabash River
-  [41.22,-90.62,0.38,10,60,"low","Central Illinois"],  // Rock River upper
-  [40.62,-89.82,0.38,10,62,"low","Central Illinois"],  // Spoon River
-  [39.42,-87.62,0.32,10,64,"low","Indiana"],           // Vermilion River IL
-  // Indiana more
-  [38.32,-85.72,0.28,10,70,"mid","Indiana"],           // Blue River lower
-  [39.72,-85.52,0.32,10,66,"low","Indiana"],           // Flatrock River
-  [40.42,-85.42,0.32,10,62,"low","Indiana"],           // Mississinewa River
-  [38.92,-85.22,0.28,10,68,"mid","Indiana"],           // Muscatatuck River
-  // Ohio more
-  [39.22,-83.52,0.32,10,66,"mid","Ohio"],              // Paint Creek OH
-  [40.32,-82.62,0.32,10,64,"mid","Ohio"],              // Kokosing River
-  [39.72,-82.92,0.32,10,66,"mid","Ohio"],              // Licking River OH
-  [41.42,-81.92,0.28,10,60,"mid","Ohio"],              // Cuyahoga Valley
-  // Michigan more
-  [45.12,-84.72,0.38,10,66,"low","Michigan"],          // Pigeon River MI
-  [43.42,-86.32,0.38,10,68,"low","Michigan"],          // White River MI
-  [44.62,-84.22,0.38,10,64,"low","Michigan"],          // Rifle River
-  [43.92,-84.72,0.32,10,62,"low","Michigan"],          // Chippewa River MI
-  // Wisconsin more
-  [44.62,-89.62,0.38,10,60,"low","Wisconsin"],         // Wisconsin River central
-  [43.82,-89.82,0.32,10,62,"low","Wisconsin"],         // Baraboo River
-  [44.02,-88.52,0.32,10,58,"low","Wisconsin"],         // Fox River WI upper
-  [46.52,-90.12,0.38,10,56,"low","Wisconsin"],         // Bad River WI
-  // Minnesota more
-  [47.52,-91.82,0.38,10,56,"low","Minnesota"],         // Boundary Waters area
-  [45.12,-93.52,0.32,10,58,"low","Minnesota"],         // Crow River
-  [43.72,-93.62,0.32,10,56,"low","Minnesota"],         // Cedar River MN
-  // Iowa more
-  [42.52,-90.72,0.32,10,60,"low","Iowa"],              // Turkey River
-  [43.02,-91.22,0.28,10,62,"low","Iowa"],              // Upper Iowa River
-  [41.62,-93.22,0.32,10,58,"low","Iowa"],              // Raccoon River
-  // Kansas / Nebraska more
-  [39.12,-95.72,0.38,10,52,"low","Kansas"],            // Kansas River
-  [37.22,-97.42,0.38,10,48,"low","Kansas"],            // Arkansas River KS
-  [40.32,-96.72,0.38,10,50,"low","Nebraska"],          // Big Blue River
-  // Kentucky more
-  [38.72,-82.62,0.28,10,68,"mid","Kentucky"],          // Tygarts Creek
-  [37.12,-83.72,0.38,10,70,"mid","Kentucky"],          // Middle Fork KY River
-  [36.72,-86.22,0.32,10,66,"mid","Kentucky"],          // Barren River
-  // Tennessee more
-  [36.52,-82.52,0.32,10,64,"mid","Tennessee"],         // Watauga River
-  [35.82,-86.92,0.38,10,62,"mid","Tennessee"],         // Duck River upper
-  [36.32,-86.72,0.32,10,60,"mid","Tennessee"],         // Stones River
-  // Arkansas more
-  [34.82,-93.12,0.38,10,66,"mid","Arkansas Ozarks"],   // Ouachita River upper
-  [35.62,-91.22,0.38,10,64,"mid","Arkansas Ozarks"],   // White River AR
-  [36.42,-90.72,0.32,10,68,"low","Arkansas Ozarks"],   // St. Francis River AR
-  // Virginia / WV more
-  [37.52,-81.22,0.32,10,68,"mid","West Virginia"],     // Coal River WV
-  [38.92,-79.12,0.32,10,64,"mid","West Virginia"],     // Potomac headwaters
-  [36.62,-81.52,0.32,10,62,"mid","Virginia"],          // New River VA upper
-  [37.82,-77.52,0.32,10,60,"mid","Virginia"],          // Rappahannock River
-  // NC / TN Smokies more
-  [35.72,-82.52,0.32,10,64,"high","NC Smokies"],       // French Broad River
-  [35.22,-82.82,0.28,10,62,"high","NC Smokies"],       // Green River NC
-  [36.32,-82.22,0.28,10,60,"mid","NC Smokies"],        // Watauga River TN
-  // Pennsylvania more
-  [41.32,-77.82,0.32,10,62,"mid","Pennsylvania"],      // Pine Creek PA
-  [40.82,-78.42,0.32,10,60,"mid","Pennsylvania"],      // Clearfield Creek
-  [40.22,-76.92,0.32,10,58,"mid","Pennsylvania"],      // Conestoga River
-  // New York / New England more
-  [42.22,-75.12,0.32,10,58,"mid","New York"],          // Delaware River NY
-  [42.82,-76.52,0.32,10,56,"mid","New York"],          // Oswego River watershed
-  [44.22,-71.82,0.32,10,55,"mid","New England"],       // Connecticut River NH
-  [43.62,-70.82,0.28,10,52,"mid","New England"],       // Saco River ME
-  // Alabama / Georgia more
-  [33.92,-85.72,0.32,10,58,"mid","Alabama Georgia"],   // Coosa River upper
-  [34.52,-86.02,0.32,10,60,"mid","Alabama Georgia"],   // Tennessee River AL
-  [34.12,-84.52,0.32,10,56,"mid","Alabama Georgia"],   // Etowah River
-  // Pacific NW more
-  [44.82,-122.12,0.38,10,54,"high","Pacific NW"],      // Santiam River OR
-  [45.42,-122.12,0.38,10,52,"mid","Oregon"],           // Sandy River OR
-  [48.12,-121.82,0.38,10,48,"high","Pacific NW"],      // Skagit River WA
-  [46.82,-122.82,0.38,10,48,"mid","Pacific NW"],       // Chehalis River WA
-  // Rockies more
-  [45.92,-110.52,0.45,8,46,"high","Rockies"],          // Yellowstone area MT
-  [43.72,-110.82,0.45,8,46,"high","Rockies"],          // Teton area WY
-  [38.52,-107.82,0.38,8,44,"high","Rockies"],          // Gunnison River CO
-  [37.32,-107.12,0.38,8,44,"high","Rockies"],          // Animas River CO
-  // California more
-  [39.52,-121.52,0.38,8,50,"mid","California"],        // Feather River CA
-  [38.92,-120.42,0.38,8,48,"mid","California"],        // American River CA
-  [40.52,-122.32,0.38,8,48,"high","California"],       // Trinity River CA
-  // Mississippi River corridor
-  [35.12,-90.12,0.32,8,52,"low","Tennessee"],          // Memphis area bottoms
-  [36.82,-89.12,0.28,8,58,"low","Southern Illinois"],  // Cairo IL river confluence
-  [38.62,-90.12,0.28,8,60,"low","Central Missouri"],   // St. Louis area bottoms
-  [40.92,-91.42,0.28,8,58,"low","Iowa"],               // Keokuk area bluffs
-  [43.82,-91.22,0.28,8,62,"low","Driftless Area"],     // La Crosse area bluffs
-  [44.92,-93.22,0.28,8,56,"low","Minnesota"],          // Minneapolis area river
+function regionQuality(lat,lng){
+  if(lat<28||lat>50||lng<-125||lng>-66) return 0;
+  // Desert SW / high Rockies — exclude
+  if(lng<-110&&lat<38) return 0.04;
+  if(lng<-107&&lat<36) return 0.04;
+  if(lng<-104&&lat<35) return 0.04;
+  var q=0;
+  // PRIME ZONES
+  if(lat>36.4&&lat<38.7&&lng>-94.6&&lng<-89.4) q=Math.max(q,0.91); // MO Ozarks
+  if(lat>35.3&&lat<37.0&&lng>-94.6&&lng<-91.4) q=Math.max(q,0.86); // AR Ozarks
+  if(lat>36.9&&lat<38.6&&lng>-90.1&&lng<-87.7) q=Math.max(q,0.84); // S Illinois
+  if(lat>36.4&&lat<38.7&&lng>-89.1&&lng<-81.9) q=Math.max(q,0.81); // Kentucky
+  if(lat>34.8&&lat<37.1&&lng>-89.1&&lng<-81.4) q=Math.max(q,0.79); // Tennessee
+  if(lat>37.7&&lat<41.3&&lng>-87.8&&lng<-84.9) q=Math.max(q,0.79); // Indiana
+  if(lat>38.3&&lat<42.1&&lng>-84.9&&lng<-80.4) q=Math.max(q,0.76); // Ohio
+  if(lat>34.9&&lat<39.6&&lng>-82.6&&lng<-77.4) q=Math.max(q,0.76); // Appalachians
+  if(lat>41.9&&lat<46.6&&lng>-87.1&&lng<-82.4) q=Math.max(q,0.77); // Michigan
+  if(lat>42.9&&lat<44.9&&lng>-92.6&&lng<-89.7) q=Math.max(q,0.75); // Driftless
+  if(lat>38.7&&lat<40.1&&lng>-94.9&&lng<-92.7) q=Math.max(q,0.73); // NW Missouri
+  if(lat>39.4&&lat<41.1&&lng>-92.6&&lng<-90.1) q=Math.max(q,0.69); // NE Missouri
+  if(lat>35.4&&lat<37.1&&lng>-95.6&&lng<-93.7) q=Math.max(q,0.66); // Oklahoma Ozarks
+  if(lat>33.4&&lat<35.6&&lng>-87.6&&lng<-83.4) q=Math.max(q,0.66); // AL/GA mountains
+  if(lat>36.4&&lat<37.6&&lng>-94.6&&lng<-92.4) q=Math.max(q,0.71); // SW Missouri
+  // GOOD ZONES
+  if(lat>39.9&&lat<43.6&&lng>-96.6&&lng<-89.9) q=Math.max(q,0.61); // Iowa
+  if(lat>43.4&&lat<47.1&&lng>-96.1&&lng<-90.9) q=Math.max(q,0.59); // Minnesota
+  if(lat>42.4&&lat<46.6&&lng>-92.6&&lng<-86.9) q=Math.max(q,0.59); // Wisconsin
+  if(lat>45.4&&lat<47.6&&lng>-88.6&&lng<-84.4) q=Math.max(q,0.59); // Michigan UP
+  if(lat>39.4&&lat<42.1&&lng>-80.1&&lng<-74.4) q=Math.max(q,0.63); // Pennsylvania
+  if(lat>40.9&&lat<45.1&&lng>-76.1&&lng<-73.4) q=Math.max(q,0.59); // New York
+  if(lat>41.9&&lat<47.1&&lng>-73.6&&lng<-67.9) q=Math.max(q,0.56); // New England
+  if(lat>36.9&&lat<40.1&&lng>-97.1&&lng<-94.4) q=Math.max(q,0.53); // Kansas
+  if(lat>39.9&&lat<43.1&&lng>-99.6&&lng<-95.4) q=Math.max(q,0.49); // Nebraska
+  if(lat>37.4&&lat<40.0&&lng>-83.1&&lng<-80.5) q=Math.max(q,0.66); // WV/VA
+  if(lat>36.4&&lat<38.6&&lng>-80.6&&lng<-77.4) q=Math.max(q,0.63); // Virginia
+  if(lat>34.9&&lat<36.6&&lng>-84.6&&lng<-81.0) q=Math.max(q,0.67); // NC Smokies
+  if(lat>28.9&&lat<34.1&&lng>-97.1&&lng<-93.4) q=Math.max(q,0.43); // Texas
+  if(lat>29.0&&lat<34.0&&lng>-93.0&&lng<-88.0) q=Math.max(q,0.39); // Deep South
+  if(lat>38.2&&lat<40.2&&lng>-93.6&&lng<-91.1) q=Math.max(q,0.66); // Central MO
+  // WESTERN ZONES
+  if(lat>41.9&&lat<46.6&&lng>-124.1&&lng<-117.4) q=Math.max(q,0.56); // Oregon
+  if(lat>45.4&&lat<49.1&&lng>-124.1&&lng<-116.9) q=Math.max(q,0.53); // Washington
+  if(lat>37.4&&lat<41.1&&lng>-109.1&&lng<-104.4) q=Math.max(q,0.47); // Colorado
+  if(lat>44.4&&lat<49.1&&lng>-117.1&&lng<-110.9) q=Math.max(q,0.49); // MT/ID
+  if(lat>41.4&&lat<45.6&&lng>-111.1&&lng<-104.4) q=Math.max(q,0.45); // Wyoming
+  if(lat>36.4&&lat<41.6&&lng>-123.1&&lng<-118.4) q=Math.max(q,0.49); // CA foothills
+  // Great Plains penalty
+  if(lng<-100&&lng>-104&&lat>37&&lat<47) q=Math.min(q,0.38);
+  if(lng<-97&&lng>-100&&lat>41&&lat<47) q=Math.min(q,0.34);
+  return q;
+}
 
-  // ── 500 MORE ─────────────────────────────────────────────────
-  // Missouri — every tributary
-  [37.82,-90.42,0.32,10,72,"mid","Missouri Ozarks"],  // St. Francis River upper
-  [37.12,-92.42,0.32,10,74,"mid","Missouri Ozarks"],  // Eleven Point River
-  [36.92,-94.22,0.32,10,68,"mid","SW Missouri"],      // Elk River MO
-  [38.52,-90.72,0.28,10,66,"low","Central Missouri"], // Meramec lower
-  [39.32,-93.12,0.32,10,64,"low","Central Missouri"], // Chariton River
-  [37.52,-93.42,0.38,10,70,"mid","SW Missouri"],      // Sac River MO
-  [38.72,-94.32,0.28,10,66,"low","NW Missouri"],      // Big Blue River MO
-  [39.52,-92.42,0.32,10,64,"low","NE Missouri"],      // Middle Fork Salt River
-  [38.22,-90.82,0.28,10,68,"low","Central Missouri"], // Bourbeuse lower
-  [37.32,-91.72,0.32,10,72,"mid","Missouri Ozarks"],  // Meramec headwaters
-  // Illinois — southern and central
-  [37.42,-89.62,0.28,10,70,"low","Southern Illinois"],// Kaskaskia lower
-  [38.32,-88.12,0.32,10,64,"low","Southern Illinois"],// Skillet Fork
-  [40.82,-88.62,0.38,10,60,"low","Central Illinois"], // Vermilion River upper
-  [41.42,-88.82,0.32,10,58,"low","Central Illinois"], // DuPage River
-  [42.22,-88.32,0.32,10,56,"low","Central Illinois"], // Fox River upper IL
-  // Indiana — more drainages
-  [41.52,-85.92,0.32,10,62,"low","Indiana"],          // St. Joseph River IN
-  [40.22,-86.52,0.32,10,64,"low","Indiana"],          // Sugar Creek IN
-  [39.42,-85.82,0.28,10,66,"mid","Indiana"],          // Driftwood River
-  [38.22,-86.72,0.28,10,68,"mid","Indiana"],          // Anderson River IN
-  // Kentucky — more hollows
-  [37.92,-82.42,0.28,10,70,"mid","Kentucky"],         // Levisa Fork
-  [37.42,-82.72,0.32,10,68,"mid","Kentucky"],         // Tug Fork
-  [36.92,-85.52,0.32,10,66,"mid","Kentucky"],         // Wolf Creek KY
-  [38.52,-85.22,0.28,10,64,"mid","Kentucky"],         // Salt River KY
-  // Tennessee — more systems
-  [36.72,-83.42,0.28,10,66,"mid","Tennessee"],        // Clinch River TN
-  [35.32,-85.72,0.32,10,64,"mid","Tennessee"],        // Sequatchie Valley
-  [36.22,-87.52,0.32,10,62,"mid","Tennessee"],        // Harpeth River
-  [35.42,-86.02,0.32,10,60,"mid","Tennessee"],        // Stones River lower
-  // Arkansas — more Ozark drainages
-  [36.52,-91.52,0.32,10,68,"mid","Arkansas Ozarks"],  // Current River AR
-  [35.22,-93.12,0.38,10,64,"mid","Arkansas Ozarks"],  // Petit Jean River
-  [34.52,-92.42,0.32,10,60,"low","Arkansas Ozarks"],  // Saline River AR
-  [36.72,-94.12,0.28,10,66,"mid","Arkansas Ozarks"],  // Big Sugar Creek AR
-  // Ohio — more river systems
-  [39.92,-84.22,0.32,10,62,"low","Ohio"],             // Great Miami River
-  [40.72,-84.12,0.28,10,60,"low","Ohio"],             // Auglaize River
-  [38.82,-83.52,0.28,10,64,"mid","Ohio"],             // Ohio Brush Creek
-  [39.42,-83.82,0.32,10,62,"mid","Ohio"],             // Scioto Brush Creek
-  // West Virginia — more drainages
-  [39.32,-80.72,0.32,10,66,"mid","West Virginia"],    // Hughes River WV
-  [38.42,-81.22,0.28,10,68,"mid","West Virginia"],    // Pocatalico River
-  [37.52,-80.72,0.32,10,64,"mid","West Virginia"],    // Greenbrier upper
-  [38.82,-78.62,0.32,10,62,"mid","Virginia"],         // South Branch Potomac
-  // Pennsylvania — more coverage
-  [41.92,-77.42,0.32,10,60,"mid","Pennsylvania"],     // Tioga River
-  [40.52,-77.82,0.32,10,60,"mid","Pennsylvania"],     // Juniata River
-  [41.22,-76.82,0.28,10,58,"mid","Pennsylvania"],     // West Branch Susquehanna
-  [40.62,-75.42,0.28,10,56,"mid","Pennsylvania"],     // Lehigh River
-  // Alabama / Georgia more
-  [33.52,-87.22,0.32,10,58,"mid","Alabama Georgia"],  // Tombigbee River upper
-  [34.72,-85.32,0.32,10,60,"mid","Alabama Georgia"],  // Little River Canyon AL
-  [33.72,-84.82,0.32,10,56,"mid","Alabama Georgia"],  // Tallapoosa River
-  // Pacific NW more
-  [47.22,-122.42,0.32,8,48,"low","Pacific NW"],       // Green River WA
-  [48.42,-122.32,0.32,8,46,"low","Pacific NW"],       // Skagit lower WA
-  [44.02,-121.52,0.38,8,50,"high","Pacific NW"],      // Deschutes River OR
-  // Rockies / Mountain West
-  [46.82,-113.92,0.38,8,46,"high","Rockies"],         // Bitterroot Valley MT
-  [47.52,-115.52,0.38,8,44,"high","Rockies"],         // Clark Fork River
-  [45.52,-111.12,0.38,8,44,"high","Rockies"],         // Gallatin Valley MT
-  [40.52,-111.52,0.38,8,44,"high","Rockies"],         // Wasatch Front UT
-  [37.22,-107.92,0.38,8,44,"high","Rockies"],         // San Juan Mountains CO
-  [40.32,-105.72,0.38,8,46,"high","Rockies"],         // Cache la Poudre CO
-];
-const rng=mulberry32(2024);
-const GENERATED=[];
-SEEDS.forEach(function(z){
-  var lat=z[0],lng=z[1],sp=z[2],n=z[3],base=z[4],elev=z[5],rk=z[6];
-  for(var i=0;i<n;i++){
-    var a=rng()*2*Math.PI,d=rng()*sp;
-    GENERATED.push({name:gn(rng),lat:+(lat+d*Math.cos(a)).toFixed(4),lng:+(lng+d*Math.sin(a)/Math.cos(lat*Math.PI/180)).toFixed(4),base:Math.round(base+(rng()-0.5)*10),elev:elev,rk:rk,notes:""});
+function getRegionKey(lat,lng){
+  if(lat>36.4&&lat<38.7&&lng>-94.6&&lng<-89.4) return "Missouri Ozarks";
+  if(lat>38.7&&lat<40.2&&lng>-95.2&&lng<-92.7) return "NW Missouri";
+  if(lat>39.4&&lat<41.1&&lng>-92.6&&lng<-90.1) return "NE Missouri";
+  if(lat>38.1&&lat<40.2&&lng>-93.6&&lng<-91.1) return "Central Missouri";
+  if(lat>36.4&&lat<37.6&&lng>-94.6&&lng<-92.4) return "SW Missouri";
+  if(lat>35.3&&lat<37.0&&lng>-94.6&&lng<-91.4) return "Arkansas Ozarks";
+  if(lat>34.4&&lat<36.1&&lng>-91.6&&lng<-88.4) return "Arkansas Ozarks";
+  if(lat>35.4&&lat<37.1&&lng>-95.6&&lng<-93.7) return "Oklahoma";
+  if(lat>36.9&&lat<38.6&&lng>-90.1&&lng<-87.7) return "Southern Illinois";
+  if(lat>38.5&&lat<41.6&&lng>-90.6&&lng<-87.4) return "Central Illinois";
+  if(lat>37.7&&lat<41.3&&lng>-87.8&&lng<-84.9) return "Indiana";
+  if(lat>38.3&&lat<42.1&&lng>-84.9&&lng<-80.4) return "Ohio";
+  if(lat>37.4&&lat<40.0&&lng>-83.1&&lng<-80.5) return "SE Ohio";
+  if(lat>41.9&&lat<46.6&&lng>-87.1&&lng<-82.4) return "Michigan";
+  if(lat>45.4&&lat<47.6&&lng>-88.6&&lng<-84.4) return "Michigan UP";
+  if(lat>42.9&&lat<44.9&&lng>-92.6&&lng<-89.7) return "Driftless Area";
+  if(lat>42.4&&lat<46.6&&lng>-92.6&&lng<-86.9) return "Wisconsin";
+  if(lat>43.4&&lat<47.1&&lng>-96.1&&lng<-90.9) return "Minnesota";
+  if(lat>39.9&&lat<43.6&&lng>-96.6&&lng<-89.9) return "Iowa";
+  if(lat>36.9&&lat<40.1&&lng>-97.1&&lng<-94.4) return "Kansas";
+  if(lat>39.9&&lat<43.1&&lng>-99.6&&lng<-95.4) return "Nebraska";
+  if(lat>36.4&&lat<38.7&&lng>-89.1&&lng<-81.9) return "Kentucky";
+  if(lat>34.8&&lat<37.1&&lng>-89.1&&lng<-81.4) return "Tennessee";
+  if(lat>37.4&&lat<40.0&&lng>-83.1&&lng<-80.5) return "West Virginia";
+  if(lat>36.4&&lat<38.6&&lng>-80.6&&lng<-77.4) return "Virginia";
+  if(lat>34.9&&lat<36.6&&lng>-84.6&&lng<-81.0) return "NC Smokies";
+  if(lat>34.9&&lat<39.6&&lng>-82.6&&lng<-77.4) return "Appalachians";
+  if(lat>33.4&&lat<35.6&&lng>-87.6&&lng<-83.4) return "Alabama Georgia";
+  if(lat>39.4&&lat<42.1&&lng>-80.1&&lng<-74.4) return "Pennsylvania";
+  if(lat>40.9&&lat<45.1&&lng>-76.1&&lng<-73.4) return "New York";
+  if(lat>41.9&&lat<47.1&&lng>-73.6&&lng<-67.9) return "New England";
+  if(lat>28.9&&lat<34.1&&lng>-97.1&&lng<-93.4) return "Texas";
+  if(lat>41.9&&lat<46.6&&lng>-124.1&&lng<-117.4) return "Oregon";
+  if(lat>45.4&&lat<49.1&&lng>-124.1&&lng<-116.9) return "Pacific NW";
+  if(lat>37.4&&lat<41.1&&lng>-109.1&&lng<-104.4) return "Rockies";
+  if(lat>44.4&&lat<49.1&&lng>-117.1&&lng<-110.9) return "Rockies";
+  if(lat>36.4&&lat<41.6&&lng>-123.1&&lng<-118.4) return "California";
+  return "Midwest";
+}
+
+function getElevBand(lat,lng){
+  if(lng<-104) return lat>44?"high":"mid";
+  if(lng>-83&&lng<-77&&lat>35&&lat<40) return "mid";
+  if(lng>-94.6&&lng<-89.4&&lat>36.4&&lat<38.7) return "mid";
+  if(lat>34.9&&lat<39.6&&lng>-82.6&&lng<-77.4) return "mid";
+  return "low";
+}
+
+function generateGridSpots(){
+  var spots=[];
+  var STEP=0.095;
+  var s=7919;
+  function lcg(){s=(s*1664525+1013904223)>>>0; return s/4294967295;}
+  for(var lat=28.5;lat<=49.5;lat+=STEP){
+    for(var lng=-124.5;lng<=-66.5;lng+=STEP){
+      var q=regionQuality(lat,lng);
+      if(q<0.20){lcg();lcg();lcg();continue;}
+      spots.push({
+        name:gn(lcg),
+        lat:+(lat+(lcg()-0.5)*STEP*0.7).toFixed(4),
+        lng:+(lng+(lcg()-0.5)*STEP*0.7).toFixed(4),
+        base:Math.round(q*62+26),
+        elev:getElevBand(lat,lng),
+        rk:getRegionKey(lat,lng),
+        notes:""
+      });
+    }
   }
-});
+  return spots;
+}
+
+const GENERATED=generateGridSpots();
 const ALL=CURATED.concat(GENERATED);
 document.getElementById("hcount").textContent=ALL.length.toLocaleString()+" spots";
 
@@ -1630,17 +1528,54 @@ var map=L.map("map",{layers:[osmLayer]}).setView([38.5,-92],5);
 L.control.layers({"Streets":osmLayer,"Terrain + Contours":topoLayer},{},{position:"topright"}).addTo(map);
 var renderer=L.canvas({padding:0.5});
 var layers=[];
+
+// Zoom hint overlay
+var zoomHint=document.createElement("div");
+zoomHint.id="zoom-hint";
+zoomHint.style.cssText="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,0.92);border:1px solid #e4e1d8;border-radius:12px;padding:16px 22px;font-size:14px;color:#555;font-family:inherit;text-align:center;pointer-events:none;z-index:500;backdrop-filter:blur(4px);";
+zoomHint.innerHTML="🍄 <strong style='color:#2d6a4f'>Zoom in</strong> to reveal habitat spots<br><span style='font-size:12px;color:#aaa'>Scroll or pinch to zoom into any region</span>";
+document.getElementById("map").style.position="relative";
+document.getElementById("map").appendChild(zoomHint);
+
+var MIN_ZOOM = 9; // dots only appear at zoom 9+
+
 function render(){
-  layers.forEach(function(l){map.removeLayer(l);});layers=[];
+  layers.forEach(function(l){map.removeLayer(l);});
+  layers=[];
+
+  var zoom=map.getZoom();
+
+  // Below threshold — show hint, no dots
+  if(zoom < MIN_ZOOM){
+    zoomHint.style.display="block";
+    return;
+  }
+  zoomHint.style.display="none";
+
+  // Only render spots inside the current viewport (+ 15% buffer)
+  var bounds=map.getBounds().pad(0.15);
+
   ALL.forEach(function(s){
-    if(!visible(s))return;
+    // Viewport cull first — fast
+    if(!bounds.contains(L.latLng(s.lat,s.lng))) return;
+    // Habitat toggle filter — disappear completely if no match
+    if(!visible(s)) return;
+
     var sc=scoreSpot(s),fc=scoreCol(sc),ec=elevCol(s.elev),r=sc>=70?9:sc>=40?7:6;
-    if(sc>=74){var g=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r+7,weight:0,fillColor:fc,fillOpacity:0.14,interactive:false});g.addTo(map);layers.push(g);}
-    var ring=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r+2.5,weight:1.8,color:ec,opacity:0.65,fillOpacity:0,interactive:false});ring.addTo(map);layers.push(ring);
+    if(sc>=74){
+      var g=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r+7,weight:0,fillColor:fc,fillOpacity:0.14,interactive:false});
+      g.addTo(map);layers.push(g);
+    }
+    var ring=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r+2.5,weight:1.8,color:ec,opacity:0.65,fillOpacity:0,interactive:false});
+    ring.addTo(map);layers.push(ring);
     var dot=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r,weight:1.5,color:"#fff",opacity:0.85,fillColor:fc,fillOpacity:0.90});
-    dot.on("click",function(){showSpotInfo(s);});dot.addTo(map);layers.push(dot);
+    dot.on("click",function(){showSpotInfo(s);});
+    dot.addTo(map);layers.push(dot);
   });
 }
+
+// Re-render whenever map moves or zooms
+map.on("moveend zoomend", debouncedRender);
 function showSpotInfo(s){
   var sc=scoreSpot(s),cls=sc>=70?"high":sc>=40?"med":"low",lbl=sc>=70?"High likelihood":sc>=40?"Moderate":"Low likelihood";
   var et={low:"Lowlands",mid:"Mid-elevation",high:"High elevation"}[s.elev];
