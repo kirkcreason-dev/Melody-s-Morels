@@ -1,137 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Melody's Morels</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f3ee; color: #1a1a1a; height: 100dvh; display: flex; flex-direction: column; }
-    header { display: flex; align-items: center; gap: 10px; padding: 11px 18px; background: #fff; border-bottom: 1px solid #e4e1d8; flex-shrink: 0; }
-    header h1 { font-size: 16px; font-weight: 600; color: #2d2d2d; }
-    .hcount { font-size: 12px; color: #bbb; font-weight: 400; margin-left: 4px; }
-    header span { font-size: 13px; color: #888; margin-left: auto; }
-    #app { display: flex; flex: 1; overflow: hidden; }
-    #sidebar { width: 252px; flex-shrink: 0; background: #fff; border-right: 1px solid #e4e1d8; display: flex; flex-direction: column; overflow-y: auto; padding: 14px 13px 20px; gap: 16px; }
-    .sec-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: #bbb; margin-bottom: 7px; }
-    .season-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-    .sbtn { padding: 7px 4px; font-size: 11px; font-weight: 500; border: 1px solid #ddd; border-radius: 8px; background: #fafaf8; color: #555; cursor: pointer; text-align: center; transition: all 0.12s; }
-    .sbtn:hover { background: #f0ede6; }
-    .sbtn.active { background: #2d6a4f; color: #fff; border-color: #2d6a4f; }
-    .sbtn small { display: block; font-size: 9px; opacity: 0.7; margin-top: 1px; }
-    .slider-row { margin-bottom: 10px; }
-    .slider-row label { display: flex; justify-content: space-between; font-size: 12px; color: #555; margin-bottom: 4px; }
-    .slider-row label span { font-weight: 600; color: #222; }
-    input[type=range] { width: 100%; -webkit-appearance: none; height: 4px; border-radius: 4px; background: #ddd; outline: none; cursor: pointer; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%; background: #2d6a4f; cursor: pointer; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-    input[type=range]::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%; background: #2d6a4f; cursor: pointer; border: 2px solid #fff; }
-    .hab-grid { display: flex; flex-direction: column; gap: 5px; }
-    .hab-toggle { display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; border-radius: 8px; border: 1px solid #e8e4dc; background: #fafaf8; cursor: pointer; transition: all 0.12s; user-select: none; }
-    .hab-toggle:hover { background: #f3f0e8; }
-    .hab-toggle.active { border-color: #2d6a4f; background: #edf7f1; }
-    .hab-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-    .hab-text { flex: 1; }
-    .hab-text strong { display: block; font-size: 12px; font-weight: 600; color: #333; margin-bottom: 2px; }
-    .hab-text small { font-size: 10px; color: #888; line-height: 1.35; display: block; }
-    .hab-check { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid #ccc; background: #fff; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
-    .hab-toggle.active .hab-check { background: #2d6a4f; border-color: #2d6a4f; }
-    .hab-toggle.active .hab-check::after { content: "✓"; color: #fff; font-size: 9px; font-weight: 700; }
-    .legend-rows { display: flex; flex-direction: column; gap: 5px; }
-    .leg-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #555; }
-    .leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .elev-rows { display: flex; flex-direction: column; gap: 4px; }
-    .elev-row { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #666; }
-    .elev-ring { width: 9px; height: 9px; border-radius: 50%; border: 2px solid; flex-shrink: 0; }
-    #zone-info { background: #f7f4ee; border-radius: 10px; padding: 11px 12px; font-size: 12px; line-height: 1.55; color: #555; border: 1px solid #e0dbd0; display: none; }
-    #zone-info.visible { display: block; }
-    #zone-info h3 { font-size: 13px; font-weight: 600; color: #222; margin-bottom: 5px; line-height: 1.3; }
-    .zi-badge { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; margin-bottom: 8px; }
-    .zi-badge.high { background: #d1fae5; color: #065f46; }
-    .zi-badge.med  { background: #fef3c7; color: #92400e; }
-    .zi-badge.low  { background: #fee2e2; color: #991b1b; }
-    .zi-row { color: #666; margin-bottom: 2px; }
-    .zi-note { margin-top: 7px; color: #777; font-style: italic; line-height: 1.4; font-size: 11px; }
-    .elev-pill { display: inline-block; background: #ede9fe; color: #4c1d95; font-size: 10px; padding: 1px 7px; border-radius: 99px; margin-left: 5px; vertical-align: middle; font-style: normal; font-weight: 500; }
-    .close-zi { float: right; background: none; border: none; font-size: 16px; color: #aaa; cursor: pointer; margin-top: -2px; }
-    .hab-matches { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
-    .hmatch { font-size: 10px; padding: 2px 7px; border-radius: 99px; background: #edf7f1; color: #1a5c3a; border: 1px solid #b6e4cb; }
-    #map { flex: 1; height: 100%; }
-    .leaflet-control-attribution { font-size: 10px; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f3ee;color:#1a1a1a;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
 
-    /* ── Tabs ── */
-    #tab-bar { display:flex; background:#fff; border-bottom:1px solid #e4e1d8; flex-shrink:0; padding:0 18px; gap:2px; }
-    .tab-btn { padding:10px 16px; font-size:13px; font-weight:500; color:#888; background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
-    .tab-btn:hover { color:#444; }
-    .tab-btn.active { color:#2d6a4f; border-bottom-color:#2d6a4f; }
-    .tab-panel { display:none; flex:1; overflow:hidden; }
-    .tab-panel.active { display:flex; }
-    .tab-panel-scroll { flex:1; overflow-y:auto; background:#f5f3ee; }
+    /* Header */
+    header{display:flex;align-items:center;gap:10px;padding:0 18px;height:52px;background:#fff;border-bottom:1px solid #e4e1d8;flex-shrink:0;z-index:100}
+    header h1{font-size:16px;font-weight:600;color:#2d2d2d}
+    .hcount{font-size:11px;color:#bbb;font-weight:400;margin-left:3px}
+    .header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+    .notif-btn{background:none;border:none;font-size:20px;cursor:pointer;padding:4px;border-radius:6px;position:relative;line-height:1}
+    .notif-btn:hover{background:#f5f3ee}
+    .notif-dot{position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:#ef4444;display:none}
+    .auth-btn{padding:7px 14px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;border:none;transition:all 0.12s;font-family:inherit}
+    .auth-btn.login{background:#f5f3ee;color:#444;border:1px solid #ddd}
+    .auth-btn.login:hover{background:#eae6de}
+    .auth-btn.signup{background:#2d6a4f;color:#fff}
+    .auth-btn.signup:hover{background:#1b4332}
+    .user-menu{position:relative}
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:#2d6a4f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;cursor:pointer;border:2px solid #e4e1d8;overflow:hidden}
+    .user-avatar img{width:100%;height:100%;object-fit:cover}
+    .user-dropdown{position:absolute;right:0;top:42px;background:#fff;border:1px solid #e4e1d8;border-radius:10px;padding:6px;min-width:180px;box-shadow:0 4px 16px rgba(0,0,0,0.1);display:none;z-index:999}
+    .user-dropdown.open{display:block}
+    .ud-item{display:block;padding:8px 12px;font-size:13px;color:#444;border-radius:7px;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:inherit}
+    .ud-item:hover{background:#f5f3ee}
+    .ud-item.premium{color:#d97706;font-weight:500}
+    .ud-sep{border:none;border-top:1px solid #f0ede6;margin:4px 0}
+    .premium-badge{display:inline-block;background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;margin-left:5px;vertical-align:middle}
 
-    /* ── Guide / Contact pages ── */
-    .page-wrap { max-width:860px; margin:0 auto; padding:36px 24px 60px; }
-    .page-hero { text-align:center; margin-bottom:40px; }
-    .page-hero h2 { font-size:26px; font-weight:600; color:#1a1a1a; margin-bottom:10px; }
-    .page-hero p { font-size:15px; color:#666; line-height:1.7; max-width:560px; margin:0 auto; }
-    .badge-pill { display:inline-block; background:#edf7f1; color:#1a5c3a; font-size:12px; font-weight:600; padding:4px 12px; border-radius:99px; border:1px solid #b6e4cb; margin-bottom:14px; }
-    .guide-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px; margin-bottom:40px; }
-    .guide-card { background:#fff; border:1px solid #e4e1d8; border-radius:12px; overflow:hidden; }
-    .guide-card-img { height:160px; background:linear-gradient(135deg,#2d6a4f 0%,#1b4332 100%); display:flex; align-items:center; justify-content:center; font-size:52px; }
-    .guide-card-body { padding:18px; }
-    .guide-card-body h3 { font-size:16px; font-weight:600; margin-bottom:3px; }
-    .guide-loc { font-size:12px; color:#2d6a4f; font-weight:500; margin-bottom:8px; }
-    .guide-card-body p { font-size:13px; color:#666; line-height:1.6; margin-bottom:12px; }
-    .guide-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px; }
-    .guide-tag { font-size:11px; padding:2px 8px; border-radius:99px; background:#f5f3ee; color:#555; border:1px solid #e4e1d8; }
-    .guide-btn { display:block; text-align:center; background:#2d6a4f; color:#fff; border:none; border-radius:8px; padding:9px 16px; font-size:13px; font-weight:500; cursor:pointer; width:100%; transition:background 0.15s; text-decoration:none; }
-    .guide-btn:hover { background:#1b4332; }
-    .coming-soon-box { background:#fff; border:1.5px dashed #c8e6d0; border-radius:12px; padding:32px; text-align:center; margin-bottom:40px; }
-    .coming-soon-box h3 { font-size:18px; font-weight:600; margin-bottom:8px; }
-    .coming-soon-box p { font-size:14px; color:#666; line-height:1.7; max-width:500px; margin:0 auto 16px; }
-    .state-pills { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:18px; }
-    .state-pill { font-size:11px; padding:3px 10px; border-radius:99px; background:#f5f3ee; color:#666; border:1px solid #e4e1d8; }
-    .state-pill.soon { background:#edf7f1; color:#2d6a4f; border-color:#b6e4cb; }
-    .divider { border:none; border-top:1px solid #e4e1d8; margin:32px 0; }
-    .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:28px; }
-    .contact-card { background:#fff; border:1px solid #e4e1d8; border-radius:12px; padding:24px; }
-    .contact-card h3 { font-size:16px; font-weight:600; margin-bottom:6px; }
-    .cc-sub { font-size:13px; color:#666; margin-bottom:20px; line-height:1.6; }
-    .form-row { margin-bottom:14px; }
-    .form-row label { display:block; font-size:12px; font-weight:500; color:#444; margin-bottom:5px; }
-    .form-row input,.form-row textarea,.form-row select { width:100%; padding:9px 12px; border:1px solid #ddd; border-radius:8px; font-size:13px; color:#222; background:#fafaf8; outline:none; font-family:inherit; transition:border-color 0.12s; }
-    .form-row input:focus,.form-row textarea:focus,.form-row select:focus { border-color:#2d6a4f; background:#fff; }
-    .form-row textarea { resize:vertical; min-height:90px; }
-    .submit-btn { width:100%; padding:11px; background:#2d6a4f; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; transition:background 0.15s; font-family:inherit; }
-    .submit-btn:hover { background:#1b4332; }
-    .success-msg { display:none; background:#edf7f1; border:1px solid #b6e4cb; border-radius:8px; padding:16px; text-align:center; font-size:14px; color:#1a5c3a; font-weight:500; margin-top:12px; }
-    .ci-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:14px; font-size:13px; color:#555; line-height:1.5; }
-    .ci-icon { font-size:18px; flex-shrink:0; }
+    /* Tabs */
+    #tab-bar{display:flex;background:#fff;border-bottom:1px solid #e4e1d8;flex-shrink:0;padding:0 14px;gap:0;overflow-x:auto;scrollbar-width:none}
+    #tab-bar::-webkit-scrollbar{display:none}
+    .tab-btn{padding:10px 14px;font-size:13px;font-weight:500;color:#888;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all 0.12s;font-family:inherit}
+    .tab-btn:hover{color:#444}
+    .tab-btn.active{color:#2d6a4f;border-bottom-color:#2d6a4f}
+    .tab-panel{display:none;flex:1;overflow:hidden;min-height:0}
+    .tab-panel.active{display:flex}
+    .scroll-page{flex:1;overflow-y:auto;background:#f5f3ee}
 
-    @media (max-width:640px) {
-      .tab-panel.active { flex-direction:column; }
-      #sidebar { width:100%; max-height:300px; padding:10px; gap:10px; overflow-y:auto; }
-      #map { min-height:360px; }
-      .contact-grid { grid-template-columns:1fr; }
-      .page-wrap { padding:20px 16px 40px; }
+    /* Ad banner */
+    .ad-banner{background:#fff;border-bottom:1px solid #e4e1d8;padding:6px;text-align:center;flex-shrink:0;display:none}
+    .ad-banner.show{display:block}
+    .ad-label{font-size:9px;color:#ccc;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.5px}
+    .ad-slot{display:inline-block;width:728px;max-width:100%;height:60px;background:#f9f7f2;border:1px dashed #ddd;border-radius:4px;line-height:60px;font-size:12px;color:#ccc;vertical-align:top}
+
+    /* Map sidebar */
+    #sidebar{width:252px;flex-shrink:0;background:#fff;border-right:1px solid #e4e1d8;display:flex;flex-direction:column;overflow-y:auto;padding:14px 13px 20px;gap:16px}
+    .sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:#bbb;margin-bottom:7px}
+    .season-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+    .sbtn{padding:7px 4px;font-size:11px;font-weight:500;border:1px solid #ddd;border-radius:8px;background:#fafaf8;color:#555;cursor:pointer;text-align:center;transition:all 0.12s;font-family:inherit}
+    .sbtn:hover{background:#f0ede6}
+    .sbtn.active{background:#2d6a4f;color:#fff;border-color:#2d6a4f}
+    .sbtn small{display:block;font-size:9px;opacity:0.7;margin-top:1px}
+    .slider-row{margin-bottom:10px}
+    .slider-row label{display:flex;justify-content:space-between;font-size:12px;color:#555;margin-bottom:4px}
+    .slider-row label span{font-weight:600;color:#222}
+    input[type=range]{width:100%;-webkit-appearance:none;height:4px;border-radius:4px;background:#ddd;outline:none;cursor:pointer}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:#2d6a4f;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+    .hab-grid{display:flex;flex-direction:column;gap:5px}
+    .hab-toggle{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border-radius:8px;border:1px solid #e8e4dc;background:#fafaf8;cursor:pointer;transition:all 0.12s;user-select:none}
+    .hab-toggle:hover{background:#f3f0e8}
+    .hab-toggle.active{border-color:#2d6a4f;background:#edf7f1}
+    .hab-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+    .hab-text{flex:1}
+    .hab-text strong{display:block;font-size:12px;font-weight:600;color:#333;margin-bottom:2px}
+    .hab-text small{font-size:10px;color:#888;line-height:1.35;display:block}
+    .hab-check{width:14px;height:14px;border-radius:4px;border:1.5px solid #ccc;background:#fff;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all 0.12s}
+    .hab-toggle.active .hab-check{background:#2d6a4f;border-color:#2d6a4f}
+    .hab-toggle.active .hab-check::after{content:"✓";color:#fff;font-size:9px;font-weight:700}
+    .legend-rows,.elev-rows{display:flex;flex-direction:column;gap:5px}
+    .leg-item,.elev-row{display:flex;align-items:center;gap:7px;font-size:11px;color:#555}
+    .leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    .elev-ring{width:9px;height:9px;border-radius:50%;border:2px solid;flex-shrink:0}
+    #zone-info{background:#f7f4ee;border-radius:10px;padding:11px 12px;font-size:12px;line-height:1.55;color:#555;border:1px solid #e0dbd0;display:none}
+    #zone-info.visible{display:block}
+    #zone-info h3{font-size:13px;font-weight:600;color:#222;margin-bottom:5px;line-height:1.3}
+    .zi-badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:600;margin-bottom:8px}
+    .zi-badge.high{background:#d1fae5;color:#065f46}
+    .zi-badge.med{background:#fef3c7;color:#92400e}
+    .zi-badge.low{background:#fee2e2;color:#991b1b}
+    .zi-row{color:#666;margin-bottom:2px}
+    .zi-note{margin-top:7px;color:#777;font-style:italic;line-height:1.4;font-size:11px}
+    .elev-pill{display:inline-block;background:#ede9fe;color:#4c1d95;font-size:10px;padding:1px 7px;border-radius:99px;margin-left:5px;vertical-align:middle;font-style:normal;font-weight:500}
+    .close-zi{float:right;background:none;border:none;font-size:16px;color:#aaa;cursor:pointer;margin-top:-2px}
+    .hab-matches{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+    .hmatch{font-size:10px;padding:2px 7px;border-radius:99px;background:#edf7f1;color:#1a5c3a;border:1px solid #b6e4cb}
+    #map{flex:1;height:100%}
+    .leaflet-control-attribution{font-size:10px}
+
+    /* Page layout */
+    .page-wrap{max-width:900px;margin:0 auto;padding:32px 24px 60px}
+    .page-hero{text-align:center;margin-bottom:36px}
+    .page-hero h2{font-size:26px;font-weight:600;margin-bottom:10px}
+    .page-hero p{font-size:15px;color:#666;line-height:1.7;max-width:560px;margin:0 auto}
+    .badge-pill{display:inline-block;background:#edf7f1;color:#1a5c3a;font-size:12px;font-weight:600;padding:4px 12px;border-radius:99px;border:1px solid #b6e4cb;margin-bottom:14px}
+    .divider{border:none;border-top:1px solid #e4e1d8;margin:28px 0}
+
+    /* Social Feed */
+    .feed-wrap{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+    .feed-stream{}
+    .feed-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .feed-top h3{font-size:16px;font-weight:600}
+    .live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:6px;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.2)}}
+    .live-count{font-size:12px;color:#666}
+    .find-card{background:#fff;border:1px solid #e4e1d8;border-radius:12px;overflow:hidden;margin-bottom:16px}
+    .find-card-img{width:100%;height:200px;object-fit:cover;display:block;background:#f0ede6}
+    .find-card-img.no-photo{display:flex;align-items:center;justify-content:center;font-size:42px;height:100px}
+    .find-card-body{padding:14px 16px}
+    .fc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .fc-avatar{width:34px;height:34px;border-radius:50%;background:#2d6a4f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;overflow:hidden}
+    .fc-avatar img{width:100%;height:100%;object-fit:cover}
+    .fc-meta{flex:1}
+    .fc-name{font-size:13px;font-weight:600;color:#222}
+    .fc-date{font-size:11px;color:#aaa}
+    .fc-loc{font-size:12px;color:#2d6a4f;margin-bottom:6px}
+    .fc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+    .fc-tag{font-size:11px;padding:2px 8px;border-radius:99px;background:#f5f3ee;color:#555;border:1px solid #e4e1d8}
+    .fc-notes{font-size:13px;color:#555;line-height:1.6;margin-bottom:10px}
+    .fc-actions{display:flex;gap:8px;padding-top:8px;border-top:1px solid #f5f3ee}
+    .fc-action-btn{background:none;border:none;font-size:12px;color:#888;cursor:pointer;padding:5px 10px;border-radius:6px;display:flex;align-items:center;gap:4px;transition:all 0.12s;font-family:inherit}
+    .fc-action-btn:hover{background:#f5f3ee;color:#444}
+    .fc-action-btn.liked{color:#ef4444}
+    .fc-action-btn.following{color:#2d6a4f}
+    .ad-between{background:#fff;border:1px solid #e4e1d8;border-radius:10px;padding:10px;text-align:center;margin-bottom:16px}
+    .feed-sidebar{}
+    .submit-find-card{background:#fff;border:1px solid #e4e1d8;border-radius:12px;padding:20px;margin-bottom:20px}
+    .submit-find-card h3{font-size:15px;font-weight:600;margin-bottom:14px}
+    .form-row{margin-bottom:12px}
+    .form-row label{display:block;font-size:12px;font-weight:500;color:#444;margin-bottom:4px}
+    .form-row input,.form-row textarea,.form-row select{width:100%;padding:8px 11px;border:1px solid #ddd;border-radius:8px;font-size:13px;color:#222;background:#fafaf8;outline:none;font-family:inherit;transition:border-color 0.12s}
+    .form-row input:focus,.form-row textarea:focus,.form-row select:focus{border-color:#2d6a4f;background:#fff}
+    .form-row textarea{resize:vertical;min-height:72px}
+    .photo-drop{border:1.5px dashed #d1d5db;border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color 0.12s;position:relative}
+    .photo-drop:hover{border-color:#2d6a4f}
+    .photo-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+    .photo-drop p{font-size:12px;color:#aaa;margin-top:4px}
+    .photo-preview-img{display:none;width:100%;height:120px;object-fit:cover;border-radius:8px;margin-top:8px}
+    .qty-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .qty-opt{display:none}
+    .qty-opt + label{display:block;padding:7px 8px;border:1px solid #ddd;border-radius:8px;font-size:11px;cursor:pointer;text-align:center;transition:all 0.12s}
+    .qty-opt:checked + label{background:#edf7f1;border-color:#2d6a4f;color:#1a5c3a;font-weight:600}
+    .loc-row{display:flex;gap:6px}
+    .loc-row input{flex:1}
+    .loc-btn{padding:8px 10px;background:#f5f3ee;border:1px solid #ddd;border-radius:8px;font-size:11px;cursor:pointer;white-space:nowrap;font-family:inherit}
+    .loc-btn:hover{background:#e8e4dc}
+    .loc-btn.got{background:#edf7f1;border-color:#b6e4cb;color:#1a5c3a}
+    .submit-btn{width:100%;padding:10px;background:#2d6a4f;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:background 0.15s;font-family:inherit;margin-top:4px}
+    .submit-btn:hover{background:#1b4332}
+    .submit-btn:disabled{opacity:0.6;cursor:not-allowed}
+    .success-msg{display:none;background:#edf7f1;border:1px solid #b6e4cb;border-radius:8px;padding:14px;text-align:center;font-size:13px;color:#1a5c3a;font-weight:500;margin-top:10px}
+    .login-gate{background:#f7f4ee;border:1px solid #e0dbd0;border-radius:10px;padding:20px;text-align:center;font-size:13px;color:#666}
+    .login-gate strong{display:block;font-size:15px;color:#222;margin-bottom:6px}
+    .login-gate .auth-btn{margin:8px 4px 0;display:inline-block}
+    .feed-empty{text-align:center;padding:40px 20px;color:#aaa;font-size:14px}
+
+    /* Premium */
+    .plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:36px}
+    .plan-card{background:#fff;border:1px solid #e4e1d8;border-radius:14px;padding:28px;position:relative}
+    .plan-card.featured{border:2px solid #2d6a4f}
+    .plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;font-size:11px;font-weight:700;padding:3px 14px;border-radius:99px;white-space:nowrap}
+    .plan-name{font-size:18px;font-weight:700;margin-bottom:4px}
+    .plan-price{font-size:32px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+    .plan-price span{font-size:14px;font-weight:400;color:#888}
+    .plan-sub{font-size:13px;color:#888;margin-bottom:20px}
+    .plan-features{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px}
+    .plan-features li{font-size:13px;color:#555;display:flex;align-items:flex-start;gap:8px;line-height:1.4}
+    .plan-features li::before{content:"✓";color:#2d6a4f;font-weight:700;flex-shrink:0;margin-top:1px}
+    .plan-features li.no::before{content:"—";color:#ccc}
+    .plan-features li.no{color:#bbb}
+    .plan-btn{display:block;width:100%;text-align:center;padding:11px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s;font-family:inherit}
+    .plan-btn.primary{background:#2d6a4f;color:#fff}
+    .plan-btn.primary:hover{background:#1b4332}
+    .plan-btn.outline{background:transparent;color:#2d6a4f;border:1px solid #2d6a4f}
+    .plan-btn.outline:hover{background:#edf7f1}
+    .billing-toggle{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:28px;font-size:13px;color:#666}
+    .toggle-sw{width:44px;height:24px;background:#ddd;border-radius:12px;position:relative;cursor:pointer;transition:background 0.2s}
+    .toggle-sw.on{background:#2d6a4f}
+    .toggle-sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:left 0.2s}
+    .toggle-sw.on::after{left:23px}
+    .save-tag{background:#edf7f1;color:#1a5c3a;font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px;border:1px solid #b6e4cb}
+    .faq{max-width:600px;margin:0 auto}
+    .faq-item{margin-bottom:16px}
+    .faq-q{font-size:14px;font-weight:600;margin-bottom:4px;color:#222}
+    .faq-a{font-size:13px;color:#666;line-height:1.6}
+
+    /* Auth modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;display:none;align-items:center;justify-content:center}
+    .modal-overlay.open{display:flex}
+    .modal{background:#fff;border-radius:16px;width:100%;max-width:420px;padding:32px;position:relative;margin:16px}
+    .modal h2{font-size:22px;font-weight:600;margin-bottom:4px}
+    .modal .modal-sub{font-size:14px;color:#888;margin-bottom:24px}
+    .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;color:#aaa;cursor:pointer}
+    .modal-tabs{display:flex;border-bottom:1px solid #e4e1d8;margin-bottom:20px;gap:0}
+    .modal-tab{flex:1;padding:10px;font-size:14px;font-weight:500;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:#888;font-family:inherit}
+    .modal-tab.active{color:#2d6a4f;border-bottom-color:#2d6a4f}
+    .google-btn{width:100%;padding:10px;background:#fff;border:1px solid #ddd;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;font-family:inherit;transition:background 0.12s}
+    .google-btn:hover{background:#f9f7f2}
+    .or-divider{display:flex;align-items:center;gap:12px;margin-bottom:16px;font-size:12px;color:#ccc}
+    .or-divider::before,.or-divider::after{content:"";flex:1;border-top:1px solid #e4e1d8}
+    .auth-error{background:#fee2e2;color:#991b1b;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:12px;display:none}
+
+    /* Notification toast */
+    .toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:3000;transform:translateY(80px);opacity:0;transition:all 0.3s;max-width:300px}
+    .toast.show{transform:translateY(0);opacity:1}
+
+    /* Guide cards */
+    .guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-bottom:36px}
+    .guide-card{background:#fff;border:1px solid #e4e1d8;border-radius:12px;overflow:hidden}
+    .guide-card-img{height:140px;background:linear-gradient(135deg,#2d6a4f,#1b4332);display:flex;align-items:center;justify-content:center;font-size:48px}
+    .guide-card-body{padding:16px}
+    .guide-card-body h3{font-size:15px;font-weight:600;margin-bottom:3px}
+    .guide-loc{font-size:12px;color:#2d6a4f;font-weight:500;margin-bottom:8px}
+    .guide-card-body p{font-size:12px;color:#666;line-height:1.6;margin-bottom:10px}
+    .guide-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+    .guide-tag{font-size:11px;padding:2px 8px;border-radius:99px;background:#f5f3ee;color:#555;border:1px solid #e4e1d8}
+    .guide-btn{display:block;text-align:center;background:#2d6a4f;color:#fff;border:none;border-radius:8px;padding:8px;font-size:13px;font-weight:500;cursor:pointer;width:100%;font-family:inherit}
+    .guide-btn:hover{background:#1b4332}
+    .coming-soon-box{background:#fff;border:1.5px dashed #c8e6d0;border-radius:12px;padding:28px;text-align:center;margin-bottom:36px}
+    .coming-soon-box h3{font-size:17px;font-weight:600;margin-bottom:8px}
+    .coming-soon-box p{font-size:13px;color:#666;line-height:1.7;max-width:480px;margin:0 auto 14px}
+    .state-pills{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-bottom:16px}
+    .state-pill{font-size:11px;padding:3px 10px;border-radius:99px;background:#f5f3ee;color:#666;border:1px solid #e4e1d8}
+    .state-pill.soon{background:#edf7f1;color:#2d6a4f;border-color:#b6e4cb}
+
+    /* Contact */
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .contact-card{background:#fff;border:1px solid #e4e1d8;border-radius:12px;padding:22px}
+    .contact-card h3{font-size:15px;font-weight:600;margin-bottom:6px}
+    .cc-sub{font-size:13px;color:#666;margin-bottom:18px;line-height:1.6}
+    .ci-row{display:flex;align-items:flex-start;gap:9px;margin-bottom:12px;font-size:13px;color:#555;line-height:1.5}
+    .ci-icon{font-size:17px;flex-shrink:0}
+
+    @media(max-width:820px){.feed-wrap,.contact-grid,.plan-grid{grid-template-columns:1fr}}
+    @media(max-width:640px){
+      .tab-panel.active{flex-direction:column}
+      #sidebar{width:100%;max-height:260px;padding:10px;gap:8px;overflow-y:auto}
+      #map{min-height:340px}
+      .page-wrap{padding:20px 14px 40px}
     }
   </style>
 </head>
 <body>
+
+<!-- ── Auth Modal ── -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAuth()">×</button>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tab-login-btn" onclick="switchAuthTab('login')">Log in</button>
+      <button class="modal-tab" id="tab-signup-btn" onclick="switchAuthTab('signup')">Sign up</button>
+    </div>
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+    <div class="or-divider">or</div>
+    <div class="auth-error" id="auth-error"></div>
+    <div id="login-form">
+      <div class="form-row"><label>Email</label><input type="email" id="login-email" placeholder="you@email.com"/></div>
+      <div class="form-row"><label>Password</label><input type="password" id="login-pass" placeholder="Password"/></div>
+      <button class="submit-btn" onclick="doLogin()">Log in</button>
+      <p style="text-align:center;margin-top:10px;font-size:12px;color:#aaa"><a href="#" onclick="doResetPassword()" style="color:#2d6a4f">Forgot password?</a></p>
+    </div>
+    <div id="signup-form" style="display:none">
+      <div class="form-row"><label>Name</label><input type="text" id="signup-name" placeholder="Your name"/></div>
+      <div class="form-row"><label>Email</label><input type="email" id="signup-email" placeholder="you@email.com"/></div>
+      <div class="form-row"><label>Password</label><input type="password" id="signup-pass" placeholder="At least 8 characters"/></div>
+      <button class="submit-btn" onclick="doSignup()">Create account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast"></div>
+
+<!-- ── Header ── -->
 <header>
   <span style="font-size:20px">🍄</span>
   <h1>Melody's Morels <span class="hcount" id="hcount"></span></h1>
-  <span>Toggle habitat · click a spot</span>
+  <div class="header-right">
+    <button class="notif-btn" id="notif-btn" onclick="toggleNotifications()" title="Get alerts">🔔<span class="notif-dot" id="notif-dot"></span></button>
+    <div id="auth-guest" style="display:flex;gap:6px">
+      <button class="auth-btn login" onclick="openAuth('login')">Log in</button>
+      <button class="auth-btn signup" onclick="openAuth('signup')">Sign up</button>
+    </div>
+    <div class="user-menu" id="auth-user" style="display:none">
+      <div class="user-avatar" id="user-avatar" onclick="toggleUserMenu()"></div>
+      <div class="user-dropdown" id="user-dropdown">
+        <div style="padding:8px 12px 8px;font-size:13px;color:#222;font-weight:600" id="dropdown-name"></div>
+        <hr class="ud-sep">
+        <button class="ud-item" onclick="switchTab('feed')">My Finds</button>
+        <button class="ud-item premium" onclick="switchTab('premium');toggleUserMenu()">⭐ Go Premium</button>
+        <hr class="ud-sep">
+        <button class="ud-item" onclick="doLogout()">Log out</button>
+      </div>
+    </div>
+  </div>
 </header>
 
+<!-- Ad banner (free users / web only — AdMob handles mobile) -->
+<div class="ad-banner" id="top-ad">
+  <span class="ad-label">Advertisement</span>
+  <ins class="adsbygoogle"
+    style="display:inline-block;width:728px;max-width:100%;height:90px"
+    data-ad-client="ca-pub-YOUR_ADSENSE_ID"
+    data-ad-slot="YOUR_LEADERBOARD_SLOT_ID"></ins>
+</div>
+
+<!-- ── Tabs ── -->
 <nav id="tab-bar">
   <button class="tab-btn active" data-tab="map">🗺 Morel Map</button>
+  <button class="tab-btn" data-tab="feed">📱 Live Feed</button>
   <button class="tab-btn" data-tab="guides">🧭 Guided Hunts</button>
-  <button class="tab-btn" data-tab="contact">✉️ Contact Us</button>
+  <button class="tab-btn" data-tab="premium">⭐ Premium</button>
+  <button class="tab-btn" data-tab="land">🏡 Land Access</button>
+  <button class="tab-btn" data-tab="contact">✉️ Contact</button>
 </nav>
 
-<!-- ── Map Tab ── -->
+<!-- ── MAP TAB ── -->
 <div id="tab-map" class="tab-panel active">
-<div id="app">
+<div id="app" style="display:flex;flex:1;overflow:hidden">
   <div id="sidebar">
     <div>
       <p class="sec-title">Season</p>
@@ -143,22 +337,16 @@
     </div>
     <div>
       <p class="sec-title">Conditions</p>
-      <div class="slider-row">
-        <label>Daytime temp <span id="temp-val">65°F</span></label>
-        <input type="range" id="temp" min="40" max="90" value="65" step="1" />
-      </div>
-      <div class="slider-row" style="margin-bottom:0">
-        <label>Rain last 5 days <span id="rain-val">1.2″</span></label>
-        <input type="range" id="rain" min="0" max="3" value="1.2" step="0.1" />
-      </div>
+      <div class="slider-row"><label>Daytime temp <span id="temp-val">65°F</span></label><input type="range" id="temp" min="40" max="90" value="65" step="1"/></div>
+      <div class="slider-row" style="margin-bottom:0"><label>Rain last 5 days <span id="rain-val">1.2″</span></label><input type="range" id="rain" min="0" max="3" value="1.2" step="0.1"/></div>
     </div>
     <div>
       <p class="sec-title">Habitat — toggle what you see</p>
       <div class="hab-grid">
         <div class="hab-toggle" data-hab="ss"><span class="hab-icon">⛰️</span><div class="hab-text"><strong>South-facing slope</strong><small>Ridge or hill facing midday sun</small></div><div class="hab-check"></div></div>
         <div class="hab-toggle" data-hab="wl"><span class="hab-icon">🌲</span><div class="hab-text"><strong>Wood line / field edge</strong><small>South-facing treeline meets open ground</small></div><div class="hab-check"></div></div>
-        <div class="hab-toggle" data-hab="w"><span class="hab-icon">💧</span><div class="hab-text"><strong>Water nearby</strong><small>Creek, pond, or wet drainage in the stand</small></div><div class="hab-check"></div></div>
-        <div class="hab-toggle" data-hab="o"><span class="hab-icon">🌳</span><div class="hab-text"><strong>Oak trees present</strong><small>White oak especially — top local indicator</small></div><div class="hab-check"></div></div>
+        <div class="hab-toggle" data-hab="w"><span class="hab-icon">💧</span><div class="hab-text"><strong>Water nearby</strong><small>Creek, pond, or wet drainage</small></div><div class="hab-check"></div></div>
+        <div class="hab-toggle" data-hab="o"><span class="hab-icon">🌳</span><div class="hab-text"><strong>Oak trees present</strong><small>White oak especially</small></div><div class="hab-check"></div></div>
       </div>
     </div>
     <div>
@@ -177,6 +365,12 @@
         <div class="elev-row"><span class="elev-ring" style="border-color:#22c55e"></span>Lowlands</div>
       </div>
     </div>
+    <!-- Ad box — free users -->
+    <div id="sidebar-ad" style="display:none;background:#f9f7f2;border:1px dashed #e0dbd0;border-radius:8px;padding:8px;text-align:center">
+      <span style="font-size:9px;color:#ccc;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Advertisement</span>
+      <!-- <ins class="adsbygoogle" style="display:inline-block;width:220px;height:200px" data-ad-client="ca-pub-XXXXXXXX" data-ad-slot="XXXXXXXX"></ins> -->
+      <div style="width:220px;height:180px;background:#f0ede6;border-radius:6px;display:inline-block;line-height:180px;font-size:11px;color:#ccc">Ad</div>
+    </div>
     <div id="zone-info">
       <button class="close-zi" id="close-zi">×</button>
       <h3 id="zi-name">—</h3>
@@ -190,189 +384,934 @@
   </div>
   <div id="map"></div>
 </div>
-</div><!-- end tab-map -->
+</div>
 
-<!-- ── Guided Hunts Tab ── -->
-<div id="tab-guides" class="tab-panel">
-  <div class="tab-panel-scroll">
+<!-- ── LIVE FEED TAB ── -->
+<div id="tab-feed" class="tab-panel">
+  <div class="scroll-page">
     <div class="page-wrap">
-      <div class="page-hero">
-        <span class="badge-pill">🌿 Now Booking — Clay County, MO</span>
-        <h2>Guided Morel Mushroom Hunts</h2>
-        <p>Local guides who know the land, the trees, and the timing. Learn to read south-facing slopes, wood lines, and creek drainages — then find your own spots for years to come.</p>
-      </div>
-
-      <div class="guide-grid">
-        <div class="guide-card">
-          <div class="guide-card-img">🍄</div>
-          <div class="guide-card-body">
-            <h3>Melody's Clay County Hunt</h3>
-            <div class="guide-loc">📍 Clay County, Missouri</div>
-            <p>Half-day guided hunt along the Missouri River bluffs in Clay County. We cover south-facing draws, creek-edge timber, and wood lines bordering farm fields — the classic NW Missouri habitat. Great for beginners and experienced hunters alike.</p>
-            <div class="guide-tags">
-              <span class="guide-tag">Half day · 4 hrs</span>
-              <span class="guide-tag">Up to 6 guests</span>
-              <span class="guide-tag">All skill levels</span>
-              <span class="guide-tag">Peak: mid April</span>
+      <div class="feed-wrap">
+        <!-- Stream -->
+        <div class="feed-stream">
+          <div class="feed-top">
+            <h3><span class="live-dot"></span>Live Feed</h3>
+            <span class="live-count" id="live-count">Loading…</span>
+          </div>
+          <div id="find-stream"><div class="feed-empty">Loading reports…</div></div>
+        </div>
+        <!-- Sidebar: submit + ad -->
+        <div class="feed-sidebar">
+          <div class="submit-find-card" id="submit-card">
+            <h3>📍 Report a find</h3>
+            <div id="submit-gate">
+              <div class="login-gate">
+                <strong>Log in to submit a report</strong>
+                Your find will appear in the live feed and on the map.
+                <br>
+                <button class="auth-btn signup" style="margin-top:10px" onclick="openAuth('signup')">Create free account</button>
+                <button class="auth-btn login" style="margin-top:8px" onclick="openAuth('login')">Log in</button>
+              </div>
             </div>
-            <button class="guide-btn" onclick="document.querySelector('[data-tab=contact]').click()">Book this hunt →</button>
+            <form id="find-form" style="display:none" onsubmit="submitFind(event)">
+              <div class="form-row"><label>Date found</label><input type="date" id="f-date" required/></div>
+              <div class="form-row">
+                <label>Location</label>
+                <div class="loc-row">
+                  <input type="text" id="f-loc" placeholder="City, County, State" required/>
+                  <button type="button" class="loc-btn" id="f-gps-btn" onclick="getFindGPS()">📍 GPS</button>
+                </div>
+                <input type="hidden" id="f-lat"/><input type="hidden" id="f-lng"/>
+              </div>
+              <div class="form-row">
+                <label>Quantity</label>
+                <div class="qty-grid">
+                  <div><input class="qty-opt" type="radio" name="fqty" id="fq1" value="A few (1–10)"><label for="fq1">🍄 A few</label></div>
+                  <div><input class="qty-opt" type="radio" name="fqty" id="fq2" value="Good haul (11–50)"><label for="fq2">🍄🍄 Good haul</label></div>
+                  <div><input class="qty-opt" type="radio" name="fqty" id="fq3" value="Loaded (50–200)"><label for="fq3">🍄🍄🍄 Loaded</label></div>
+                  <div><input class="qty-opt" type="radio" name="fqty" id="fq4" value="Motherlode (200+)"><label for="fq4">🍄🍄🍄🍄 Motherlode</label></div>
+                </div>
+              </div>
+              <div class="form-row">
+                <label>Average size</label>
+                <select id="f-size"><option value="">— select —</option><option>Tiny (under 1″)</option><option>Small (1–2″)</option><option>Medium (2–4″)</option><option>Large (4–6″)</option><option>Huge (6″+)</option></select>
+              </div>
+              <div class="form-row">
+                <label>Photo</label>
+                <div class="photo-drop" id="f-photo-drop">
+                  <input type="file" id="f-photo" accept="image/*" onchange="previewFindPhoto(this)"/>
+                  <div style="font-size:28px">📷</div>
+                  <p>Tap to upload</p>
+                </div>
+                <img class="photo-preview-img" id="f-photo-preview" alt="preview"/>
+              </div>
+              <div class="form-row"><label>Notes</label><textarea id="f-notes" placeholder="South-facing slope, near a creek, after rain…"></textarea></div>
+              <button type="submit" class="submit-btn" id="find-submit-btn">Post to feed</button>
+              <div class="success-msg" id="find-success">✅ Posted! Check the live feed.</div>
+            </form>
+          </div>
+          <!-- Ad box -->
+          <div id="feed-ad" style="display:none;background:#fff;border:1px solid #e4e1d8;border-radius:10px;padding:10px;text-align:center;margin-bottom:16px">
+            <span style="font-size:9px;color:#ccc;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Advertisement</span>
+            <div style="width:300px;max-width:100%;height:250px;background:#f9f7f2;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:#ccc">Ad — paste AdSense code</div>
           </div>
         </div>
-
-        <div class="guide-card">
-          <div class="guide-card-img">🌿</div>
-          <div class="guide-card-body">
-            <h3>Bluff & Timber Full Day</h3>
-            <div class="guide-loc">📍 Clay County, Missouri</div>
-            <p>Full-day immersive hunt covering multiple habitat types — river bluff faces, south-slope timber, old field edges, and creek drainages. Includes habitat education so you leave knowing exactly what to look for on your own.</p>
-            <div class="guide-tags">
-              <span class="guide-tag">Full day · 8 hrs</span>
-              <span class="guide-tag">Up to 4 guests</span>
-              <span class="guide-tag">Lunch included</span>
-              <span class="guide-tag">Peak: April 15–25</span>
-            </div>
-            <button class="guide-btn" onclick="document.querySelector('[data-tab=contact]').click()">Book this hunt →</button>
-          </div>
-        </div>
-
-        <div class="guide-card">
-          <div class="guide-card-img">🌲</div>
-          <div class="guide-card-body">
-            <h3>Private Group Hunt</h3>
-            <div class="guide-loc">📍 Clay County, Missouri</div>
-            <p>Book a private hunt for your group — family outings, corporate teams, or friend groups. We customize the route, pace, and focus to your group's experience level and goals. Ask about multi-day packages.</p>
-            <div class="guide-tags">
-              <span class="guide-tag">Flexible duration</span>
-              <span class="guide-tag">Private group</span>
-              <span class="guide-tag">Custom route</span>
-              <span class="guide-tag">All season</span>
-            </div>
-            <button class="guide-btn" onclick="document.querySelector('[data-tab=contact]').click()">Request a quote →</button>
-          </div>
-        </div>
-      </div>
-
-      <hr class="divider">
-
-      <div class="coming-soon-box">
-        <h3>🗺 Guides Coming Across the USA</h3>
-        <p>We're partnering with experienced local hunters and naturalists to bring guided morel hunts to the best regions in the country. If you know the land in your area, we'd love to hear from you.</p>
-        <div class="state-pills">
-          <span class="state-pill soon">Missouri ✓</span>
-          <span class="state-pill">Southern Illinois</span>
-          <span class="state-pill">Indiana</span>
-          <span class="state-pill">Michigan</span>
-          <span class="state-pill">Ohio</span>
-          <span class="state-pill">Kentucky</span>
-          <span class="state-pill">Tennessee</span>
-          <span class="state-pill">Arkansas Ozarks</span>
-          <span class="state-pill">Wisconsin</span>
-          <span class="state-pill">Minnesota</span>
-          <span class="state-pill">West Virginia</span>
-          <span class="state-pill">Pennsylvania</span>
-          <span class="state-pill">Virginia</span>
-          <span class="state-pill">North Carolina</span>
-          <span class="state-pill">Oregon</span>
-          <span class="state-pill">More coming soon…</span>
-        </div>
-        <button class="guide-btn" style="max-width:280px;margin:0 auto;display:block" onclick="document.querySelector('[data-tab=contact]').click()">Inquire about your region →</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ── Contact Tab ── -->
-<div id="tab-contact" class="tab-panel">
-  <div class="tab-panel-scroll">
+<!-- ── GUIDED HUNTS TAB ── -->
+<div id="tab-guides" class="tab-panel">
+  <div class="scroll-page">
     <div class="page-wrap">
       <div class="page-hero">
-        <span class="badge-pill">📬 Get in Touch</span>
-        <h2>Contact Melody's Morels</h2>
-        <p>Questions about guided hunts, becoming a guide in your area, or anything else — we'd love to hear from you.</p>
+        <span class="badge-pill">🌿 Now Booking — Clay County, MO</span>
+        <h2>Guided Morel Hunts</h2>
+        <p>Local guides who know the land, the trees, and the timing. Learn to read south-facing slopes, wood lines, and creek drainages.</p>
       </div>
+      <div class="guide-grid">
+        <div class="guide-card"><div class="guide-card-img">🍄</div><div class="guide-card-body"><h3>Melody's Clay County Hunt</h3><div class="guide-loc">📍 Clay County, Missouri</div><p>Half-day guided hunt along the Missouri River bluffs. South-facing draws, creek-edge timber, wood lines. Great for all skill levels.</p><div class="guide-tags"><span class="guide-tag">Half day · 4 hrs</span><span class="guide-tag">Up to 6 guests</span><span class="guide-tag">Peak: mid April</span></div><button class="guide-btn" onclick="switchTab('contact')">Book this hunt →</button></div></div>
+        <div class="guide-card"><div class="guide-card-img">🌿</div><div class="guide-card-body"><h3>Bluff & Timber Full Day</h3><div class="guide-loc">📍 Clay County, Missouri</div><p>Full-day immersive hunt covering multiple habitat types. Includes habitat education so you leave knowing exactly what to look for.</p><div class="guide-tags"><span class="guide-tag">Full day · 8 hrs</span><span class="guide-tag">Up to 4 guests</span><span class="guide-tag">Lunch included</span></div><button class="guide-btn" onclick="switchTab('contact')">Book this hunt →</button></div></div>
+        <div class="guide-card"><div class="guide-card-img">🌲</div><div class="guide-card-body"><h3>Private Group Hunt</h3><div class="guide-loc">📍 Clay County, Missouri</div><p>Private hunt for your group — family, corporate, or friends. Custom route and pace. Ask about multi-day packages.</p><div class="guide-tags"><span class="guide-tag">Flexible</span><span class="guide-tag">Private group</span><span class="guide-tag">All season</span></div><button class="guide-btn" onclick="switchTab('contact')">Request a quote →</button></div></div>
+      </div>
+      <div class="coming-soon-box">
+        <h3>🗺 Guides Coming Across the USA</h3>
+        <p>We're partnering with local hunters to bring guided hunts to the best regions in the country.</p>
+        <div class="state-pills">
+          <span class="state-pill soon">Missouri ✓</span><span class="state-pill">Southern Illinois</span><span class="state-pill">Indiana</span><span class="state-pill">Michigan</span><span class="state-pill">Ohio</span><span class="state-pill">Kentucky</span><span class="state-pill">Tennessee</span><span class="state-pill">Arkansas Ozarks</span><span class="state-pill">Wisconsin</span><span class="state-pill">West Virginia</span><span class="state-pill">More coming soon…</span>
+        </div>
+        <button class="guide-btn" style="max-width:240px;margin:0 auto;display:block" onclick="switchTab('contact')">Inquire about your region →</button>
+      </div>
+    </div>
+  </div>
+</div>
 
+<!-- ── PREMIUM TAB ── -->
+<div id="tab-premium" class="tab-panel">
+  <div class="scroll-page">
+    <div class="page-wrap">
+      <div class="page-hero">
+        <span class="badge-pill">⭐ Upgrade your season</span>
+        <h2>Melody's Morels Premium</h2>
+        <p>Everything free hunters get — plus tools that make you a better hunter every season.</p>
+      </div>
+      <div class="billing-toggle">
+        <span>Monthly</span>
+        <div class="toggle-sw" id="billing-toggle" onclick="toggleBilling()"></div>
+        <span>Annual <span class="save-tag">Save 33%</span></span>
+      </div>
+      <div class="plan-grid">
+        <div class="plan-card">
+          <div class="plan-name">Free</div>
+          <div class="plan-price">$0 <span>/ forever</span></div>
+          <div class="plan-sub">For casual hunters</div>
+          <ul class="plan-features">
+            <li>1,500+ habitat spots on the map</li>
+            <li>Seasonal & weather scoring</li>
+            <li>Live community feed</li>
+            <li>Submit finds with photos</li>
+            <li class="no">Bookmark your own spots</li>
+            <li class="no">Spot history &amp; trends</li>
+            <li class="no">Export your finds</li>
+            <li class="no">Ad-free experience</li>
+            <li class="no">Early season alerts</li>
+            <li class="no">Priority guide booking</li>
+          </ul>
+          <button class="plan-btn outline" onclick="openAuth('signup')">Get started free</button>
+        </div>
+        <div class="plan-card featured">
+          <div class="plan-badge">Most popular</div>
+          <div class="plan-name">Premium</div>
+          <div class="plan-price" id="premium-price">$9.99 <span>/ month</span></div>
+          <div class="plan-sub" id="premium-sub">Cancel anytime</div>
+          <ul class="plan-features">
+            <li>Everything in Free</li>
+            <li>Bookmark unlimited personal spots</li>
+            <li>Full spot history &amp; year-over-year trends</li>
+            <li>Export your finds (CSV / KML)</li>
+            <li>Completely ad-free</li>
+            <li>Early season push alerts by region</li>
+            <li>Priority guide booking</li>
+            <li>Community leaderboard</li>
+            <li>Offline map support (coming soon)</li>
+          </ul>
+          <button class="plan-btn primary" id="checkout-btn" onclick="startCheckout()">Start free 7-day trial</button>
+        </div>
+      </div>
+      <hr class="divider">
+      <div class="faq">
+        <h3 style="font-size:18px;font-weight:600;margin-bottom:20px;text-align:center">Common questions</h3>
+        <div class="faq-item"><div class="faq-q">Can I cancel anytime?</div><div class="faq-a">Yes — cancel from your account settings and you keep access through the end of your billing period. No questions asked.</div></div>
+        <div class="faq-item"><div class="faq-q">What payment methods do you accept?</div><div class="faq-a">All major credit and debit cards via Stripe. Your card info is never stored on our servers.</div></div>
+        <div class="faq-item"><div class="faq-q">When do early season alerts go out?</div><div class="faq-a">We send alerts when our regional models indicate conditions are prime and community reports start coming in from your selected regions.</div></div>
+        <div class="faq-item"><div class="faq-q">What's in the 7-day trial?</div><div class="faq-a">Full premium access with no charge. You won't be billed until the trial ends — and you can cancel before then with one click.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONTACT TAB ── -->
+<div id="tab-contact" class="tab-panel">
+  <div class="scroll-page">
+    <div class="page-wrap">
+      <div class="page-hero"><span class="badge-pill">📬 Get in Touch</span><h2>Contact Melody's Morels</h2><p>Questions about guided hunts, becoming a guide, or anything else.</p></div>
       <div class="contact-grid">
-
         <div class="contact-card">
           <h3>🧭 Book a Guided Hunt</h3>
-          <p class="cc-sub">Ready to get out in the field? Fill out the form and we'll get back to you within 24 hours with availability and pricing.</p>
+          <p class="cc-sub">Fill out the form and we'll get back to you within 24 hours with availability and pricing.</p>
           <form id="hunt-form" onsubmit="submitForm(event,'hunt-success','HUNT_FORM_ID')">
-            <div class="form-row">
-              <label>Your name</label>
-              <input type="text" name="name" placeholder="First and last name" required />
-            </div>
-            <div class="form-row">
-              <label>Email address</label>
-              <input type="email" name="email" placeholder="you@email.com" required />
-            </div>
-            <div class="form-row">
-              <label>Phone (optional)</label>
-              <input type="tel" name="phone" placeholder="(555) 000-0000" />
-            </div>
-            <div class="form-row">
-              <label>Hunt type</label>
-              <select name="hunt_type">
-                <option>Clay County Half Day</option>
-                <option>Clay County Full Day</option>
-                <option>Private Group Hunt</option>
-                <option>Not sure — help me choose</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label>Preferred dates / questions</label>
-              <textarea name="message" placeholder="When are you hoping to go? Group size? Any questions?"></textarea>
-            </div>
+            <div class="form-row"><label>Your name</label><input type="text" name="name" placeholder="First and last name" required/></div>
+            <div class="form-row"><label>Email</label><input type="email" name="email" placeholder="you@email.com" required/></div>
+            <div class="form-row"><label>Phone (optional)</label><input type="tel" name="phone" placeholder="(555) 000-0000"/></div>
+            <div class="form-row"><label>Hunt type</label><select name="hunt_type"><option>Clay County Half Day</option><option>Clay County Full Day</option><option>Private Group Hunt</option><option>Not sure</option></select></div>
+            <div class="form-row"><label>Preferred dates / notes</label><textarea name="message" placeholder="Dates, group size, questions…"></textarea></div>
             <button type="submit" class="submit-btn">Send booking request</button>
           </form>
           <div class="success-msg" id="hunt-success">✅ Request sent! We'll be in touch within 24 hours.</div>
         </div>
-
         <div class="contact-card">
           <h3>✉️ General Inquiry</h3>
-          <p class="cc-sub">Questions about the map, becoming a guide in your region, partnerships, or anything else — reach out any time.</p>
+          <p class="cc-sub">Becoming a guide, partnerships, map feedback, or anything else.</p>
           <form id="general-form" onsubmit="submitForm(event,'general-success','GENERAL_FORM_ID')">
-            <div class="form-row">
-              <label>Your name</label>
-              <input type="text" name="name" placeholder="First and last name" required />
-            </div>
-            <div class="form-row">
-              <label>Email address</label>
-              <input type="email" name="email" placeholder="you@email.com" required />
-            </div>
-            <div class="form-row">
-              <label>I'm interested in…</label>
-              <select name="interest">
-                <option>Guided hunts in my area</option>
-                <option>Becoming a guide</option>
-                <option>Partnership or media</option>
-                <option>Map feedback or corrections</option>
-                <option>Something else</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label>Message</label>
-              <textarea name="message" placeholder="Tell us what's on your mind…" style="min-height:120px"></textarea>
-            </div>
+            <div class="form-row"><label>Your name</label><input type="text" name="name" placeholder="First and last name" required/></div>
+            <div class="form-row"><label>Email</label><input type="email" name="email" placeholder="you@email.com" required/></div>
+            <div class="form-row"><label>I'm interested in…</label><select name="interest"><option>Guided hunts in my area</option><option>Becoming a guide</option><option>Partnership or media</option><option>Map feedback</option><option>Something else</option></select></div>
+            <div class="form-row"><label>Message</label><textarea name="message" placeholder="Tell us what's on your mind…" style="min-height:110px"></textarea></div>
             <button type="submit" class="submit-btn">Send message</button>
           </form>
           <div class="success-msg" id="general-success">✅ Message received! We'll get back to you soon.</div>
-
-          <hr class="divider" style="margin:24px 0">
-
+          <hr class="divider" style="margin:20px 0">
           <div class="ci-row"><span class="ci-icon">📍</span><div><strong>Based in</strong><br>Clay County, Missouri</div></div>
           <div class="ci-row"><span class="ci-icon">🍄</span><div><strong>Hunt season</strong><br>March – June (varies by region)</div></div>
-          <div class="ci-row"><span class="ci-icon">🌿</span><div><strong>We follow</strong><br>Leave No Trace principles on all hunts</div></div>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
+<!-- ── LAND ACCESS TAB ── -->
+<style>
+  .land-role-toggle{display:flex;gap:10px;margin-bottom:28px;background:#fff;border:1px solid #e4e1d8;border-radius:12px;padding:6px}
+  .role-btn{flex:1;padding:10px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.15s;background:transparent;color:#888;font-family:inherit}
+  .role-btn.active{background:#2d6a4f;color:#fff}
+  .land-view{display:none}
+  .land-view.active{display:block}
+  .listings-layout{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+  .listing-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .filter-pill{padding:6px 14px;border:1px solid #ddd;border-radius:99px;font-size:12px;cursor:pointer;background:#fff;color:#555;transition:all 0.12s;font-family:inherit}
+  .filter-pill.active{background:#2d6a4f;color:#fff;border-color:#2d6a4f}
+  .listing-card{background:#fff;border:1px solid #e4e1d8;border-radius:12px;overflow:hidden;margin-bottom:16px;transition:box-shadow 0.15s}
+  .listing-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.08)}
+  .listing-card-img{width:100%;height:180px;object-fit:cover;display:block;background:linear-gradient(135deg,#d4edda,#a8d5b5)}
+  .listing-card-img.no-photo{display:flex;align-items:center;justify-content:center;font-size:48px;height:140px}
+  .listing-card-body{padding:16px}
+  .lc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+  .lc-title{font-size:15px;font-weight:600;color:#222}
+  .lc-price{font-size:15px;font-weight:700;color:#2d6a4f;white-space:nowrap;margin-left:10px}
+  .lc-price span{font-size:11px;font-weight:400;color:#888}
+  .lc-loc{font-size:12px;color:#888;margin-bottom:8px}
+  .lc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+  .lc-tag{font-size:11px;padding:2px 8px;border-radius:99px;background:#edf7f1;color:#1a5c3a;border:1px solid #b6e4cb}
+  .lc-tag.terrain{background:#ede9fe;color:#4c1d95;border-color:#c4b5fd}
+  .lc-meta{display:flex;gap:14px;font-size:12px;color:#888;margin-bottom:12px}
+  .lc-actions{display:flex;gap:8px}
+  .lc-btn{flex:1;padding:9px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:background 0.12s;font-family:inherit}
+  .lc-btn.primary{background:#2d6a4f;color:#fff}
+  .lc-btn.primary:hover{background:#1b4332}
+  .lc-btn.outline{background:transparent;border:1px solid #2d6a4f;color:#2d6a4f}
+  .lc-btn.outline:hover{background:#edf7f1}
+  .stars{color:#f59e0b;font-size:12px}
+  .listing-empty{text-align:center;padding:40px 20px;color:#aaa;font-size:14px}
+  /* Landowner form */
+  .list-your-land{background:#fff;border:1px solid #e4e1d8;border-radius:12px;padding:22px;margin-bottom:20px}
+  .list-your-land h3{font-size:15px;font-weight:600;margin-bottom:6px}
+  .list-your-land .sub{font-size:13px;color:#666;margin-bottom:18px;line-height:1.6}
+  .checkbox-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+  .cb-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#444;cursor:pointer}
+  .cb-item input{width:15px;height:15px;cursor:pointer;accent-color:#2d6a4f}
+  .price-row{display:flex;gap:10px;align-items:center}
+  .price-row input{flex:1}
+  .price-row .currency{font-size:16px;color:#555;font-weight:600;flex-shrink:0}
+  /* Booking modal */
+  .booking-modal{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2001;display:none;align-items:center;justify-content:center}
+  .booking-modal.open{display:flex}
+  .booking-box{background:#fff;border-radius:16px;width:100%;max-width:460px;padding:28px;position:relative;margin:16px;max-height:90vh;overflow-y:auto}
+  .booking-box h3{font-size:18px;font-weight:600;margin-bottom:4px}
+  .booking-box .bsub{font-size:13px;color:#888;margin-bottom:20px}
+  .booking-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#aaa}
+  .price-summary{background:#f7f4ee;border-radius:10px;padding:14px;margin:14px 0}
+  .ps-row{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:6px}
+  .ps-row.total{font-weight:700;color:#222;font-size:15px;border-top:1px solid #e4e1d8;padding-top:10px;margin-top:6px}
+  .terms-note{font-size:11px;color:#aaa;margin-top:12px;line-height:1.6}
+  /* My listings */
+  .my-listing-row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e4e1d8;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+  .ml-img{width:54px;height:54px;border-radius:8px;object-fit:cover;background:#edf7f1;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+  .ml-info{flex:1}
+  .ml-title{font-size:14px;font-weight:600;color:#222}
+  .ml-meta{font-size:12px;color:#888;margin-top:2px}
+  .ml-status{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600}
+  .ml-status.active{background:#edf7f1;color:#1a5c3a}
+  .ml-status.inactive{background:#fee2e2;color:#991b1b}
+  .stripe-connect-btn{display:flex;align-items:center;gap:10px;background:#635bff;color:#fff;border:none;border-radius:10px;padding:13px 18px;font-size:14px;font-weight:600;cursor:pointer;width:100%;justify-content:center;margin-bottom:16px;font-family:inherit;transition:background 0.15s}
+  .stripe-connect-btn:hover{background:#4f46e5}
+  .earnings-box{background:#edf7f1;border:1px solid #b6e4cb;border-radius:10px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+  .eb-amount{font-size:28px;font-weight:700;color:#065f46}
+  .eb-label{font-size:12px;color:#1a5c3a}
+  .info-callout{background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:14px 16px;font-size:13px;color:#78350f;line-height:1.6;margin-bottom:20px}
+  .info-callout strong{display:block;margin-bottom:4px}
+</style>
+
+<div id="tab-land" class="tab-panel">
+  <div class="scroll-page">
+    <div class="page-wrap">
+
+      <div class="page-hero">
+        <span class="badge-pill">🏡 New — Land Access Marketplace</span>
+        <h2>Hunt Private Land. Earn from Yours.</h2>
+        <p>Landowners list their property and set their price. Hunters book access by the day. Everyone wins.</p>
+      </div>
+
+      <div class="info-callout">
+        <strong>⚠️ Important for landowners</strong>
+        Before listing your land, make sure you have liability insurance that covers paid recreational access and have guests sign a waiver. See our <a href="#" onclick="switchTab('contact');return false" style="color:#92400e">contact page</a> for insurance resources.
+      </div>
+
+      <!-- Role toggle -->
+      <div class="land-role-toggle">
+        <button class="role-btn active" id="role-hunt" onclick="setLandRole('hunt')">🔍 I want to find land to hunt</button>
+        <button class="role-btn" id="role-own" onclick="setLandRole('own')">🏡 I want to list my land</button>
+      </div>
+
+      <!-- HUNTER VIEW -->
+      <div class="land-view active" id="land-hunter-view">
+        <div class="listings-layout">
+          <!-- Listing feed -->
+          <div>
+            <div class="listing-filters">
+              <button class="filter-pill active" data-filter="all" onclick="filterListings(this,'all')">All regions</button>
+              <button class="filter-pill" data-filter="Missouri" onclick="filterListings(this,'Missouri')">Missouri</button>
+              <button class="filter-pill" data-filter="Illinois" onclick="filterListings(this,'Illinois')">Illinois</button>
+              <button class="filter-pill" data-filter="Indiana" onclick="filterListings(this,'Indiana')">Indiana</button>
+              <button class="filter-pill" data-filter="Kentucky" onclick="filterListings(this,'Kentucky')">Kentucky</button>
+              <button class="filter-pill" data-filter="Ohio" onclick="filterListings(this,'Ohio')">Ohio</button>
+              <button class="filter-pill" data-filter="Tennessee" onclick="filterListings(this,'Tennessee')">Tennessee</button>
+            </div>
+            <div id="listings-feed"><div class="listing-empty">Loading available land…</div></div>
+          </div>
+          <!-- Sidebar info -->
+          <div>
+            <div style="background:#fff;border:1px solid #e4e1d8;border-radius:12px;padding:18px;margin-bottom:16px">
+              <h3 style="font-size:15px;font-weight:600;margin-bottom:8px">How it works</h3>
+              <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;color:#555">
+                <div style="display:flex;gap:10px"><span style="font-size:18px;flex-shrink:0">🗺</span><span>Browse available land on the map or in the list below</span></div>
+                <div style="display:flex;gap:10px"><span style="font-size:18px;flex-shrink:0">📅</span><span>Pick your date and number of hunters</span></div>
+                <div style="display:flex;gap:10px"><span style="font-size:18px;flex-shrink:0">💳</span><span>Pay securely — exact property address released after booking</span></div>
+                <div style="display:flex;gap:10px"><span style="font-size:18px;flex-shrink:0">🍄</span><span>Hunt, enjoy, and leave the land as you found it</span></div>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid #e4e1d8;border-radius:12px;padding:18px">
+              <h3 style="font-size:15px;font-weight:600;margin-bottom:8px">Hunter rules</h3>
+              <ul style="font-size:12px;color:#666;line-height:1.8;padding-left:16px">
+                <li>Stay within the listed boundaries</li>
+                <li>Pack out everything you bring in</li>
+                <li>No fires unless explicitly permitted</li>
+                <li>Respect posted signs and livestock</li>
+                <li>Sign the waiver before entering</li>
+                <li>No hunting of game animals</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LANDOWNER VIEW -->
+      <div class="land-view" id="land-owner-view">
+        <div class="listings-layout">
+          <!-- List your land form -->
+          <div>
+            <div id="lo-gate" style="display:none">
+              <div class="login-gate">
+                <strong>Log in to list your land</strong>
+                Create a free account to start earning from your property.
+                <br>
+                <button class="auth-btn signup" style="margin-top:10px" onclick="openAuth('signup')">Create free account</button>
+                <button class="auth-btn login" style="margin-top:8px" onclick="openAuth('login')">Log in</button>
+              </div>
+            </div>
+
+            <div id="lo-form-wrap">
+              <!-- Stripe Connect -->
+              <div id="stripe-connect-section" style="margin-bottom:20px">
+                <div id="stripe-not-connected">
+                  <button class="stripe-connect-btn" onclick="connectStripe()">
+                    <svg width="20" height="20" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#fff"/><path d="M13.5 11c0-.83.67-1.5 1.5-1.5h2c.83 0 1.5.67 1.5 1.5v1h2.5a.5.5 0 010 1H19v8.5a1.5 1.5 0 01-1.5 1.5h-3a1.5 1.5 0 01-1.5-1.5V13h-1.5a.5.5 0 010-1H13v-1zm1.5-.5a.5.5 0 00-.5.5v1h3v-1a.5.5 0 00-.5-.5h-2z" fill="#635bff"/></svg>
+                    Connect with Stripe to receive payouts
+                  </button>
+                  <p style="font-size:12px;color:#aaa;text-align:center;margin-top:6px">Takes 5 minutes. Stripe handles all payments — you get deposited directly.</p>
+                </div>
+                <div id="stripe-connected" style="display:none">
+                  <div class="earnings-box">
+                    <div><div class="eb-amount" id="earnings-amount">$0</div><div class="eb-label">Total earnings this season</div></div>
+                    <div style="margin-left:auto;font-size:12px;color:#1a5c3a">✓ Stripe connected</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- My listings -->
+              <div style="margin-bottom:20px">
+                <h3 style="font-size:15px;font-weight:600;margin-bottom:12px">My listings <span id="my-listings-count" style="font-size:12px;color:#aaa;font-weight:400"></span></h3>
+                <div id="my-listings-feed"><p style="font-size:13px;color:#aaa">No listings yet. Create one below.</p></div>
+              </div>
+
+              <!-- New listing form -->
+              <div class="list-your-land">
+                <h3>+ Add a new listing</h3>
+                <p class="sub">Hunters see approximate location until booked. Exact address is only shared after confirmed payment.</p>
+                <form id="listing-form" onsubmit="submitListing(event)">
+                  <div class="form-row"><label>Listing title</label><input type="text" id="l-title" placeholder="e.g. South Creek Timber — Clay County, MO" required/></div>
+                  <div class="form-row"><label>Location (county + state — shown publicly)</label><input type="text" id="l-loc" placeholder="e.g. Clay County, Missouri" required/></div>
+                  <div class="form-row"><label>Exact address (shared only after booking)</label><input type="text" id="l-address" placeholder="123 Farm Road, Liberty, MO 64068" required/></div>
+                  <div class="form-row">
+                    <label>Approximate map pin (click map or enter)</label>
+                    <div style="display:flex;gap:6px">
+                      <input type="number" id="l-lat" placeholder="Latitude" step="0.0001" style="flex:1"/>
+                      <input type="number" id="l-lng" placeholder="Longitude" step="0.0001" style="flex:1"/>
+                      <button type="button" class="loc-btn" onclick="getListingGPS()">📍 GPS</button>
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <label>Acreage available for hunting</label>
+                    <input type="number" id="l-acres" placeholder="e.g. 80" min="1" required/>
+                  </div>
+                  <div class="form-row">
+                    <label>Habitat features (check all that apply)</label>
+                    <div class="checkbox-grid">
+                      <label class="cb-item"><input type="checkbox" value="South-facing slopes"> South-facing slopes</label>
+                      <label class="cb-item"><input type="checkbox" value="Creek / water on property"> Creek / water</label>
+                      <label class="cb-item"><input type="checkbox" value="White oak timber"> White oak timber</label>
+                      <label class="cb-item"><input type="checkbox" value="Elm / ash timber"> Elm / ash timber</label>
+                      <label class="cb-item"><input type="checkbox" value="Wood lines / field edges"> Wood lines / edges</label>
+                      <label class="cb-item"><input type="checkbox" value="South-facing ridge noses"> South-facing ridge noses</label>
+                      <label class="cb-item"><input type="checkbox" value="Old orchard"> Old orchard</label>
+                      <label class="cb-item"><input type="checkbox" value="Limestone bluffs"> Limestone bluffs</label>
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <label>Price per person per day</label>
+                    <div class="price-row"><span class="currency">$</span><input type="number" id="l-price" placeholder="e.g. 25" min="5" max="500" required/></div>
+                    <p style="font-size:11px;color:#aaa;margin-top:4px">Melody's Morels retains a 15% platform fee. You receive 85% of each booking.</p>
+                  </div>
+                  <div class="form-row">
+                    <label>Max group size per day</label>
+                    <select id="l-maxguests"><option value="2">2 hunters</option><option value="4">4 hunters</option><option value="6" selected>6 hunters</option><option value="8">8 hunters</option><option value="10">10 hunters</option><option value="20">20 hunters</option></select>
+                  </div>
+                  <div class="form-row">
+                    <label>Season availability</label>
+                    <select id="l-season"><option value="March–June">March – June (full spring season)</option><option value="April–May">April – May (peak only)</option><option value="March–April">March – April (early season)</option><option value="Year-round">Year-round</option></select>
+                  </div>
+                  <div class="form-row"><label>Rules / notes for hunters</label><textarea id="l-rules" placeholder="Stay on marked paths, no fires, close all gates…" rows="3"></textarea></div>
+                  <div class="form-row">
+                    <label>Photo of your property</label>
+                    <div class="photo-drop">
+                      <input type="file" id="l-photo" accept="image/*" onchange="previewListingPhoto(this)"/>
+                      <div style="font-size:28px">📷</div>
+                      <p style="font-size:12px;color:#aaa;margin-top:4px">South-facing slope, timber stand, or creek photo works great</p>
+                    </div>
+                    <img class="photo-preview-img" id="l-photo-preview" alt="preview"/>
+                  </div>
+                  <div class="form-row" style="margin-bottom:0">
+                    <label class="cb-item" style="font-size:13px;gap:10px">
+                      <input type="checkbox" id="l-terms" required/>
+                      I confirm I have the legal right to grant access to this property, and I understand that Melody's Morels is not liable for injuries or damages.
+                    </label>
+                  </div>
+                  <button type="submit" class="submit-btn" id="listing-submit-btn" style="margin-top:16px">Publish listing</button>
+                  <div class="success-msg" id="listing-success">✅ Listing published! Hunters can now discover and book your land.</div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Landowner sidebar info -->
+          <div>
+            <div style="background:#fff;border:1px solid #e4e1d8;border-radius:12px;padding:18px;margin-bottom:16px">
+              <h3 style="font-size:15px;font-weight:600;margin-bottom:10px">What you earn</h3>
+              <div style="font-size:13px;color:#555;line-height:1.8">
+                <div style="font-size:22px;font-weight:700;color:#2d6a4f;margin-bottom:4px">85% of each booking</div>
+                Melody's Morels keeps 15% to cover platform costs, payment processing, and support.<br><br>
+                <strong>Example:</strong> 4 hunters × $30/person = $120 booking. You receive <strong>$102</strong>, deposited to your Stripe account within 2 days of the hunt date.
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid #e4e1d8;border-radius:12px;padding:18px">
+              <h3 style="font-size:15px;font-weight:600;margin-bottom:10px">Landowner protections</h3>
+              <ul style="font-size:12px;color:#666;line-height:1.9;padding-left:16px">
+                <li>All hunters sign a liability waiver at booking</li>
+                <li>Exact address hidden until payment confirmed</li>
+                <li>You can block dates or pause listing anytime</li>
+                <li>Rate and review hunters after each visit</li>
+                <li>24-hr dispute resolution support</li>
+              </ul>
+              <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0ede6;font-size:12px;color:#888">
+                We strongly recommend a <strong>premises liability policy</strong> that covers paid recreational access. Ask your insurer about agritourism riders.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Booking modal -->
+<div class="booking-modal" id="booking-modal">
+  <div class="booking-box">
+    <button class="booking-close" onclick="closeBooking()">×</button>
+    <h3 id="bm-title">Book this land</h3>
+    <p class="bsub" id="bm-loc"></p>
+    <div class="form-row"><label>Hunt date</label><input type="date" id="bm-date" required/></div>
+    <div class="form-row"><label>Number of hunters</label><select id="bm-guests"><option value="1">1 hunter</option><option value="2">2 hunters</option><option value="3">3 hunters</option><option value="4">4 hunters</option><option value="5">5 hunters</option><option value="6">6 hunters</option></select></div>
+    <div class="price-summary">
+      <div class="ps-row"><span id="bm-price-label">— × —</span><span id="bm-price-sub">$0</span></div>
+      <div class="ps-row"><span>Platform fee (10%)</span><span id="bm-fee">$0</span></div>
+      <div class="ps-row total"><span>Total</span><span id="bm-total">$0</span></div>
+    </div>
+    <button class="submit-btn" id="bm-submit-btn" onclick="confirmBooking()">Pay &amp; confirm booking</button>
+    <div class="success-msg" id="bm-success" style="margin-top:12px">✅ Booking confirmed! The exact address has been emailed to you.</div>
+    <p class="terms-note">By booking you agree to the hunter rules for this property and our <a href="#" style="color:#2d6a4f">terms of service</a>. A liability waiver will be emailed before your hunt date. Exact address shared after payment clears.</p>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
+<!-- Stripe -->
+<script src="https://js.stripe.com/v3/"></script>
+<!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
-// ── Region profiles ───────────────────────────────────────────
-const RP = {
+// ══════════════════════════════════════════════════════════════
+// CONFIG — REPLACE ALL "YOUR_..." VALUES
+// ══════════════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT.firebaseapp.com",
+  databaseURL:       "YOUR_PROJECT-default-rtdb.firebaseio.com",
+  projectId:         "YOUR_PROJECT",
+  storageBucket:     "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId:             "YOUR_APP_ID"
+};
+const STRIPE_KEY           = "pk_live_YOUR_STRIPE_PUBLISHABLE_KEY";
+const STRIPE_PRICE_MONTHLY = "price_YOUR_MONTHLY_PRICE_ID";
+const STRIPE_PRICE_YEARLY  = "price_YOUR_YEARLY_PRICE_ID";
+const ADSENSE_PUB_ID       = "ca-pub-YOUR_ADSENSE_ID";        // web only — adsense.google.com
+const ADMOB_APP_ID_IOS     = "ca-app-pub-XXXX~YOUR_IOS_APP_ID";     // AdMob dashboard
+const ADMOB_APP_ID_ANDROID = "ca-app-pub-XXXX~YOUR_ANDROID_APP_ID"; // AdMob dashboard
+const ADMOB_BANNER_IOS     = "ca-app-pub-XXXX/YOUR_IOS_BANNER_UNIT";
+const ADMOB_BANNER_ANDROID = "ca-app-pub-XXXX/YOUR_ANDROID_BANNER_UNIT";
+const ADMOB_INTERSTITIAL_IOS     = "ca-app-pub-XXXX/YOUR_IOS_INTER_UNIT";
+const ADMOB_INTERSTITIAL_ANDROID = "ca-app-pub-XXXX/YOUR_ANDROID_INTER_UNIT";
+const CLOUDINARY_CLOUD  = "YOUR_CLOUD_NAME";
+const CLOUDINARY_PRESET = "YOUR_UPLOAD_PRESET";
+const FCM_VAPID_KEY     = "YOUR_VAPID_KEY";
+
+// Detect platform: 'ios' | 'android' | 'web'
+const IS_NATIVE  = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+const PLATFORM   = IS_NATIVE ? (window.Capacitor.getPlatform() || "web") : "web";
+const ADMOB_BANNER      = PLATFORM==="ios" ? ADMOB_BANNER_IOS      : ADMOB_BANNER_ANDROID;
+const ADMOB_INTERSTITIAL= PLATFORM==="ios" ? ADMOB_INTERSTITIAL_IOS : ADMOB_INTERSTITIAL_ANDROID;
+// ══════════════════════════════════════════════════════════════
+
+// ── Firebase init ─────────────────────────────────────────────
+var fbApp, auth, db, storage, messaging;
+try {
+  fbApp     = firebase.initializeApp(FIREBASE_CONFIG);
+  auth      = firebase.auth();
+  db        = firebase.firestore();
+  storage   = firebase.storage();
+  messaging = firebase.messaging();
+} catch(e) { console.warn("Firebase not configured:", e.message); }
+
+var currentUser = null;
+var isPremium   = false;
+var billingAnnual = false;
+
+if(auth) auth.onAuthStateChanged(async function(user){
+  currentUser = user;
+  if(user){
+    var snap = await db.collection("users").doc(user.uid).get();
+    var data = snap.data()||{};
+    isPremium = data.premium||false;
+    updateAuthUI();
+    if(isPremium) disableAds();
+    loadFeed();
+  } else {
+    updateAuthUI();
+    loadFeed();
+  }
+});
+
+// ── Auth UI ───────────────────────────────────────────────────
+function updateAuthUI(){
+  var g = document.getElementById("auth-guest");
+  var u = document.getElementById("auth-user");
+  var av= document.getElementById("user-avatar");
+  var dn= document.getElementById("dropdown-name");
+  if(currentUser){
+    g.style.display="none"; u.style.display="block";
+    dn.textContent = currentUser.displayName||currentUser.email||"Hunter";
+    if(currentUser.photoURL){ av.innerHTML='<img src="'+currentUser.photoURL+'" alt="">'; }
+    else { av.textContent=(currentUser.displayName||currentUser.email||"?")[0].toUpperCase(); }
+    if(isPremium){ dn.innerHTML+=' <span class="premium-badge">PRO</span>'; }
+    // Show submit form
+    document.getElementById("submit-gate").style.display="none";
+    document.getElementById("find-form").style.display="block";
+    var d=document.getElementById("f-date");
+    if(d&&!d.value) d.value=new Date().toISOString().split("T")[0];
+  } else {
+    g.style.display="flex"; u.style.display="none";
+    document.getElementById("submit-gate").style.display="block";
+    document.getElementById("find-form").style.display="none";
+    showAds();
+  }
+}
+
+function openAuth(tab){
+  document.getElementById("auth-modal").classList.add("open");
+  switchAuthTab(tab||"login");
+  document.getElementById("auth-error").style.display="none";
+}
+function closeAuth(){ document.getElementById("auth-modal").classList.remove("open"); }
+function switchAuthTab(t){
+  document.getElementById("login-form").style.display=t==="login"?"block":"none";
+  document.getElementById("signup-form").style.display=t==="signup"?"block":"none";
+  document.getElementById("tab-login-btn").classList.toggle("active",t==="login");
+  document.getElementById("tab-signup-btn").classList.toggle("active",t==="signup");
+}
+function toggleUserMenu(){ document.getElementById("user-dropdown").classList.toggle("open"); }
+document.addEventListener("click",function(e){ if(!e.target.closest(".user-menu")) document.getElementById("user-dropdown").classList.remove("open"); });
+
+function showAuthError(msg){ var el=document.getElementById("auth-error"); el.textContent=msg; el.style.display="block"; }
+
+async function doLogin(){
+  if(!auth){showAuthError("Firebase not configured.");return;}
+  var email=document.getElementById("login-email").value.trim();
+  var pass =document.getElementById("login-pass").value;
+  try{ await auth.signInWithEmailAndPassword(email,pass); closeAuth(); toast("Welcome back! 🍄"); }
+  catch(e){ showAuthError(e.message); }
+}
+async function doSignup(){
+  if(!auth){showAuthError("Firebase not configured.");return;}
+  var name =document.getElementById("signup-name").value.trim();
+  var email=document.getElementById("signup-email").value.trim();
+  var pass =document.getElementById("signup-pass").value;
+  try{
+    var cred=await auth.createUserWithEmailAndPassword(email,pass);
+    await cred.user.updateProfile({displayName:name});
+    await db.collection("users").doc(cred.user.uid).set({name,email,premium:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    closeAuth(); toast("Account created! Welcome 🍄");
+  }catch(e){ showAuthError(e.message); }
+}
+async function signInWithGoogle(){
+  if(!auth){showAuthError("Firebase not configured.");return;}
+  var provider=new firebase.auth.GoogleAuthProvider();
+  try{
+    var cred=await auth.signInWithPopup(provider);
+    var snap=await db.collection("users").doc(cred.user.uid).get();
+    if(!snap.exists) await db.collection("users").doc(cred.user.uid).set({name:cred.user.displayName,email:cred.user.email,premium:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    closeAuth(); toast("Welcome! 🍄");
+  }catch(e){ showAuthError(e.message); }
+}
+async function doLogout(){ if(auth) await auth.signOut(); toggleUserMenu(); toast("Logged out."); }
+async function doResetPassword(){
+  var email=document.getElementById("login-email").value.trim();
+  if(!email){showAuthError("Enter your email first.");return;}
+  await auth.sendPasswordResetEmail(email);
+  showAuthError(""); toast("Reset email sent!");
+}
+
+// ── Ads — AdSense (web) + AdMob (mobile) ─────────────────────
+async function initAds(){
+  if(IS_NATIVE){
+    var AdMob=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.AdMob;
+    if(!AdMob){console.warn("AdMob plugin not loaded"); return;}
+    await AdMob.initialize({
+      requestTrackingAuthorization:true,  // iOS 14+ ATT prompt
+      testingDevices:[],
+      initializeForTesting:false
+    });
+    console.log("AdMob initialized on",PLATFORM);
+  } else {
+    // Inject AdSense script once
+    if(ADSENSE_PUB_ID!=="ca-pub-YOUR_ADSENSE_ID" && !document.getElementById("adsense-script")){
+      var s=document.createElement("script");
+      s.id="adsense-script"; s.async=true;
+      s.src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client="+ADSENSE_PUB_ID;
+      s.crossOrigin="anonymous";
+      document.head.appendChild(s);
+    }
+  }
+}
+
+async function showAds(){
+  if(isPremium) return;
+  if(IS_NATIVE){
+    await showAdMobBanner();
+  } else {
+    // Show AdSense slots
+    document.getElementById("top-ad").classList.add("show");
+    document.getElementById("sidebar-ad").style.display="block";
+    document.getElementById("feed-ad").style.display="block";
+    // Push AdSense units
+    try{ (window.adsbygoogle=window.adsbygoogle||[]).push({}); }catch(e){}
+  }
+}
+
+async function disableAds(){
+  if(IS_NATIVE){
+    await hideAdMobBanner();
+  } else {
+    document.getElementById("top-ad").classList.remove("show");
+    document.getElementById("sidebar-ad").style.display="none";
+    document.getElementById("feed-ad").style.display="none";
+  }
+}
+
+// ── AdMob helpers ─────────────────────────────────────────────
+var admobBannerShown=false;
+async function showAdMobBanner(){
+  var AdMob=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.AdMob;
+  if(!AdMob||admobBannerShown) return;
+  try{
+    await AdMob.showBanner({
+      adId: ADMOB_BANNER,
+      adSize: "ADAPTIVE_BANNER",
+      position: "BOTTOM_CENTER",
+      margin: 0,
+      isTesting: false
+    });
+    admobBannerShown=true;
+  }catch(e){ console.warn("AdMob banner error:",e); }
+}
+
+async function hideAdMobBanner(){
+  var AdMob=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.AdMob;
+  if(!AdMob||!admobBannerShown) return;
+  try{ await AdMob.removeBanner(); admobBannerShown=false; }catch(e){}
+}
+
+// Interstitial — call between natural breaks (e.g. after posting a find)
+async function showInterstitial(){
+  if(isPremium||!IS_NATIVE) return;
+  var AdMob=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.AdMob;
+  if(!AdMob) return;
+  try{
+    await AdMob.prepareInterstitial({adId:ADMOB_INTERSTITIAL,isTesting:false});
+    await AdMob.showInterstitial();
+  }catch(e){ console.warn("Interstitial error:",e); }
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function toast(msg,duration){
+  var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  setTimeout(function(){ t.classList.remove("show"); },duration||3000);
+}
+
+// ── Tabs ──────────────────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.toggle("active",b.dataset.tab===name); });
+  document.querySelectorAll(".tab-panel").forEach(function(p){ p.classList.toggle("active",p.id==="tab-"+name); });
+  if(name==="map") setTimeout(function(){ if(map) map.invalidateSize(); },50);
+  if(name==="feed") loadFeed();
+}
+document.querySelectorAll(".tab-btn").forEach(function(btn){
+  btn.addEventListener("click",function(){ switchTab(this.dataset.tab); });
+});
+
+// ── Push Notifications ────────────────────────────────────────
+var notifEnabled = false;
+async function toggleNotifications(){
+  if(!messaging){ toast("Configure Firebase to enable notifications."); return; }
+  if(notifEnabled){ toast("Notifications already on 🔔"); return; }
+  try{
+    await Notification.requestPermission();
+    var token = await messaging.getToken({vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:await navigator.serviceWorker.register("/sw.js")});
+    if(currentUser && token) await db.collection("users").doc(currentUser.uid).update({fcmToken:token});
+    notifEnabled=true;
+    document.getElementById("notif-dot").style.display="block";
+    toast("🔔 Notifications on! You'll get alerts when morels pop near you.");
+  }catch(e){ toast("Notification permission denied."); }
+}
+
+// ── Premium / Stripe ──────────────────────────────────────────
+function toggleBilling(){
+  billingAnnual=!billingAnnual;
+  document.getElementById("billing-toggle").classList.toggle("on",billingAnnual);
+  document.getElementById("premium-price").innerHTML=billingAnnual?"$6.66 <span>/ month, billed annually</span>":"$9.99 <span>/ month</span>";
+  document.getElementById("premium-sub").textContent=billingAnnual?"$79.99/year — cancel anytime":"Cancel anytime";
+}
+async function startCheckout(){
+  if(!currentUser){ openAuth("signup"); return; }
+  if(STRIPE_KEY==="pk_live_YOUR_STRIPE_PUBLISHABLE_KEY"){ toast("Add your Stripe key to index.html."); return; }
+  var priceId=billingAnnual?STRIPE_PRICE_YEARLY:STRIPE_PRICE_MONTHLY;
+  var stripe=Stripe(STRIPE_KEY);
+  toast("Redirecting to checkout…");
+  // Create checkout session via your backend / Firebase Function
+  // For a quick start you can also use a Stripe Payment Link:
+  // window.location.href = "https://buy.stripe.com/YOUR_PAYMENT_LINK";
+  var r=await fetch("/api/create-checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,uid:currentUser.uid,email:currentUser.email})});
+  var {sessionId}=await r.json();
+  stripe.redirectToCheckout({sessionId});
+}
+
+// ── Social Feed ───────────────────────────────────────────────
+var feedUnsubscribe = null;
+var reportMapMarkers = [];
+
+function loadFeed(){
+  if(!db){ document.getElementById("find-stream").innerHTML='<div class="feed-empty">Configure Firebase to see live reports.</div>'; return; }
+  if(feedUnsubscribe) feedUnsubscribe();
+  feedUnsubscribe = db.collection("finds").orderBy("ts","desc").limit(30).onSnapshot(function(snap){
+    var stream=document.getElementById("find-stream");
+    reportMapMarkers.forEach(function(m){ if(map) map.removeLayer(m); }); reportMapMarkers=[];
+    if(snap.empty){ stream.innerHTML='<div class="feed-empty">No reports yet — be the first! 🍄</div>'; return; }
+    stream.innerHTML="";
+    document.getElementById("live-count").textContent=snap.size+" recent find"+(snap.size!==1?"s":"");
+    snap.docs.forEach(function(doc,i){
+      var r=doc.data(); r.id=doc.id;
+      stream.appendChild(buildFindCard(r));
+      if(i>0 && i%3===0 && !isPremium){
+        var ad=document.createElement("div"); ad.className="ad-between";
+        ad.innerHTML='<span style="font-size:9px;color:#ccc;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Advertisement</span><div style="height:90px;background:#f9f7f2;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc">Ad — paste AdSense code here</div>';
+        stream.appendChild(ad);
+      }
+      if(r.lat&&r.lng&&map){
+        var m=L.circleMarker([r.lat,r.lng],{renderer:renderer,radius:10,weight:2,color:"#fff",fillColor:"#f59e0b",fillOpacity:0.92});
+        m.bindPopup("<strong>"+escH(r.userName||"Anonymous")+"</strong><br>📍 "+escH(r.locName||"")+(r.qty?"<br>"+escH(r.qty):""));
+        m.addTo(map); reportMapMarkers.push(m);
+      }
+    });
+  });
+}
+
+function buildFindCard(r){
+  var div=document.createElement("div"); div.className="find-card";
+  var ds=r.ts?new Date(r.ts.toDate?r.ts.toDate():r.ts).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
+  var initials=(r.userName||"A")[0].toUpperCase();
+  div.innerHTML=(r.photoUrl?'<img class="find-card-img" src="'+escH(r.photoUrl)+'" loading="lazy" alt="morel photo">'
+    :'<div class="find-card-img no-photo">🍄</div>')
+    +'<div class="find-card-body">'
+    +'<div class="fc-top">'
+    +(r.userPhoto?'<div class="fc-avatar"><img src="'+escH(r.userPhoto)+'" alt=""></div>':'<div class="fc-avatar">'+escH(initials)+'</div>')
+    +'<div class="fc-meta"><div class="fc-name">'+escH(r.userName||"Anonymous")+'</div><div class="fc-date">'+escH(ds)+'</div></div>'
+    +'</div>'
+    +'<div class="fc-loc">📍 '+escH(r.locName||"Location not shared")+'</div>'
+    +'<div class="fc-tags">'+(r.qty?'<span class="fc-tag">'+escH(r.qty)+'</span>':'')+(r.size?'<span class="fc-tag">'+escH(r.size)+'</span>':'')+'</div>'
+    +(r.notes?'<p class="fc-notes">'+escH(r.notes)+'</p>':'')
+    +'<div class="fc-actions">'
+    +'<button class="fc-action-btn" id="like-'+r.id+'" onclick="toggleLike(\''+r.id+'\',this)">♡ '+(r.likeCount||0)+'</button>'
+    +'<button class="fc-action-btn" onclick="followHunter(\''+escH(r.userId||"")+'\',\''+escH(r.userName||"")+'\',this)">+ Follow</button>'
+    +'</div></div>';
+  return div;
+}
+
+async function toggleLike(findId, btn){
+  if(!currentUser){ openAuth("login"); return; }
+  var ref=db.collection("finds").doc(findId);
+  var likeRef=db.collection("likes").doc(currentUser.uid+"_"+findId);
+  var liked=(await likeRef.get()).exists;
+  if(liked){
+    await likeRef.delete();
+    await ref.update({likeCount:firebase.firestore.FieldValue.increment(-1)});
+    btn.classList.remove("liked"); btn.textContent="♡ "+(parseInt(btn.textContent.replace("♡",""))-1);
+  } else {
+    await likeRef.set({userId:currentUser.uid,findId,ts:firebase.firestore.FieldValue.serverTimestamp()});
+    await ref.update({likeCount:firebase.firestore.FieldValue.increment(1)});
+    btn.classList.add("liked"); btn.textContent="♥ "+(parseInt(btn.textContent.replace("♡","").replace("♥",""))+1);
+  }
+}
+
+async function followHunter(uid, name, btn){
+  if(!currentUser){ openAuth("login"); return; }
+  if(!uid||uid===currentUser.uid) return;
+  var ref=db.collection("follows").doc(currentUser.uid+"_"+uid);
+  var following=(await ref.get()).exists;
+  if(following){ await ref.delete(); btn.textContent="+ Follow"; btn.classList.remove("following"); toast("Unfollowed "+name); }
+  else { await ref.set({followerId:currentUser.uid,followingId:uid,ts:firebase.firestore.FieldValue.serverTimestamp()}); btn.textContent="✓ Following"; btn.classList.add("following"); toast("Following "+name+" 🍄"); }
+}
+
+// Submit a find
+async function submitFind(e){
+  e.preventDefault();
+  if(!currentUser){ openAuth("login"); return; }
+  var btn=document.getElementById("find-submit-btn"); btn.disabled=true; btn.textContent="Posting…";
+  var photoFile=document.getElementById("f-photo").files[0];
+  var photoUrl=null;
+  if(photoFile&&CLOUDINARY_CLOUD!=="YOUR_CLOUD_NAME"){
+    var fd=new FormData(); fd.append("file",photoFile); fd.append("upload_preset",CLOUDINARY_PRESET);
+    var r=await fetch("https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD+"/image/upload",{method:"POST",body:fd});
+    var d=await r.json(); photoUrl=d.secure_url||null;
+  }
+  var qty=document.querySelector('input[name="fqty"]:checked');
+  var find={
+    userId:    currentUser.uid,
+    userName:  currentUser.displayName||"Anonymous",
+    userPhoto: currentUser.photoURL||null,
+    date:      document.getElementById("f-date").value,
+    locName:   document.getElementById("f-loc").value.trim(),
+    lat:       parseFloat(document.getElementById("f-lat").value)||null,
+    lng:       parseFloat(document.getElementById("f-lng").value)||null,
+    qty:       qty?qty.value:"",
+    size:      document.getElementById("f-size").value,
+    notes:     document.getElementById("f-notes").value.trim(),
+    photoUrl,
+    likeCount: 0,
+    ts:        firebase.firestore.FieldValue.serverTimestamp()
+  };
+  try{
+    await db.collection("finds").add(find);
+    document.getElementById("find-form").style.display="none";
+    document.getElementById("find-success").style.display="block";
+    toast("Find posted! 🍄");
+  }catch(err){ btn.disabled=false; btn.textContent="Post to feed"; toast("Error posting: "+err.message); }
+}
+
+function getFindGPS(){
+  var btn=document.getElementById("f-gps-btn"); btn.textContent="Getting…";
+  navigator.geolocation.getCurrentPosition(function(p){
+    document.getElementById("f-lat").value=p.coords.latitude.toFixed(5);
+    document.getElementById("f-lng").value=p.coords.longitude.toFixed(5);
+    if(!document.getElementById("f-loc").value) document.getElementById("f-loc").value=p.coords.latitude.toFixed(3)+"°, "+p.coords.longitude.toFixed(3)+"°";
+    btn.textContent="✓ Got"; btn.classList.add("got");
+  },function(){ btn.textContent="📍 GPS"; });
+}
+
+function previewFindPhoto(input){
+  if(input.files&&input.files[0]){
+    var r=new FileReader(); r.onload=function(e){ var i=document.getElementById("f-photo-preview"); i.src=e.target.result; i.style.display="block"; }; r.readAsDataURL(input.files[0]);
+  }
+}
+
+function escH(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+// ── Formspree contact forms ───────────────────────────────────
+function submitForm(e,sid,formId){
+  e.preventDefault(); var form=e.target; var btn=form.querySelector(".submit-btn");
+  btn.textContent="Sending…"; btn.disabled=true;
+  fetch("https://formspree.io/f/"+formId,{method:"POST",body:new FormData(form),headers:{"Accept":"application/json"}})
+  .then(function(r){ if(r.ok){ form.style.display="none"; document.getElementById(sid).style.display="block"; } else { btn.textContent="Error — try again"; btn.disabled=false; } })
+  .catch(function(){ btn.textContent="Error — try again"; btn.disabled=false; });
+}
+
+// ══════════════════════════════════════════════════════════════
+// MOREL MAP — 1,499 habitat spots
+// ══════════════════════════════════════════════════════════════
+const RP={
   "Missouri Ozarks":   ["White oak, ash, elm, sycamore",      "South-facing limestone hollows, creek draws",    [2,2,2,2]],
   "NW Missouri":       ["Elm, ash, cottonwood, hackberry",     "Missouri River bluffs, south-facing draws",      [2,2,2,1]],
   "NE Missouri":       ["Elm, ash, cottonwood, red oak",       "River bottoms, south-facing timber edges",       [1,2,2,1]],
@@ -409,442 +1348,354 @@ const RP = {
   "Rockies":           ["Aspen, cottonwood, ponderosa",        "South-facing slopes, creek drainages",           [2,1,1,0]],
   "California":        ["Blue oak, valley oak, ponderosa",     "South-facing oak woodland, post-fire slopes",    [2,2,1,2]],
 };
-
-// ── Curated premium spots ─────────────────────────────────────
-const CURATED = [
-  {name:"Missouri City — River Bluffs",         lat:39.245,lng:-94.290,base:78,elev:"low", rk:"NW Missouri",    notes:"Sitting right on the Missouri River bluff edge in Clay County. South-facing draws where bluff timber breaks toward the bottoms — wood lines against farm fields, creek drainages feeding the river. Elm and ash on south aspects. Peak: mid–late April."},
-  {name:"Fishing River Hollows",                lat:39.320,lng:-94.150,base:74,elev:"low", rk:"NW Missouri",    notes:"Fishing River drainage off the Missouri bluffs. South-facing hollows where creek timber meets crop ground produce reliably. Mature elms along the creek edges. Peak: mid April."},
-  {name:"Little Platte River Timber",           lat:39.400,lng:-94.480,base:70,elev:"low", rk:"NW Missouri",    notes:"Little Platte River bottomland timber with south-facing bluff edges. Bur oak on drier south slopes, cottonwood and ash in the bottoms. Peak: mid April."},
-  {name:"Rush Creek — Clay County",             lat:39.180,lng:-94.420,base:72,elev:"low", rk:"NW Missouri",    notes:"Rush Creek drainage cutting south through Clay County timber. Wood lines on south exposures adjacent to open pasture. Classic mid-April morel country. Peak: April 15–25."},
-  {name:"Gasconade River Bluffs",               lat:37.960,lng:-91.990,base:84,elev:"mid", rk:"Missouri Ozarks",notes:"Gasconade River bluff faces with south exposure and creek draws. White oak mixed with ash on the south slopes is the defining combo. One of the most reliable spots in the Ozarks. Peak: late April."},
-  {name:"Big Piney River Corridor",             lat:37.510,lng:-92.100,base:82,elev:"mid", rk:"Missouri Ozarks",notes:"Big Piney River with south-facing timbered hollows. Confluence zones where tributaries enter from the south are prime. Lots of dying ash and elm. Peak: late April."},
-  {name:"Current River — South Hollows",        lat:37.090,lng:-91.550,base:80,elev:"mid", rk:"Missouri Ozarks",notes:"Current River country with south-facing hollow faces above the creek. Look for hollow heads where south-facing slopes hold warmth above seeps. Peak: late April."},
-  {name:"Bryant Creek Bottoms",                 lat:36.850,lng:-92.300,base:76,elev:"mid", rk:"Missouri Ozarks",notes:"Bryant Creek drainage in Douglas County. South-facing ridge noses above creek bottoms with white oak. Field-edge timber on south aspects produces year after year. Peak: late April."},
-  {name:"Salt River Bottoms (NE MO)",           lat:39.450,lng:-91.600,base:70,elev:"low", rk:"NE Missouri",    notes:"Salt River and North Fork Missouri timber in northeast Missouri. South-facing timber edges above the river bottom. Mark Twain lake area holds good populations. Peak: late April."},
-  {name:"Cuivre River Timber",                  lat:38.960,lng:-91.150,base:72,elev:"low", rk:"NE Missouri",    notes:"Cuivre River State Park with classic south-facing creek hollow morel habitat. Wood lines bordering south-facing slopes above creek bottoms. Peak: late April."},
-  {name:"Cache River Bottoms (IL)",             lat:37.150,lng:-89.100,base:80,elev:"low", rk:"Southern Illinois",notes:"Cache River wetlands with south-facing bluff bases above the bottomland. Timber edge between bluff and cypress swamp is the precise zone. Peak: mid-April."},
-  {name:"LaRue-Pine Hills (IL)",                lat:37.580,lng:-89.370,base:78,elev:"low", rk:"Southern Illinois",notes:"South-facing bluff timber above the swamp with a distinct wood line. Dying elm and ash are everywhere. One of the most ecologically diverse spots in the Midwest. Peak: mid-April."},
-  {name:"Illinois River Bottoms (Cass Co.)",    lat:39.900,lng:-90.350,base:68,elev:"low", rk:"Central Illinois",notes:"Illinois River bottomland timber in Cass and Morgan counties. Wood lines where riparian forest meets farm ground on south-facing banks. Peak: mid-April."},
-  {name:"Brown County (IN) Ridges",             lat:39.200,lng:-86.200,base:75,elev:"mid", rk:"Indiana",        notes:"Brown County hill country with classic south-facing ridge faces and hollow heads. Work the south sides of ridges systematically. Peak: late April–early May."},
-  {name:"Hocking Hills (OH)",                   lat:39.440,lng:-82.530,base:70,elev:"mid", rk:"Ohio",           notes:"Hunt the south-facing mixed hardwood slopes above the gorge rims and hollow faces leading down to creeks. Mature elm and ash near the water. Peak: late April–early May."},
-  {name:"Muskegon River Corridor (MI)",         lat:43.650,lng:-85.800,base:74,elev:"low", rk:"Michigan",       notes:"Classic Michigan morel country — orchard edges backed by second-growth forest on south-facing sandy loam banks. National Morel Mushroom Festival nearby. Peak: early May."},
-  {name:"Driftless Coulee Country (WI/MN)",     lat:43.810,lng:-91.230,base:68,elev:"low", rk:"Driftless Area", notes:"Classic south-facing coulee bluffs above meandering trout streams. Bluff face where timber transitions to open field above the creek is the prime zone. Peak: late April–mid May."},
-  {name:"Kettle Moraine Oak Openings (WI)",     lat:43.180,lng:-88.400,base:65,elev:"low", rk:"Wisconsin",      notes:"South-facing oak openings on the glacial hills. Wood lines bordering agricultural kettles hold morels reliably. Peak: late April–early May."},
-  {name:"Buffalo River Corridor (AR)",          lat:36.030,lng:-92.890,base:80,elev:"mid", rk:"Arkansas Ozarks",notes:"Buffalo National River corridor with exceptional south-facing limestone hollow habitat. White oak and ash on south aspects, redbud on the bluff edges. One of the finest morel landscapes in the South. Peak: late March–mid April."},
-  {name:"Land Between the Lakes (KY/TN)",       lat:36.900,lng:-87.990,base:72,elev:"low", rk:"Kentucky",       notes:"South-facing ridge faces dropping to the lake coves. White oak above tulip poplar below — work the transition zone on south aspects in early season. Peak: late March–mid April."},
-  {name:"Red River Gorge (KY)",                 lat:37.770,lng:-83.680,base:74,elev:"mid", rk:"Kentucky",       notes:"Dramatic south-facing sandstone hollow faces. Hollow heads above the rock arches retain moisture and warmth. Among the most beautiful morel country in the East. Peak: mid–late April."},
-  {name:"New River Gorge (WV)",                 lat:37.900,lng:-81.080,base:72,elev:"mid", rk:"West Virginia",  notes:"Gorge walls and tributary hollow faces. The gorge creates extreme south-facing aspects. Mixed mesophytic forest in the hollows with tulip poplar and ash. Peak: mid–late April."},
-  {name:"Nantahala Gorge (NC)",                 lat:35.320,lng:-83.740,base:67,elev:"high",rk:"NC Smokies",     notes:"South-facing cove hardwood forest with intense micro-climates. Tulip poplar and buckeye with white oak near seeps and streams. Peak: mid–late April."},
-  {name:"Bankhead National Forest (AL)",        lat:34.270,lng:-87.230,base:64,elev:"mid", rk:"Alabama Georgia",notes:"South-facing coves with white oak and tulip poplar near creek drainages. Among the earliest regions in the East — sometimes late February. Peak: late March."},
-  {name:"Hudson Valley Orchards (NY)",          lat:41.800,lng:-73.850,base:63,elev:"mid", rk:"New York",       notes:"Old orchard land on south-facing hillsides. Old farmsteads with mature apple trees backing up to mixed hardwood forest. Wood lines where orchard meets timber. Peak: early–mid May."},
-  {name:"Laurel Highlands (PA)",                lat:40.040,lng:-79.250,base:67,elev:"mid", rk:"Pennsylvania",   notes:"South-facing ridge hollows in southwest PA with old farmstead tree remnants. Ash and elm on south aspects above creek drainages. Peak: late April–early May."},
-  {name:"Willamette Valley South (OR)",         lat:44.180,lng:-123.100,base:62,elev:"low",rk:"Oregon",         notes:"South-facing river terraces with Oregon ash near water. Wood lines where riparian forest edges open farm ground on south aspects. Peak: March–April."},
-  {name:"Rogue Valley / Siskiyou (OR)",         lat:42.380,lng:-122.880,base:55,elev:"mid",rk:"Oregon Siskiyou",notes:"Oregon white oak on south-facing slopes in the Rogue Valley and Siskiyou foothills. A distinct habitat type from the rest of the PNW. Peak: March–May."},
-  {name:"Colorado Front Range (CO)",            lat:39.720,lng:-105.280,base:50,elev:"high",rk:"Rockies",       notes:"Gambel oak on south-facing Front Range foothills and post-fire ponderosa zones. The westernmost reliable oak-associated morel habitat in the US. Peak: May–June."},
-  {name:"Sierra Nevada Foothills (CA)",         lat:38.420,lng:-120.860,base:52,elev:"mid",rk:"California",     notes:"Blue oak and valley oak on south-facing Sierra foothills. Post-fire ponderosa zones produce burn morels. Peak: February–April."},
+const CURATED=[
+  {name:"Missouri City — River Bluffs",lat:39.245,lng:-94.290,base:78,elev:"low",rk:"NW Missouri",notes:"Sitting right on the Missouri River bluff edge in Clay County. South-facing draws where bluff timber breaks toward the bottoms. Peak: mid–late April."},
+  {name:"Fishing River Hollows",lat:39.320,lng:-94.150,base:74,elev:"low",rk:"NW Missouri",notes:"Fishing River drainage off the Missouri bluffs. South-facing hollows where creek timber meets crop ground produce reliably. Peak: mid April."},
+  {name:"Little Platte River Timber",lat:39.400,lng:-94.480,base:70,elev:"low",rk:"NW Missouri",notes:"Little Platte River bottomland timber with south-facing bluff edges. Bur oak on drier south slopes, cottonwood in the bottoms. Peak: mid April."},
+  {name:"Rush Creek — Clay County",lat:39.180,lng:-94.420,base:72,elev:"low",rk:"NW Missouri",notes:"Rush Creek drainage cutting south through Clay County timber. Wood lines on south exposures adjacent to open pasture. Peak: April 15–25."},
+  {name:"Gasconade River Bluffs",lat:37.960,lng:-91.990,base:84,elev:"mid",rk:"Missouri Ozarks",notes:"South exposure and creek draws. White oak mixed with ash on south slopes. One of the most reliable spots in the Ozarks. Peak: late April."},
+  {name:"Big Piney River Corridor",lat:37.510,lng:-92.100,base:82,elev:"mid",rk:"Missouri Ozarks",notes:"South-facing timbered hollows. Confluence zones where tributaries enter from the south are prime. Lots of dying ash and elm. Peak: late April."},
+  {name:"Current River — South Hollows",lat:37.090,lng:-91.550,base:80,elev:"mid",rk:"Missouri Ozarks",notes:"South-facing hollow faces above the creek. Look for hollow heads where south-facing slopes hold warmth above seeps. Peak: late April."},
+  {name:"Bryant Creek Bottoms",lat:36.850,lng:-92.300,base:76,elev:"mid",rk:"Missouri Ozarks",notes:"South-facing ridge noses above creek bottoms with white oak. Field-edge timber on south aspects produces year after year. Peak: late April."},
+  {name:"Cache River Bottoms (IL)",lat:37.150,lng:-89.100,base:80,elev:"low",rk:"Southern Illinois",notes:"Timber edge between bluff and cypress swamp is the precise zone. Peak: mid-April."},
+  {name:"LaRue-Pine Hills (IL)",lat:37.580,lng:-89.370,base:78,elev:"low",rk:"Southern Illinois",notes:"South-facing bluff timber above the swamp with a distinct wood line. Dying elm and ash everywhere. Peak: mid-April."},
+  {name:"Brown County (IN) Ridges",lat:39.200,lng:-86.200,base:75,elev:"mid",rk:"Indiana",notes:"Classic south-facing ridge faces and hollow heads. Work the south sides of ridges systematically. Peak: late April–early May."},
+  {name:"Hocking Hills (OH)",lat:39.440,lng:-82.530,base:70,elev:"mid",rk:"Ohio",notes:"South-facing slopes above gorge rims and hollow faces leading down to creeks. Peak: late April–early May."},
+  {name:"Muskegon River Corridor (MI)",lat:43.650,lng:-85.800,base:74,elev:"low",rk:"Michigan",notes:"Orchard edges backed by second-growth forest on south-facing sandy loam. National Morel Mushroom Festival nearby. Peak: early May."},
+  {name:"Driftless Coulee Country (WI/MN)",lat:43.810,lng:-91.230,base:68,elev:"low",rk:"Driftless Area",notes:"South-facing coulee bluffs above meandering trout streams. Peak: late April–mid May."},
+  {name:"Buffalo River Corridor (AR)",lat:36.030,lng:-92.890,base:80,elev:"mid",rk:"Arkansas Ozarks",notes:"Exceptional south-facing limestone hollow habitat. White oak and ash on south aspects. One of the finest morel landscapes in the South. Peak: late March–mid April."},
+  {name:"Red River Gorge (KY)",lat:37.770,lng:-83.680,base:74,elev:"mid",rk:"Kentucky",notes:"Dramatic south-facing sandstone hollow faces. Hollow heads above rock arches retain moisture and warmth. Peak: mid–late April."},
+  {name:"New River Gorge (WV)",lat:37.900,lng:-81.080,base:72,elev:"mid",rk:"West Virginia",notes:"Gorge walls and tributary hollow faces. Mixed mesophytic forest with tulip poplar and ash. Peak: mid–late April."},
+  {name:"Nantahala Gorge (NC)",lat:35.320,lng:-83.740,base:67,elev:"high",rk:"NC Smokies",notes:"South-facing cove hardwood forest. Tulip poplar and buckeye with white oak near seeps. Peak: mid–late April."},
+  {name:"Bankhead National Forest (AL)",lat:34.270,lng:-87.230,base:64,elev:"mid",rk:"Alabama Georgia",notes:"South-facing coves with white oak and tulip poplar. Among the earliest regions in the East. Peak: late March."},
+  {name:"Laurel Highlands (PA)",lat:40.040,lng:-79.250,base:67,elev:"mid",rk:"Pennsylvania",notes:"South-facing ridge hollows with old farmstead tree remnants. Ash and elm on south aspects. Peak: late April–early May."},
+  {name:"Willamette Valley South (OR)",lat:44.180,lng:-123.100,base:62,elev:"low",rk:"Oregon",notes:"South-facing river terraces with Oregon ash near water. Wood lines where riparian forest edges open farm ground. Peak: March–April."},
+  {name:"Colorado Front Range (CO)",lat:39.720,lng:-105.280,base:50,elev:"high",rk:"Rockies",notes:"Gambel oak on south-facing foothills and post-fire ponderosa zones. Peak: May–June."},
+  {name:"Sierra Nevada Foothills (CA)",lat:38.420,lng:-120.860,base:52,elev:"mid",rk:"California",notes:"Blue oak and valley oak on south-facing foothills. Post-fire ponderosa zones produce burn morels. Peak: February–April."},
 ];
-
-// ── Seeded PRNG (deterministic = same spots every load) ───────
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-
-// ── Generated name pools ───────────────────────────────────────
 const NP=["North","South","East","West","Upper","Lower","Big","Little","Long","Deep","Cedar","Hickory","Walnut","Elm","Ash","Oak","Sugar","Black","White","Clear","Rock","Dry","Sand","Deer","Bear","Wolf","Coon","Turkey","Goose","Hawk"];
-const NF=["Fork","Run","Branch","Creek","Hollow","Draw","Ridge","Bottom","Bend","Cove","Gap","Knob","Bluff","Flat","Holler","Branch","Slough"];
-const NT=["Timber","Bottoms","Bluff","Draw","Drainage","Hollow","Cove","Ridge","Slope","Wood Line","Seep","Ravine","Flat","Bend","Run"];
-function gn(r){const t=~~(r()*3);if(t===0)return NP[~~(r()*NP.length)]+" "+NF[~~(r()*NF.length)];if(t===1)return NF[~~(r()*NF.length)]+" "+NT[~~(r()*NT.length)];return NP[~~(r()*NP.length)]+" "+NF[~~(r()*NF.length)]+" "+NT[~~(r()*NT.length)]}
-
-// ── Seed zones: [lat, lng, spread, count, base, elev, regionKey] ──
-const SEEDS = [
-  // Missouri Ozarks
-  [37.90,-92.00,0.55,13,82,"mid","Missouri Ozarks"],
-  [37.10,-91.55,0.45,13,80,"mid","Missouri Ozarks"],
-  [37.55,-92.20,0.45,13,79,"mid","Missouri Ozarks"],
-  [36.90,-93.00,0.45,12,76,"mid","Missouri Ozarks"],
-  [36.62,-91.30,0.40,12,74,"mid","Missouri Ozarks"],
-  [38.05,-91.25,0.45,11,72,"mid","Missouri Ozarks"],
-  // NW Missouri / KC corridor
-  [39.22,-94.28,0.28,12,75,"low","NW Missouri"],
-  [39.10,-94.02,0.28,11,72,"low","NW Missouri"],
-  [39.42,-94.65,0.28,11,70,"low","NW Missouri"],
-  [39.62,-95.12,0.28,10,66,"low","NW Missouri"],
-  // SW Missouri
-  [36.62,-93.80,0.40,10,72,"mid","SW Missouri"],
-  [36.80,-93.20,0.40,10,70,"mid","SW Missouri"],
-  // NE / Central Missouri
-  [39.52,-91.72,0.38,10,68,"low","NE Missouri"],
-  [38.88,-91.20,0.38,10,70,"low","NE Missouri"],
-  [38.62,-92.22,0.40,10,66,"low","Central Missouri"],
-  [38.40,-92.62,0.45,10,64,"low","Central Missouri"],
-  // Southern Illinois
-  [37.22,-89.12,0.38,12,78,"low","Southern Illinois"],
-  [37.60,-89.40,0.28,12,76,"low","Southern Illinois"],
-  [37.52,-88.32,0.38,11,72,"low","Southern Illinois"],
-  [37.82,-88.92,0.38,11,70,"low","Southern Illinois"],
-  // Central / Northern Illinois
-  [40.02,-90.28,0.45,9,66,"low","Central Illinois"],
-  [39.92,-89.52,0.45,9,64,"low","Central Illinois"],
-  [40.52,-90.32,0.38,9,62,"low","Central Illinois"],
-  // Indiana
-  [39.22,-86.22,0.38,10,74,"mid","Indiana"],
-  [38.62,-86.42,0.38,10,70,"mid","Indiana"],
-  [40.72,-86.52,0.38,9,64,"low","Indiana"],
-  [39.52,-87.02,0.38,9,68,"low","Indiana"],
-  // Ohio
-  [39.52,-82.52,0.38,9,70,"mid","Ohio"],
-  [40.62,-82.22,0.38,9,68,"mid","Ohio"],
-  [39.22,-82.02,0.35,9,66,"mid","Ohio"],
-  [38.62,-82.52,0.30,9,64,"low","SE Ohio"],
-  // Michigan Lower Peninsula
-  [43.72,-85.82,0.45,10,74,"low","Michigan"],
-  [44.22,-85.92,0.45,10,72,"low","Michigan"],
-  [43.82,-86.12,0.38,10,70,"low","Michigan"],
-  [44.88,-86.02,0.38,10,68,"low","Michigan"],
-  [44.72,-85.52,0.38,10,66,"low","Michigan"],
-  // Michigan Upper Peninsula
-  [46.22,-85.52,0.55,8,60,"low","Michigan UP"],
-  [46.72,-88.52,0.55,8,58,"low","Michigan UP"],
-  // Wisconsin Driftless
-  [43.82,-91.22,0.38,9,68,"low","Driftless Area"],
-  [44.22,-91.42,0.28,9,66,"low","Driftless Area"],
-  [43.22,-90.92,0.38,9,64,"low","Driftless Area"],
-  [43.52,-90.42,0.38,9,62,"low","Driftless Area"],
-  // Wisconsin Other
-  [43.22,-88.42,0.38,8,65,"low","Wisconsin"],
-  [45.92,-90.72,0.48,8,58,"low","Wisconsin"],
-  [45.52,-89.52,0.48,8,56,"low","Wisconsin"],
-  // Minnesota
-  [43.92,-91.52,0.28,8,65,"low","Minnesota"],
-  [44.42,-93.02,0.38,8,60,"low","Minnesota"],
-  [44.12,-91.92,0.28,8,62,"low","Driftless Area"],
-  // Iowa
-  [41.92,-95.82,0.38,8,63,"low","Iowa"],
-  [42.62,-91.62,0.38,8,60,"low","Iowa"],
-  [41.82,-92.02,0.38,8,58,"low","Iowa"],
-  [40.62,-91.92,0.28,8,60,"low","Iowa"],
-  // Kansas / Nebraska
-  [38.52,-96.52,0.48,8,54,"low","Kansas"],
-  [37.52,-95.82,0.38,8,50,"low","Kansas"],
-  [41.12,-98.32,0.48,8,50,"low","Nebraska"],
-  // Arkansas Ozarks
-  [36.02,-92.92,0.45,13,78,"mid","Arkansas Ozarks"],
-  [35.72,-93.82,0.38,13,74,"mid","Arkansas Ozarks"],
-  [36.32,-92.02,0.45,12,72,"mid","Arkansas Ozarks"],
-  [36.12,-93.52,0.38,12,70,"mid","Arkansas Ozarks"],
-  [36.32,-93.82,0.38,11,70,"mid","Arkansas Ozarks"],
-  [36.22,-94.12,0.28,10,68,"mid","Arkansas Ozarks"],
-  // Oklahoma
-  [36.32,-94.52,0.38,8,58,"mid","Oklahoma"],
-  [34.72,-94.72,0.45,8,52,"mid","Oklahoma"],
-  // Kentucky
-  [37.82,-83.72,0.38,11,74,"mid","Kentucky"],
-  [36.92,-88.02,0.38,11,70,"low","Kentucky"],
-  [36.82,-84.92,0.38,11,68,"mid","Kentucky"],
-  [37.52,-83.52,0.45,11,66,"mid","Kentucky"],
-  // Tennessee
-  [35.72,-84.82,0.45,11,70,"mid","Tennessee"],
-  [35.42,-88.02,0.38,11,66,"low","Tennessee"],
-  [35.22,-84.52,0.38,11,66,"mid","Tennessee"],
-  [35.52,-87.52,0.38,11,64,"low","Tennessee"],
-  // Texas
-  [31.62,-94.62,0.38,6,45,"low","Texas"],
-  [33.52,-95.02,0.38,6,42,"low","Texas"],
-  // West Virginia
-  [37.92,-81.12,0.38,8,70,"mid","West Virginia"],
-  [38.22,-80.32,0.38,8,66,"mid","West Virginia"],
-  [38.52,-79.82,0.38,8,64,"mid","West Virginia"],
-  // Virginia
-  [38.72,-78.52,0.38,8,64,"mid","Virginia"],
-  [38.12,-79.22,0.38,8,66,"mid","Virginia"],
-  [37.22,-80.42,0.38,8,64,"mid","Virginia"],
-  // North Carolina / Smokies
-  [35.32,-83.72,0.38,8,67,"high","NC Smokies"],
-  [35.52,-82.82,0.38,8,64,"high","NC Smokies"],
-  [36.02,-81.52,0.28,8,60,"mid","NC Smokies"],
-  // Georgia / Alabama
-  [34.82,-84.32,0.38,8,60,"mid","Alabama Georgia"],
-  [34.32,-87.22,0.38,8,62,"mid","Alabama Georgia"],
-  [33.52,-86.02,0.38,8,56,"mid","Alabama Georgia"],
-  // Pennsylvania
-  [40.02,-79.22,0.38,8,66,"mid","Pennsylvania"],
-  [41.52,-76.42,0.38,8,64,"mid","Pennsylvania"],
-  [41.62,-79.12,0.38,8,60,"mid","Pennsylvania"],
-  // New York / New England
-  [41.82,-73.92,0.38,7,60,"mid","New York"],
-  [43.92,-72.82,0.38,7,57,"mid","New England"],
-  [42.52,-72.22,0.38,7,55,"mid","New England"],
-  // Pacific NW / Oregon
-  [44.22,-123.12,0.45,7,60,"low","Oregon"],
-  [42.42,-122.92,0.38,7,53,"mid","Oregon Siskiyou"],
-  [45.72,-121.82,0.45,7,52,"high","Pacific NW"],
-  [47.52,-120.52,0.55,7,50,"high","Pacific NW"],
-  // Rockies
-  [39.72,-105.32,0.45,6,48,"high","Rockies"],
-  [44.62,-107.42,0.45,6,46,"high","Rockies"],
-  [46.12,-116.62,0.45,6,48,"high","Rockies"],
-  [46.52,-114.32,0.45,6,46,"high","Rockies"],
-  // California
-  [38.42,-120.92,0.45,6,50,"mid","California"],
-  [40.92,-122.52,0.45,6,48,"high","California"],
-  // Mississippi bluffs
-  [38.82,-90.32,0.28,10,66,"low","Central Missouri"],
-  // SE Indiana
-  [39.12,-84.92,0.28,8,66,"low","Indiana"],
-  // NW Arkansas extra
-  [36.42,-93.92,0.28,8,68,"mid","Arkansas Ozarks"],
-
-  // ── 500 more ─────────────────────────────────────────────────
-  // Missouri — more river systems
-  [38.35,-91.05,0.38,10,74,"mid","Missouri Ozarks"],  // Meramec River
-  [38.20,-91.40,0.35,10,72,"mid","Missouri Ozarks"],  // Bourbeuse River
-  [37.70,-92.90,0.38,10,76,"mid","Missouri Ozarks"],  // Niangua River
-  [36.82,-90.82,0.38,10,72,"mid","Missouri Ozarks"],  // Black River MO
-  [37.62,-91.22,0.32,10,78,"mid","Missouri Ozarks"],  // Courtois Creek
-  [38.28,-93.22,0.42,10,66,"low","Central Missouri"],  // Osage River
-  // Illinois — more river systems
-  [38.52,-89.52,0.38,10,65,"low","Southern Illinois"], // Kaskaskia River
-  [39.22,-88.32,0.38,10,62,"low","Central Illinois"],  // Embarras River
-  [38.82,-87.92,0.32,10,64,"low","Indiana"],           // Wabash River IL side
-  [41.82,-89.52,0.38,10,60,"low","Central Illinois"],  // Rock River IL
-  [41.62,-88.42,0.32,10,58,"low","Central Illinois"],  // Fox River IL
-  // Iowa — more river corridors
-  [41.32,-93.82,0.42,10,60,"low","Iowa"],              // Des Moines River
-  [41.92,-91.72,0.38,10,62,"low","Iowa"],              // Cedar River
-  [42.12,-91.22,0.32,10,60,"low","Iowa"],              // Maquoketa River
-  [42.12,-91.82,0.38,10,58,"low","Iowa"],              // Wapsipinicon River
-  // Wisconsin — more river systems
-  [43.52,-90.72,0.32,10,64,"low","Driftless Area"],    // Kickapoo River
-  [44.82,-88.92,0.38,10,58,"low","Wisconsin"],         // Wolf River
-  [44.32,-90.82,0.32,10,62,"low","Driftless Area"],    // Black River WI
-  [45.92,-91.82,0.38,10,56,"low","Wisconsin"],         // Namekagon River
-  // Minnesota — more bluff country
-  [43.65,-91.92,0.32,10,65,"low","Driftless Area"],    // Root River MN
-  [44.02,-92.02,0.28,10,63,"low","Minnesota"],         // Whitewater River
-  [44.52,-92.52,0.32,10,60,"low","Minnesota"],         // Mississippi Bluffs MN
-  // Michigan — more river systems
-  [44.42,-84.52,0.42,10,68,"low","Michigan"],          // Au Sable River
-  [42.92,-85.72,0.38,10,66,"low","Michigan"],          // Grand River MI
-  [43.22,-85.52,0.32,10,64,"low","Michigan"],          // Rogue River MI
-  // Ohio — more river systems
-  [39.82,-83.12,0.38,10,64,"mid","Ohio"],              // Scioto River
-  [40.02,-81.92,0.38,10,62,"mid","Ohio"],              // Muskingum River
-  [39.52,-81.32,0.28,10,64,"mid","SE Ohio"],           // Little Muskingum
-  // Indiana — more river systems
-  [41.02,-86.72,0.38,10,60,"low","Indiana"],           // Tippecanoe River
-  [39.92,-86.22,0.32,10,66,"low","Indiana"],           // White River upper IN
-  [38.62,-86.22,0.28,10,68,"mid","Indiana"],           // Blue River IN
-  // Kentucky — more river systems
-  [38.22,-84.02,0.38,10,66,"mid","Kentucky"],          // Licking River
-  [37.22,-85.82,0.42,10,68,"mid","Kentucky"],          // Green River KY
-  [36.52,-84.72,0.32,10,70,"mid","Kentucky"],          // Big South Fork
-  [37.32,-84.32,0.28,10,68,"mid","Kentucky"],          // Rockcastle River
-  // Tennessee — more river systems
-  [35.62,-87.12,0.38,10,66,"mid","Tennessee"],         // Duck River
-  [35.12,-86.42,0.38,10,64,"mid","Tennessee"],         // Elk River TN
-  [35.12,-84.52,0.32,10,64,"mid","Tennessee"],         // Hiwassee River
-  [36.12,-85.72,0.32,10,62,"mid","Tennessee"],         // Caney Fork
-  // Arkansas — more river systems
-  [36.22,-93.62,0.32,10,72,"mid","Arkansas Ozarks"],   // Kings River AR
-  [35.92,-94.52,0.35,10,68,"mid","Arkansas Ozarks"],   // Illinois River AR
-  [35.42,-92.42,0.38,10,66,"mid","Arkansas Ozarks"],   // Little Red River
-  // Virginia — more river systems
-  [37.02,-80.52,0.38,10,64,"mid","Virginia"],          // New River VA
-  [36.82,-82.32,0.32,10,62,"mid","Virginia"],          // Clinch River
-  [37.62,-79.52,0.38,10,62,"mid","Virginia"],          // James River VA
-  // Pennsylvania — more coverage
-  [41.72,-79.12,0.42,10,60,"mid","Pennsylvania"],      // Allegheny NF
-  [41.12,-75.32,0.32,10,58,"mid","Pennsylvania"],      // Delaware River PA
-  // Georgia/Alabama — more Appalachian foothills
-  [34.92,-83.42,0.32,10,60,"mid","Alabama Georgia"],   // Chattooga River
-  [35.10,-84.62,0.28,10,62,"mid","Tennessee"],         // Ocoee area
-  // Pacific NW — Umpqua & Klamath
-  [43.42,-123.42,0.42,10,55,"low","Oregon"],           // Umpqua River
-  [43.22,-122.62,0.38,10,52,"mid","Oregon"],           // North Umpqua
-  [41.82,-123.02,0.42,10,50,"low","Oregon"],           // Klamath River corridor
+const NF=["Fork","Run","Branch","Creek","Hollow","Draw","Ridge","Bottom","Bend","Cove","Gap","Knob","Bluff","Flat","Holler","Slough"];
+const NT=["Timber","Bottoms","Bluff","Draw","Drainage","Hollow","Cove","Ridge","Slope","Wood Line","Seep","Ravine","Flat","Bend"];
+function gn(r){var t=~~(r()*3);if(t===0)return NP[~~(r()*NP.length)]+" "+NF[~~(r()*NF.length)];if(t===1)return NF[~~(r()*NF.length)]+" "+NT[~~(r()*NT.length)];return NP[~~(r()*NP.length)]+" "+NF[~~(r()*NF.length)]+" "+NT[~~(r()*NT.length)]}
+const SEEDS=[
+  [37.90,-92.00,0.55,13,82,"mid","Missouri Ozarks"],[37.10,-91.55,0.45,13,80,"mid","Missouri Ozarks"],[37.55,-92.20,0.45,13,79,"mid","Missouri Ozarks"],[36.90,-93.00,0.45,12,76,"mid","Missouri Ozarks"],[36.62,-91.30,0.40,12,74,"mid","Missouri Ozarks"],[38.05,-91.25,0.45,11,72,"mid","Missouri Ozarks"],
+  [39.22,-94.28,0.28,12,75,"low","NW Missouri"],[39.10,-94.02,0.28,11,72,"low","NW Missouri"],[39.42,-94.65,0.28,11,70,"low","NW Missouri"],[39.62,-95.12,0.28,10,66,"low","NW Missouri"],
+  [36.62,-93.80,0.40,10,72,"mid","SW Missouri"],[36.80,-93.20,0.40,10,70,"mid","SW Missouri"],
+  [39.52,-91.72,0.38,10,68,"low","NE Missouri"],[38.88,-91.20,0.38,10,70,"low","NE Missouri"],[38.62,-92.22,0.40,10,66,"low","Central Missouri"],[38.40,-92.62,0.45,10,64,"low","Central Missouri"],
+  [37.22,-89.12,0.38,12,78,"low","Southern Illinois"],[37.60,-89.40,0.28,12,76,"low","Southern Illinois"],[37.52,-88.32,0.38,11,72,"low","Southern Illinois"],[37.82,-88.92,0.38,11,70,"low","Southern Illinois"],
+  [40.02,-90.28,0.45,9,66,"low","Central Illinois"],[39.92,-89.52,0.45,9,64,"low","Central Illinois"],[40.52,-90.32,0.38,9,62,"low","Central Illinois"],
+  [39.22,-86.22,0.38,10,74,"mid","Indiana"],[38.62,-86.42,0.38,10,70,"mid","Indiana"],[40.72,-86.52,0.38,9,64,"low","Indiana"],[39.52,-87.02,0.38,9,68,"low","Indiana"],
+  [39.52,-82.52,0.38,9,70,"mid","Ohio"],[40.62,-82.22,0.38,9,68,"mid","Ohio"],[39.22,-82.02,0.35,9,66,"mid","Ohio"],[38.62,-82.52,0.30,9,64,"low","SE Ohio"],
+  [43.72,-85.82,0.45,10,74,"low","Michigan"],[44.22,-85.92,0.45,10,72,"low","Michigan"],[43.82,-86.12,0.38,10,70,"low","Michigan"],[44.88,-86.02,0.38,10,68,"low","Michigan"],[44.72,-85.52,0.38,10,66,"low","Michigan"],
+  [46.22,-85.52,0.55,8,60,"low","Michigan UP"],[46.72,-88.52,0.55,8,58,"low","Michigan UP"],
+  [43.82,-91.22,0.38,9,68,"low","Driftless Area"],[44.22,-91.42,0.28,9,66,"low","Driftless Area"],[43.22,-90.92,0.38,9,64,"low","Driftless Area"],[43.52,-90.42,0.38,9,62,"low","Driftless Area"],
+  [43.22,-88.42,0.38,8,65,"low","Wisconsin"],[45.92,-90.72,0.48,8,58,"low","Wisconsin"],[45.52,-89.52,0.48,8,56,"low","Wisconsin"],
+  [43.92,-91.52,0.28,8,65,"low","Minnesota"],[44.42,-93.02,0.38,8,60,"low","Minnesota"],[44.12,-91.92,0.28,8,62,"low","Driftless Area"],
+  [41.92,-95.82,0.38,8,63,"low","Iowa"],[42.62,-91.62,0.38,8,60,"low","Iowa"],[41.82,-92.02,0.38,8,58,"low","Iowa"],[40.62,-91.92,0.28,8,60,"low","Iowa"],
+  [38.52,-96.52,0.48,8,54,"low","Kansas"],[37.52,-95.82,0.38,8,50,"low","Kansas"],[41.12,-98.32,0.48,8,50,"low","Nebraska"],
+  [36.02,-92.92,0.45,13,78,"mid","Arkansas Ozarks"],[35.72,-93.82,0.38,13,74,"mid","Arkansas Ozarks"],[36.32,-92.02,0.45,12,72,"mid","Arkansas Ozarks"],[36.12,-93.52,0.38,12,70,"mid","Arkansas Ozarks"],[36.32,-93.82,0.38,11,70,"mid","Arkansas Ozarks"],[36.22,-94.12,0.28,10,68,"mid","Arkansas Ozarks"],
+  [36.32,-94.52,0.38,8,58,"mid","Oklahoma"],[34.72,-94.72,0.45,8,52,"mid","Oklahoma"],
+  [37.82,-83.72,0.38,11,74,"mid","Kentucky"],[36.92,-88.02,0.38,11,70,"low","Kentucky"],[36.82,-84.92,0.38,11,68,"mid","Kentucky"],[37.52,-83.52,0.45,11,66,"mid","Kentucky"],
+  [35.72,-84.82,0.45,11,70,"mid","Tennessee"],[35.42,-88.02,0.38,11,66,"low","Tennessee"],[35.22,-84.52,0.38,11,66,"mid","Tennessee"],[35.52,-87.52,0.38,11,64,"low","Tennessee"],
+  [31.62,-94.62,0.38,6,45,"low","Texas"],[33.52,-95.02,0.38,6,42,"low","Texas"],
+  [37.92,-81.12,0.38,8,70,"mid","West Virginia"],[38.22,-80.32,0.38,8,66,"mid","West Virginia"],[38.52,-79.82,0.38,8,64,"mid","West Virginia"],
+  [38.72,-78.52,0.38,8,64,"mid","Virginia"],[38.12,-79.22,0.38,8,66,"mid","Virginia"],[37.22,-80.42,0.38,8,64,"mid","Virginia"],
+  [35.32,-83.72,0.38,8,67,"high","NC Smokies"],[35.52,-82.82,0.38,8,64,"high","NC Smokies"],[36.02,-81.52,0.28,8,60,"mid","NC Smokies"],
+  [34.82,-84.32,0.38,8,60,"mid","Alabama Georgia"],[34.32,-87.22,0.38,8,62,"mid","Alabama Georgia"],[33.52,-86.02,0.38,8,56,"mid","Alabama Georgia"],
+  [40.02,-79.22,0.38,8,66,"mid","Pennsylvania"],[41.52,-76.42,0.38,8,64,"mid","Pennsylvania"],[41.62,-79.12,0.38,8,60,"mid","Pennsylvania"],
+  [41.82,-73.92,0.38,7,60,"mid","New York"],[43.92,-72.82,0.38,7,57,"mid","New England"],[42.52,-72.22,0.38,7,55,"mid","New England"],
+  [44.22,-123.12,0.45,7,60,"low","Oregon"],[42.42,-122.92,0.38,7,53,"mid","Oregon Siskiyou"],[45.72,-121.82,0.45,7,52,"high","Pacific NW"],[47.52,-120.52,0.55,7,50,"high","Pacific NW"],
+  [39.72,-105.32,0.45,6,48,"high","Rockies"],[44.62,-107.42,0.45,6,46,"high","Rockies"],[46.12,-116.62,0.45,6,48,"high","Rockies"],[46.52,-114.32,0.45,6,46,"high","Rockies"],
+  [38.42,-120.92,0.45,6,50,"mid","California"],[40.92,-122.52,0.45,6,48,"high","California"],
+  [38.82,-90.32,0.28,10,66,"low","Central Missouri"],[39.12,-84.92,0.28,8,66,"low","Indiana"],[36.42,-93.92,0.28,8,68,"mid","Arkansas Ozarks"],
+  [38.35,-91.05,0.38,10,74,"mid","Missouri Ozarks"],[38.20,-91.40,0.35,10,72,"mid","Missouri Ozarks"],[37.70,-92.90,0.38,10,76,"mid","Missouri Ozarks"],[36.82,-90.82,0.38,10,72,"mid","Missouri Ozarks"],[37.62,-91.22,0.32,10,78,"mid","Missouri Ozarks"],[38.28,-93.22,0.42,10,66,"low","Central Missouri"],
+  [38.52,-89.52,0.38,10,65,"low","Southern Illinois"],[39.22,-88.32,0.38,10,62,"low","Central Illinois"],[38.82,-87.92,0.32,10,64,"low","Indiana"],[41.82,-89.52,0.38,10,60,"low","Central Illinois"],[41.62,-88.42,0.32,10,58,"low","Central Illinois"],
+  [41.32,-93.82,0.42,10,60,"low","Iowa"],[41.92,-91.72,0.38,10,62,"low","Iowa"],[42.12,-91.22,0.32,10,60,"low","Iowa"],[42.12,-91.82,0.38,10,58,"low","Iowa"],
+  [43.52,-90.72,0.32,10,64,"low","Driftless Area"],[44.82,-88.92,0.38,10,58,"low","Wisconsin"],[44.32,-90.82,0.32,10,62,"low","Driftless Area"],[45.92,-91.82,0.38,10,56,"low","Wisconsin"],
+  [43.65,-91.92,0.32,10,65,"low","Driftless Area"],[44.02,-92.02,0.28,10,63,"low","Minnesota"],[44.52,-92.52,0.32,10,60,"low","Minnesota"],
+  [44.42,-84.52,0.42,10,68,"low","Michigan"],[42.92,-85.72,0.38,10,66,"low","Michigan"],[43.22,-85.52,0.32,10,64,"low","Michigan"],
+  [39.82,-83.12,0.38,10,64,"mid","Ohio"],[40.02,-81.92,0.38,10,62,"mid","Ohio"],[39.52,-81.32,0.28,10,64,"mid","SE Ohio"],
+  [41.02,-86.72,0.38,10,60,"low","Indiana"],[39.92,-86.22,0.32,10,66,"low","Indiana"],[38.62,-86.22,0.28,10,68,"mid","Indiana"],
+  [38.22,-84.02,0.38,10,66,"mid","Kentucky"],[37.22,-85.82,0.42,10,68,"mid","Kentucky"],[36.52,-84.72,0.32,10,70,"mid","Kentucky"],[37.32,-84.32,0.28,10,68,"mid","Kentucky"],
+  [35.62,-87.12,0.38,10,66,"mid","Tennessee"],[35.12,-86.42,0.38,10,64,"mid","Tennessee"],[35.12,-84.52,0.32,10,64,"mid","Tennessee"],[36.12,-85.72,0.32,10,62,"mid","Tennessee"],
+  [36.22,-93.62,0.32,10,72,"mid","Arkansas Ozarks"],[35.92,-94.52,0.35,10,68,"mid","Arkansas Ozarks"],[35.42,-92.42,0.38,10,66,"mid","Arkansas Ozarks"],
+  [37.02,-80.52,0.38,10,64,"mid","Virginia"],[36.82,-82.32,0.32,10,62,"mid","Virginia"],[37.62,-79.52,0.38,10,62,"mid","Virginia"],
+  [41.72,-79.12,0.42,10,60,"mid","Pennsylvania"],[41.12,-75.32,0.32,10,58,"mid","Pennsylvania"],
+  [34.92,-83.42,0.32,10,60,"mid","Alabama Georgia"],[35.10,-84.62,0.28,10,62,"mid","Tennessee"],
+  [43.42,-123.42,0.42,10,55,"low","Oregon"],[43.22,-122.62,0.38,10,52,"mid","Oregon"],[41.82,-123.02,0.42,10,50,"low","Oregon"],
 ];
-
-// ── Generate spots from seeds ─────────────────────────────────
-const rng = mulberry32(2024);
-const GENERATED = [];
+const rng=mulberry32(2024);
+const GENERATED=[];
 SEEDS.forEach(function(z){
   var lat=z[0],lng=z[1],sp=z[2],n=z[3],base=z[4],elev=z[5],rk=z[6];
   for(var i=0;i<n;i++){
-    var a=rng()*2*Math.PI, d=rng()*sp;
-    var slat=+(lat+d*Math.cos(a)).toFixed(4);
-    var slng=+(lng+d*Math.sin(a)/Math.cos(lat*Math.PI/180)).toFixed(4);
-    var b=Math.round(base+(rng()-0.5)*10);
-    GENERATED.push({name:gn(rng),lat:slat,lng:slng,base:b,elev:elev,rk:rk,notes:""});
+    var a=rng()*2*Math.PI,d=rng()*sp;
+    GENERATED.push({name:gn(rng),lat:+(lat+d*Math.cos(a)).toFixed(4),lng:+(lng+d*Math.sin(a)/Math.cos(lat*Math.PI/180)).toFixed(4),base:Math.round(base+(rng()-0.5)*10),elev:elev,rk:rk,notes:""});
   }
 });
+const ALL=CURATED.concat(GENERATED);
+document.getElementById("hcount").textContent=ALL.length.toLocaleString()+" spots";
 
-// ── All spots ─────────────────────────────────────────────────
-const ALL = CURATED.concat(GENERATED);
-document.getElementById("hcount").textContent = ALL.length.toLocaleString()+" spots";
-
-// ── Scoring ───────────────────────────────────────────────────
-const SEL = {early:{low:14,mid:2,high:-20},peak:{low:2,mid:9,high:-4},late:{low:-16,mid:5,high:18}};
-const SF  = {early:0.76,peak:1.0,late:0.82};
-const HB  = [0,6,14];
-
+const SEL={early:{low:14,mid:2,high:-20},peak:{low:2,mid:9,high:-4},late:{low:-16,mid:5,high:18}};
+const SF={early:0.76,peak:1.0,late:0.82};
+const HB=[0,6,14];
 var season="peak";
 var hab={ss:false,wl:false,w:false,o:false};
+function visible(s){var anyOn=hab.ss||hab.wl||hab.w||hab.o;if(!anyOn)return true;var h=(RP[s.rk]||["","", [0,0,0,0]])[2];if(hab.ss&&(h[0]||0)<1)return false;if(hab.wl&&(h[1]||0)<1)return false;if(hab.w&&(h[2]||0)<1)return false;if(hab.o&&(h[3]||0)<1)return false;return true;}
+function scoreSpot(s){var rp=RP[s.rk]||["","", [0,0,0,0]];var h=rp[2];var v=s.base;v+=(SEL[season][s.elev]||0);v*=SF[season];var temp=parseInt(document.getElementById("temp").value);var rain=parseFloat(document.getElementById("rain").value);var tf=(temp>=55&&temp<=75)?1.0:(temp>=50&&temp<=80)?0.85:0.62;var rf=(rain>=0.5&&rain<=2.5)?1.0:(rain>=0.2)?0.85:(rain>2.5)?0.75:0.50;v*=tf*rf;if(hab.ss)v+=HB[h[0]||0];if(hab.wl)v+=HB[h[1]||0];if(hab.w)v+=HB[h[2]||0];if(hab.o)v+=HB[h[3]||0];return Math.round(Math.min(99,Math.max(5,v)));}
+function scoreCol(sc){return sc>=70?"#1b7a56":sc>=40?"#d97706":"#dc2626";}
+function elevCol(e){return e==="high"?"#8b5cf6":e==="mid"?"#3b82f6":"#22c55e";}
 
-// When any toggle is on, only show spots that have that feature (h[i] >= 1).
-// All active toggles must match — toggle on = filter to matching spots only.
-function visible(s){
-  var anyOn=hab.ss||hab.wl||hab.w||hab.o;
-  if(!anyOn) return true;
-  var h=(RP[s.rk]||["","", [0,0,0,0]])[2];
-  if(hab.ss && (h[0]||0)<1) return false;
-  if(hab.wl && (h[1]||0)<1) return false;
-  if(hab.w  && (h[2]||0)<1) return false;
-  if(hab.o  && (h[3]||0)<1) return false;
-  return true;
-}
-
-function score(s){
-  var rp=RP[s.rk]||["","", [0,0,0,0]];
-  var h=rp[2];
-  var v=s.base;
-  v+=(SEL[season][s.elev]||0);
-  v*=SF[season];
-  var temp=parseInt(document.getElementById("temp").value);
-  var rain=parseFloat(document.getElementById("rain").value);
-  var tf=(temp>=55&&temp<=75)?1.0:(temp>=50&&temp<=80)?0.85:0.62;
-  var rf=(rain>=0.5&&rain<=2.5)?1.0:(rain>=0.2)?0.85:(rain>2.5)?0.75:0.50;
-  v*=tf*rf;
-  if(hab.ss) v+=HB[h[0]||0];
-  if(hab.wl) v+=HB[h[1]||0];
-  if(hab.w)  v+=HB[h[2]||0];
-  if(hab.o)  v+=HB[h[3]||0];
-  return Math.round(Math.min(99,Math.max(5,v)));
-}
-
-function scoreCol(sc){ return sc>=70?"#1b7a56":sc>=40?"#d97706":"#dc2626"; }
-function elevCol(e)  { return e==="high"?"#8b5cf6":e==="mid"?"#3b82f6":"#22c55e"; }
-
-// ── Map ───────────────────────────────────────────────────────
 var osmLayer=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',maxZoom:19});
 var topoLayer=L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{attribution:'&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',maxZoom:17});
 var map=L.map("map",{layers:[osmLayer]}).setView([38.5,-92],5);
 L.control.layers({"Streets":osmLayer,"Terrain + Contours":topoLayer},{},{position:"topright"}).addTo(map);
-
-// Canvas renderer for performance with 1000+ markers
 var renderer=L.canvas({padding:0.5});
-
 var layers=[];
 function render(){
-  layers.forEach(function(l){map.removeLayer(l);});
-  layers=[];
+  layers.forEach(function(l){map.removeLayer(l);});layers=[];
   ALL.forEach(function(s){
-    if(!visible(s)) return;   // hide spots that don't match active toggles
-    var sc=score(s);
-    var fc=scoreCol(sc);
-    var ec=elevCol(s.elev);
-    var r=sc>=70?9:sc>=40?7:6;
-
-    if(sc>=74){
-      var glow=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r+7,weight:0,fillColor:fc,fillOpacity:0.14,interactive:false});
-      glow.addTo(map);layers.push(glow);
-    }
-    var ring=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r+2.5,weight:1.8,color:ec,opacity:0.65,fillOpacity:0,interactive:false});
-    ring.addTo(map);layers.push(ring);
-
+    if(!visible(s))return;
+    var sc=scoreSpot(s),fc=scoreCol(sc),ec=elevCol(s.elev),r=sc>=70?9:sc>=40?7:6;
+    if(sc>=74){var g=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r+7,weight:0,fillColor:fc,fillOpacity:0.14,interactive:false});g.addTo(map);layers.push(g);}
+    var ring=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r+2.5,weight:1.8,color:ec,opacity:0.65,fillOpacity:0,interactive:false});ring.addTo(map);layers.push(ring);
     var dot=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r,weight:1.5,color:"#fff",opacity:0.85,fillColor:fc,fillOpacity:0.90});
-    dot.on("click",function(){showInfo(s);});
-    dot.addTo(map);layers.push(dot);
+    dot.on("click",function(){showSpotInfo(s);});dot.addTo(map);layers.push(dot);
   });
 }
-
-function showInfo(s){
-  var sc=score(s);
-  var cls=sc>=70?"high":sc>=40?"med":"low";
-  var lbl=sc>=70?"High likelihood":sc>=40?"Moderate":"Low likelihood";
+function showSpotInfo(s){
+  var sc=scoreSpot(s),cls=sc>=70?"high":sc>=40?"med":"low",lbl=sc>=70?"High likelihood":sc>=40?"Moderate":"Low likelihood";
   var et={low:"Lowlands",mid:"Mid-elevation",high:"High elevation"}[s.elev];
   var rp=RP[s.rk]||["Unknown","Unknown",[0,0,0,0]];
-
   document.getElementById("zi-name").innerHTML=s.name+'<span class="elev-pill">'+et+'</span>';
-  var b=document.getElementById("zi-badge");
-  b.textContent=sc+"% — "+lbl; b.className="zi-badge "+cls;
-  document.getElementById("zi-region").textContent=s.rk||"—";
-  document.getElementById("zi-trees").textContent=rp[0];
-  document.getElementById("zi-topo").textContent=rp[1];
-  document.getElementById("zi-note").textContent=s.notes||"";
-
-  var hLabels={ss:"South-facing slope",wl:"Wood line / edge",w:"Water nearby",o:"Oak trees"};
-  var hKeys=["ss","wl","w","o"];
-  var me=document.getElementById("zi-hab-matches");
-  me.innerHTML="";
-  rp[2].forEach(function(v,i){
-    if(v>=1){var c=document.createElement("span");c.className="hmatch";c.textContent=(v===2?"★ ":"")+hLabels[hKeys[i]];me.appendChild(c);}
-  });
-
-  var panel=document.getElementById("zone-info");
-  panel.classList.add("visible");
-  panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+  var b=document.getElementById("zi-badge");b.textContent=sc+"% — "+lbl;b.className="zi-badge "+cls;
+  document.getElementById("zi-region").textContent=s.rk||"—";document.getElementById("zi-trees").textContent=rp[0];document.getElementById("zi-topo").textContent=rp[1];document.getElementById("zi-note").textContent=s.notes||"";
+  var me=document.getElementById("zi-hab-matches");me.innerHTML="";
+  var hLabels={ss:"South-facing slope",wl:"Wood line",w:"Water nearby",o:"Oak trees"};var hKeys=["ss","wl","w","o"];
+  rp[2].forEach(function(v,i){if(v>=1){var c=document.createElement("span");c.className="hmatch";c.textContent=(v===2?"★ ":"")+hLabels[hKeys[i]];me.appendChild(c);}});
+  document.getElementById("zone-info").classList.add("visible");
+  document.getElementById("zone-info").scrollIntoView({behavior:"smooth",block:"nearest"});
 }
-
 document.getElementById("close-zi").addEventListener("click",function(){document.getElementById("zone-info").classList.remove("visible");});
-
 var debounce=null;
 function debouncedRender(){clearTimeout(debounce);debounce=setTimeout(render,80);}
-
 document.getElementById("temp").addEventListener("input",function(){document.getElementById("temp-val").textContent=this.value+"°F";debouncedRender();});
 document.getElementById("rain").addEventListener("input",function(){document.getElementById("rain-val").textContent=parseFloat(this.value).toFixed(1)+"\"";debouncedRender();});
-document.querySelectorAll(".sbtn").forEach(function(btn){
-  btn.addEventListener("click",function(){
-    document.querySelectorAll(".sbtn").forEach(function(b){b.classList.remove("active");});
-    this.classList.add("active"); season=this.dataset.s; render();
-  });
-});
-document.querySelectorAll(".hab-toggle").forEach(function(el){
-  el.addEventListener("click",function(){
-    var k=this.dataset.hab;
-    hab[k]=!hab[k];
-    this.classList.toggle("active",hab[k]);
-    render();
-  });
-});
+document.querySelectorAll(".sbtn").forEach(function(btn){btn.addEventListener("click",function(){document.querySelectorAll(".sbtn").forEach(function(b){b.classList.remove("active");});this.classList.add("active");season=this.dataset.s;render();});});
+document.querySelectorAll(".hab-toggle").forEach(function(el){el.addEventListener("click",function(){var k=this.dataset.hab;hab[k]=!hab[k];this.classList.toggle("active",hab[k]);render();});});
 
 render();
+updateAuthUI();
+initAds();
 
-// ── Tab switching ─────────────────────────────────────────────
-document.querySelectorAll(".tab-btn").forEach(function(btn){
-  btn.addEventListener("click",function(){
-    document.querySelectorAll(".tab-btn").forEach(function(b){b.classList.remove("active");});
-    document.querySelectorAll(".tab-panel").forEach(function(p){p.classList.remove("active");});
-    this.classList.add("active");
-    document.getElementById("tab-"+this.dataset.tab).classList.add("active");
-    if(this.dataset.tab==="map") setTimeout(function(){map.invalidateSize();},50);
-  });
-});
+// ══════════════════════════════════════════════════════════════
+// LAND ACCESS MARKETPLACE
+// ══════════════════════════════════════════════════════════════
+var currentLandRole = "hunt";
+var allListings = [];
+var currentListing = null;
+var listingMapMarkers = [];
 
-// ── Contact form handler (Formspree) ─────────────────────────
-// Replace HUNT_FORM_ID and GENERAL_FORM_ID with your IDs from formspree.io
-function submitForm(e, sid, formId){
-  e.preventDefault();
-  var form = e.target;
-  var btn  = form.querySelector(".submit-btn");
-  btn.textContent = "Sending…";
-  btn.disabled = true;
-  fetch("https://formspree.io/f/" + formId, {
-    method: "POST",
-    body: new FormData(form),
-    headers: { "Accept": "application/json" }
-  })
-  .then(function(r){
-    if(r.ok){
-      form.style.display = "none";
-      document.getElementById(sid).style.display = "block";
-    } else {
-      btn.textContent = "Error — please try again";
-      btn.disabled = false;
+function setLandRole(role){
+  currentLandRole = role;
+  document.getElementById("role-hunt").classList.toggle("active", role==="hunt");
+  document.getElementById("role-own").classList.toggle("active", role==="own");
+  document.getElementById("land-hunter-view").classList.toggle("active", role==="hunt");
+  document.getElementById("land-owner-view").classList.toggle("active", role==="own");
+  if(role==="own") refreshOwnerView();
+}
+
+function refreshOwnerView(){
+  if(!currentUser){ document.getElementById("lo-gate").style.display="block"; document.getElementById("lo-form-wrap").style.display="none"; }
+  else { document.getElementById("lo-gate").style.display="none"; document.getElementById("lo-form-wrap").style.display="block"; loadMyListings(); }
+}
+
+// Load public listings
+async function loadListings(filter){
+  var feed = document.getElementById("listings-feed");
+  if(!db){ feed.innerHTML='<div class="listing-empty">Configure Firebase to see land listings.</div>'; return; }
+  feed.innerHTML='<div class="listing-empty">Loading…</div>';
+  try{
+    var q = db.collection("listings").where("active","==",true).orderBy("createdAt","desc").limit(30);
+    var snap = await q.get();
+    allListings = snap.docs.map(function(d){ var r=d.data(); r.id=d.id; return r; });
+    renderListings(filter||"all");
+  }catch(e){ feed.innerHTML='<div class="listing-empty">No listings yet — be the first to list your land! 🏡</div>'; }
+}
+
+function filterListings(btn, filter){
+  document.querySelectorAll(".filter-pill").forEach(function(p){ p.classList.remove("active"); });
+  btn.classList.add("active");
+  renderListings(filter);
+}
+
+function renderListings(filter){
+  var feed = document.getElementById("listings-feed");
+  var data = filter==="all" ? allListings : allListings.filter(function(l){ return (l.loc||"").includes(filter); });
+  if(!data.length){ feed.innerHTML='<div class="listing-empty">No listings in this region yet.</div>'; return; }
+  feed.innerHTML="";
+  // Clear old map markers
+  listingMapMarkers.forEach(function(m){ if(map) map.removeLayer(m); }); listingMapMarkers=[];
+  data.forEach(function(l){
+    feed.appendChild(buildListingCard(l));
+    if(l.lat&&l.lng&&map){
+      var m=L.circleMarker([l.lat,l.lng],{renderer:renderer,radius:11,weight:2,color:"#fff",fillColor:"#16a34a",fillOpacity:0.9});
+      m.bindPopup("<strong>"+escH(l.title)+"</strong><br>"+escH(l.loc||"")+"<br><strong style='color:#2d6a4f'>$"+escH(String(l.price||0))+"/person/day</strong>");
+      m.addTo(map); listingMapMarkers.push(m);
     }
-  })
-  .catch(function(){
-    btn.textContent = "Error — please try again";
-    btn.disabled = false;
   });
 }
+
+function buildListingCard(l){
+  var stars = l.rating ? ("★".repeat(Math.round(l.rating||0))+"☆".repeat(5-Math.round(l.rating||0))) : "";
+  var div=document.createElement("div"); div.className="listing-card";
+  var habitat=(l.habitat||[]).map(function(h){ return '<span class="lc-tag terrain">'+escH(h)+'</span>'; }).join("");
+  div.innerHTML=(l.photoUrl?'<img class="listing-card-img" src="'+escH(l.photoUrl)+'" loading="lazy" alt="property photo">'
+    :'<div class="listing-card-img no-photo">🌲</div>')
+    +'<div class="listing-card-body">'
+    +'<div class="lc-top"><span class="lc-title">'+escH(l.title||"Untitled")+'</span><span class="lc-price">$'+escH(String(l.price||0))+'<span>/person</span></span></div>'
+    +'<div class="lc-loc">📍 '+escH(l.loc||"Location not specified")+(stars?' &nbsp; <span class="stars">'+stars+'</span> <span style="font-size:11px;color:#aaa">('+escH(String(l.reviewCount||0))+')</span>':'')+'</div>'
+    +'<div class="lc-meta"><span>🌲 '+escH(String(l.acres||"?"))+'ac</span><span>👥 Max '+escH(String(l.maxGuests||6))+'</span><span>📅 '+escH(l.season||"Spring")+'</span></div>'
+    +'<div class="lc-tags">'+habitat+'</div>'
+    +(l.rules?'<p style="font-size:12px;color:#888;margin-bottom:10px">📋 '+escH(l.rules.slice(0,80))+(l.rules.length>80?"…":"")+'</p>':'')
+    +'<div class="lc-actions">'
+    +'<button class="lc-btn outline" onclick="switchTab(\'map\')">View on map</button>'
+    +'<button class="lc-btn primary" onclick="openBooking('+JSON.stringify(l).replace(/</g,"\\u003c")+')">Book this land</button>'
+    +'</div></div>';
+  return div;
+}
+
+// Load landowner's own listings
+async function loadMyListings(){
+  if(!currentUser||!db) return;
+  var feed=document.getElementById("my-listings-feed");
+  var snap=await db.collection("listings").where("ownerId","==",currentUser.uid).orderBy("createdAt","desc").get();
+  if(snap.empty){ feed.innerHTML='<p style="font-size:13px;color:#aaa">No listings yet. Create one below.</p>'; document.getElementById("my-listings-count").textContent=""; return; }
+  document.getElementById("my-listings-count").textContent="("+snap.size+")";
+  feed.innerHTML="";
+  snap.docs.forEach(function(doc){
+    var l=doc.data();
+    var row=document.createElement("div"); row.className="my-listing-row";
+    row.innerHTML=(l.photoUrl?'<img class="ml-img" src="'+escH(l.photoUrl)+'" alt="property">'
+      :'<div class="ml-img">🌲</div>')
+      +'<div class="ml-info"><div class="ml-title">'+escH(l.title||"Untitled")+'</div><div class="ml-meta">'+escH(l.loc||"")+' · $'+escH(String(l.price||0))+'/person</div></div>'
+      +'<span class="ml-status '+(l.active?"active":"inactive")+'">'+(l.active?"Active":"Paused")+'</span>';
+    feed.appendChild(row);
+  });
+}
+
+// Submit a new listing
+async function submitListing(e){
+  e.preventDefault();
+  if(!currentUser){ openAuth("login"); return; }
+  var btn=document.getElementById("listing-submit-btn"); btn.disabled=true; btn.textContent="Publishing…";
+  var photoFile=document.getElementById("l-photo").files[0];
+  var photoUrl=null;
+  if(photoFile&&CLOUDINARY_CLOUD!=="YOUR_CLOUD_NAME"){
+    var fd=new FormData(); fd.append("file",photoFile); fd.append("upload_preset",CLOUDINARY_PRESET);
+    var r=await fetch("https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD+"/image/upload",{method:"POST",body:fd});
+    var d=await r.json(); photoUrl=d.secure_url||null;
+  }
+  var habitats=[];
+  document.querySelectorAll("#listing-form input[type=checkbox]:not(#l-terms)").forEach(function(cb){ if(cb.checked) habitats.push(cb.value); });
+  var listing={
+    ownerId:   currentUser.uid,
+    ownerName: currentUser.displayName||"Anonymous",
+    title:     document.getElementById("l-title").value.trim(),
+    loc:       document.getElementById("l-loc").value.trim(),
+    address:   document.getElementById("l-address").value.trim(), // stored encrypted/private
+    lat:       parseFloat(document.getElementById("l-lat").value)||null,
+    lng:       parseFloat(document.getElementById("l-lng").value)||null,
+    acres:     parseInt(document.getElementById("l-acres").value)||null,
+    habitat:   habitats,
+    price:     parseFloat(document.getElementById("l-price").value)||0,
+    maxGuests: parseInt(document.getElementById("l-maxguests").value)||6,
+    season:    document.getElementById("l-season").value,
+    rules:     document.getElementById("l-rules").value.trim(),
+    photoUrl,
+    active:    true,
+    rating:    0,
+    reviewCount:0,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  try{
+    await db.collection("listings").add(listing);
+    document.getElementById("listing-form").style.display="none";
+    document.getElementById("listing-success").style.display="block";
+    toast("🏡 Land listed! Hunters can now discover it.");
+    loadMyListings();
+  }catch(err){ btn.disabled=false; btn.textContent="Publish listing"; toast("Error: "+err.message); }
+}
+
+function getListingGPS(){
+  navigator.geolocation.getCurrentPosition(function(p){
+    document.getElementById("l-lat").value=p.coords.latitude.toFixed(4);
+    document.getElementById("l-lng").value=p.coords.longitude.toFixed(4);
+    toast("📍 Location captured!");
+  },function(){ toast("Location unavailable. Enter manually."); });
+}
+
+function previewListingPhoto(input){
+  if(input.files&&input.files[0]){
+    var r=new FileReader(); r.onload=function(e){ var i=document.getElementById("l-photo-preview"); i.src=e.target.result; i.style.display="block"; }; r.readAsDataURL(input.files[0]);
+  }
+}
+
+// Stripe Connect onboarding
+async function connectStripe(){
+  if(!currentUser){ openAuth("login"); return; }
+  if(STRIPE_KEY==="pk_live_YOUR_STRIPE_PUBLISHABLE_KEY"){ toast("Configure Stripe in index.html first."); return; }
+  toast("Opening Stripe onboarding…");
+  // Your Cloud Function creates a Stripe Connect account link
+  // See README for the Cloud Function code to add
+  var r=await fetch("/api/stripe-connect-onboard",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({uid:currentUser.uid,email:currentUser.email})});
+  var {url}=await r.json();
+  window.location.href=url;
+}
+
+// Booking modal
+function openBooking(listing){
+  if(!currentUser){ openAuth("login"); return; }
+  currentListing=listing;
+  document.getElementById("bm-title").textContent="Book: "+listing.title;
+  document.getElementById("bm-loc").textContent="📍 "+listing.loc;
+  var d=document.getElementById("bm-date"); if(!d.value) d.value=new Date().toISOString().split("T")[0];
+  updateBookingPrice();
+  document.getElementById("booking-modal").classList.add("open");
+  document.getElementById("bm-success").style.display="none";
+  document.getElementById("bm-submit-btn").style.display="block";
+}
+function closeBooking(){ document.getElementById("booking-modal").classList.remove("open"); currentListing=null; }
+function updateBookingPrice(){
+  if(!currentListing) return;
+  var guests=parseInt(document.getElementById("bm-guests").value)||1;
+  var sub=currentListing.price*guests;
+  var fee=Math.round(sub*0.10*100)/100;
+  var total=Math.round((sub+fee)*100)/100;
+  document.getElementById("bm-price-label").textContent=guests+" hunter"+(guests>1?"s":"")+" × $"+currentListing.price+"/person";
+  document.getElementById("bm-price-sub").textContent="$"+sub.toFixed(2);
+  document.getElementById("bm-fee").textContent="$"+fee.toFixed(2);
+  document.getElementById("bm-total").textContent="$"+total.toFixed(2);
+}
+document.getElementById("bm-guests").addEventListener("change", updateBookingPrice);
+
+async function confirmBooking(){
+  if(!currentUser||!currentListing){ openAuth("login"); return; }
+  if(STRIPE_KEY==="pk_live_YOUR_STRIPE_PUBLISHABLE_KEY"){ toast("Configure Stripe to enable bookings."); return; }
+  var btn=document.getElementById("bm-submit-btn"); btn.disabled=true; btn.textContent="Processing…";
+  var guests=parseInt(document.getElementById("bm-guests").value)||1;
+  var date=document.getElementById("bm-date").value;
+  // Create a Stripe Checkout session via your Cloud Function
+  var r=await fetch("/api/create-land-checkout",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({listingId:currentListing.id,guests,date,hunterId:currentUser.uid,hunterEmail:currentUser.email})});
+  var {sessionId}=await r.json();
+  Stripe(STRIPE_KEY).redirectToCheckout({sessionId});
+}
+
+// Load listings when tab opened
+document.querySelector('[data-tab="land"]').addEventListener("click",function(){ setTimeout(function(){ loadListings(); },100); });
+
 </script>
 </body>
 </html>

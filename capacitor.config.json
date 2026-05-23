@@ -1,0 +1,28 @@
+{
+  "appId": "com.melodysmorels.app",
+  "appName": "Melody's Morels",
+  "webDir": ".",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "AdMob": {
+      "appIdAndroid": "ca-app-pub-XXXX~YOUR_ANDROID_APP_ID",
+      "appIdIos":     "ca-app-pub-XXXX~YOUR_IOS_APP_ID"
+    },
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    },
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#2d6a4f",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#2d6a4f"
+    }
+  }
+}
