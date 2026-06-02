@@ -7,8 +7,8 @@
   },
   "plugins": {
     "AdMob": {
-      "appIdAndroid": "ca-app-pub-XXXX~YOUR_ANDROID_APP_ID",
-      "appIdIos":     "ca-app-pub-XXXX~YOUR_IOS_APP_ID"
+      "appIdAndroid": "ca-app-pub-5721783953904959~6367353985",
+      "appIdIos":     "ca-app-pub-5721783953904959~4391623416"
     },
     "PushNotifications": {
       "presentationOptions": ["badge", "sound", "alert"]

@@ -323,6 +323,7 @@
   <button class="tab-btn" data-tab="premium">⭐ Premium</button>
   <button class="tab-btn" data-tab="land">🏡 Land Access</button>
   <button class="tab-btn" data-tab="contact">✉️ Contact</button>
+  <button class="tab-btn" data-tab="waiver">✍️ Waivers</button>
   <button class="tab-btn" data-tab="terms">📄 Terms</button>
   <button class="tab-btn" data-tab="privacy">🔒 Privacy</button>
 </nav>
@@ -474,9 +475,9 @@
         <p>Local guides who know the land, the trees, and the timing. Learn to read south-facing slopes, wood lines, and creek drainages.</p>
       </div>
       <div class="guide-grid">
-        <div class="guide-card"><div class="guide-card-img">🍄</div><div class="guide-card-body"><h3>Melody's Clay County Hunt</h3><div class="guide-loc">📍 Clay County, Missouri</div><p>Half-day guided hunt along the Missouri River bluffs. South-facing draws, creek-edge timber, wood lines. Great for all skill levels.</p><div class="guide-tags"><span class="guide-tag">Half day · 4 hrs</span><span class="guide-tag">Up to 6 guests</span><span class="guide-tag">Peak: mid April</span></div><button class="guide-btn" onclick="switchTab('contact')">Book this hunt →</button></div></div>
-        <div class="guide-card"><div class="guide-card-img">🌿</div><div class="guide-card-body"><h3>Bluff & Timber Full Day</h3><div class="guide-loc">📍 Clay County, Missouri</div><p>Full-day immersive hunt covering multiple habitat types. Includes habitat education so you leave knowing exactly what to look for.</p><div class="guide-tags"><span class="guide-tag">Full day · 8 hrs</span><span class="guide-tag">Up to 4 guests</span><span class="guide-tag">Lunch included</span></div><button class="guide-btn" onclick="switchTab('contact')">Book this hunt →</button></div></div>
-        <div class="guide-card"><div class="guide-card-img">🌲</div><div class="guide-card-body"><h3>Private Group Hunt</h3><div class="guide-loc">📍 Clay County, Missouri</div><p>Private hunt for your group — family, corporate, or friends. Custom route and pace. Ask about multi-day packages.</p><div class="guide-tags"><span class="guide-tag">Flexible</span><span class="guide-tag">Private group</span><span class="guide-tag">All season</span></div><button class="guide-btn" onclick="switchTab('contact')">Request a quote →</button></div></div>
+        <div class="guide-card"><div class="guide-card-img">🍄</div><div class="guide-card-body"><h3>Melody's Clay County Hunt</h3><div class="guide-loc">📍 Clay County, Missouri</div><p>Half-day guided hunt along the Missouri River bluffs. South-facing draws, creek-edge timber, wood lines. Great for all skill levels.</p><div class="guide-tags"><span class="guide-tag">Half day · 4 hrs</span><span class="guide-tag">Up to 6 guests</span><span class="guide-tag">Peak: mid April</span></div><div style="display:flex;gap:6px"><button class="guide-btn outline" onclick="switchTab('contact')" style="background:transparent;border:1px solid #2d6a4f;color:#2d6a4f">Inquire</button><button class="guide-btn" onclick="window.open(STRIPE_PAYMENT_LINK,'_blank')">Pay deposit →</button></div></div></div>
+        <div class="guide-card"><div class="guide-card-img">🌿</div><div class="guide-card-body"><h3>Bluff & Timber Full Day</h3><div class="guide-loc">📍 Clay County, Missouri</div><p>Full-day immersive hunt covering multiple habitat types. Includes habitat education so you leave knowing exactly what to look for.</p><div class="guide-tags"><span class="guide-tag">Full day · 8 hrs</span><span class="guide-tag">Up to 4 guests</span><span class="guide-tag">Lunch included</span></div><div style="display:flex;gap:6px"><button class="guide-btn outline" onclick="switchTab('contact')" style="background:transparent;border:1px solid #2d6a4f;color:#2d6a4f">Inquire</button><button class="guide-btn" onclick="window.open(STRIPE_PAYMENT_LINK,'_blank')">Pay deposit →</button></div></div></div>
+        <div class="guide-card"><div class="guide-card-img">🌲</div><div class="guide-card-body"><h3>Private Group Hunt</h3><div class="guide-loc">📍 Clay County, Missouri</div><p>Private hunt for your group — family, corporate, or friends. Custom route and pace. Ask about multi-day packages.</p><div class="guide-tags"><span class="guide-tag">Flexible</span><span class="guide-tag">Private group</span><span class="guide-tag">All season</span></div><div style="display:flex;gap:6px"><button class="guide-btn outline" onclick="switchTab('contact')" style="background:transparent;border:1px solid #2d6a4f;color:#2d6a4f">Get quote</button><button class="guide-btn" onclick="window.open(STRIPE_PAYMENT_LINK,'_blank')">Pay deposit →</button></div></div></div>
       </div>
       <div class="coming-soon-box">
         <h3>🗺 Guides Coming Across the USA</h3>
@@ -571,7 +572,7 @@
             <div class="form-row"><label>Preferred dates / notes</label><textarea name="message" placeholder="Dates, group size, questions…"></textarea></div>
             <button type="submit" class="submit-btn">Send booking request</button>
           </form>
-          <div class="success-msg" id="hunt-success">✅ Request sent! We'll be in touch within 24 hours.</div>
+          <div class="success-msg" id="hunt-success">✅ Request sent! We'll be in touch within 24 hours.<br><br><button onclick="window.open(STRIPE_PAYMENT_LINK,'_blank')" style="background:#2d6a4f;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:500;cursor:pointer;margin-top:6px;font-family:inherit">Pay deposit now →</button></div>
         </div>
         <div class="contact-card">
           <h3>✉️ General Inquiry</h3>
@@ -881,8 +882,166 @@
       <div class="ps-row total"><span>Total</span><span id="bm-total">$0</span></div>
     </div>
     <button class="submit-btn" id="bm-submit-btn" onclick="confirmBooking()">Pay &amp; confirm booking</button>
+    <div style="text-align:center;margin-top:10px">
+      <button onclick="window.open(STRIPE_PAYMENT_LINK,'_blank')" style="background:none;border:none;color:#2d6a4f;font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit">Pay custom amount via Stripe →</button>
+    </div>
     <div class="success-msg" id="bm-success" style="margin-top:12px">✅ Booking confirmed! The exact address has been emailed to you.</div>
     <p class="terms-note">By booking you agree to the hunter rules for this property and our <a href="#" style="color:#2d6a4f">terms of service</a>. A liability waiver will be emailed before your hunt date. Exact address shared after payment clears.</p>
+  </div>
+</div>
+
+<!-- ── WAIVER TAB ── -->
+<style>
+  .waiver-type-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px}
+  .waiver-type-card{background:#fff;border:1.5px solid #e4e1d8;border-radius:12px;padding:18px;cursor:pointer;transition:all 0.15s;text-align:center}
+  .waiver-type-card:hover{border-color:#2d6a4f;background:#f7fdf9}
+  .waiver-type-card.selected{border-color:#2d6a4f;background:#edf7f1}
+  .wtc-icon{font-size:32px;margin-bottom:8px}
+  .wtc-title{font-size:14px;font-weight:600;color:#222;margin-bottom:4px}
+  .wtc-desc{font-size:12px;color:#888;line-height:1.4}
+  .waiver-form-wrap{background:#fff;border:1px solid #e4e1d8;border-radius:14px;overflow:hidden;display:none}
+  .waiver-form-wrap.visible{display:block}
+  .waiver-header{background:#2d6a4f;padding:22px 28px;color:#fff}
+  .waiver-header h3{font-size:18px;font-weight:600;margin-bottom:4px}
+  .waiver-header p{font-size:13px;opacity:0.8}
+  .waiver-body{padding:24px 28px}
+  .waiver-text{background:#f7f4ee;border:1px solid #e0dbd0;border-radius:10px;padding:18px;font-size:12px;line-height:1.8;color:#555;max-height:320px;overflow-y:auto;margin-bottom:20px}
+  .waiver-text h4{font-size:13px;font-weight:600;color:#222;margin:12px 0 4px}
+  .waiver-text h4:first-child{margin-top:0}
+  .signer-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .sig-canvas-wrap{border:1px solid #ddd;border-radius:8px;overflow:hidden;position:relative;background:#fafaf8;margin-bottom:8px}
+  .sig-canvas-wrap canvas{display:block;cursor:crosshair;touch-action:none}
+  .sig-label{font-size:11px;color:#aaa;text-align:center;padding:4px;border-top:1px solid #f0ede6}
+  .sig-clear{position:absolute;top:6px;right:8px;background:#fff;border:1px solid #ddd;border-radius:5px;font-size:11px;cursor:pointer;padding:2px 7px;color:#888}
+  .checkbox-agree{display:flex;align-items:flex-start;gap:10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#78350f;line-height:1.5}
+  .checkbox-agree input{width:16px;height:16px;flex-shrink:0;margin-top:2px;accent-color:#2d6a4f;cursor:pointer}
+  .waiver-submit-btn{width:100%;padding:13px;background:#2d6a4f;color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.15s}
+  .waiver-submit-btn:hover{background:#1b4332}
+  .waiver-submit-btn:disabled{opacity:0.5;cursor:not-allowed}
+  .waiver-success{display:none;background:#edf7f1;border:1px solid #b6e4cb;border-radius:10px;padding:20px;text-align:center}
+  .waiver-success .ws-icon{font-size:40px;margin-bottom:8px}
+  .waiver-success h3{font-size:17px;font-weight:600;color:#065f46;margin-bottom:6px}
+  .waiver-success p{font-size:13px;color:#1a5c3a}
+  .waiver-id{font-size:11px;color:#aaa;margin-top:8px}
+  .signed-waivers-list{margin-top:28px}
+  .sw-row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e4e1d8;border-radius:10px;padding:12px 14px;margin-bottom:8px}
+  .sw-icon{font-size:20px;flex-shrink:0}
+  .sw-info{flex:1}
+  .sw-title{font-size:13px;font-weight:600;color:#222}
+  .sw-meta{font-size:11px;color:#aaa;margin-top:2px}
+  .sw-badge{font-size:11px;padding:2px 9px;border-radius:99px;background:#edf7f1;color:#065f46;font-weight:500}
+  @media(max-width:640px){.signer-grid{grid-template-columns:1fr}.waiver-body{padding:16px}}
+</style>
+
+<div id="tab-waiver" class="tab-panel">
+  <div class="scroll-page">
+    <div class="page-wrap" style="max-width:800px">
+
+      <div class="page-hero">
+        <span class="badge-pill">✍️ Digital Waivers</span>
+        <h2>Activity Waivers</h2>
+        <p>Required before all in-person activities. Sign digitally — your waiver is stored securely and timestamped.</p>
+      </div>
+
+      <!-- Activity type selector -->
+      <div class="waiver-type-grid" id="waiver-type-grid">
+        <div class="waiver-type-card" data-waiver="guided" onclick="selectWaiver('guided',this)">
+          <div class="wtc-icon">🧭</div>
+          <div class="wtc-title">Guided Hunt</div>
+          <div class="wtc-desc">Required for all guided morel hunt participants in Clay County, MO</div>
+        </div>
+        <div class="waiver-type-card" data-waiver="land" onclick="selectWaiver('land',this)">
+          <div class="wtc-icon">🏡</div>
+          <div class="wtc-title">Land Access</div>
+          <div class="wtc-desc">Required before accessing any private land booked through the marketplace</div>
+        </div>
+        <div class="waiver-type-card" data-waiver="group" onclick="selectWaiver('group',this)">
+          <div class="wtc-icon">👥</div>
+          <div class="wtc-title">Group / Event</div>
+          <div class="wtc-desc">For organized group hunts, corporate events, or community forays</div>
+        </div>
+        <div class="waiver-type-card" data-waiver="minor" onclick="selectWaiver('minor',this)">
+          <div class="wtc-icon">👨‍👧</div>
+          <div class="wtc-title">Minor Participant</div>
+          <div class="wtc-desc">Parent or guardian must sign for any participant under 18 years old</div>
+        </div>
+      </div>
+
+      <!-- Waiver form -->
+      <div class="waiver-form-wrap" id="waiver-form-wrap">
+        <div class="waiver-header">
+          <h3 id="wf-title">Liability Waiver</h3>
+          <p id="wf-subtitle">Please read carefully and sign below</p>
+        </div>
+        <div class="waiver-body">
+
+          <!-- Waiver text -->
+          <div class="waiver-text" id="waiver-text-content"></div>
+
+          <!-- Participant info -->
+          <div class="signer-grid">
+            <div class="form-row"><label>Full legal name <span style="color:#ef4444">*</span></label><input type="text" id="w-name" placeholder="First and last name" required/></div>
+            <div class="form-row"><label>Email address <span style="color:#ef4444">*</span></label><input type="email" id="w-email" placeholder="you@email.com" required/></div>
+            <div class="form-row"><label>Date of birth <span style="color:#ef4444">*</span></label><input type="date" id="w-dob" required/></div>
+            <div class="form-row"><label>Phone number</label><input type="tel" id="w-phone" placeholder="(555) 000-0000"/></div>
+            <div class="form-row"><label>Emergency contact name <span style="color:#ef4444">*</span></label><input type="text" id="w-ec-name" placeholder="Contact name" required/></div>
+            <div class="form-row"><label>Emergency contact phone <span style="color:#ef4444">*</span></label><input type="tel" id="w-ec-phone" placeholder="(555) 000-0000" required/></div>
+          </div>
+
+          <!-- Minor fields (shown for minor waiver) -->
+          <div id="minor-fields" style="display:none">
+            <hr style="border:none;border-top:1px solid #e4e1d8;margin:4px 0 16px">
+            <p style="font-size:13px;font-weight:600;color:#222;margin-bottom:12px">Minor participant information</p>
+            <div class="signer-grid">
+              <div class="form-row"><label>Minor's full name <span style="color:#ef4444">*</span></label><input type="text" id="w-minor-name" placeholder="Minor's full name"/></div>
+              <div class="form-row"><label>Minor's date of birth <span style="color:#ef4444">*</span></label><input type="date" id="w-minor-dob"/></div>
+              <div class="form-row"><label>Your relationship to minor</label><select id="w-relationship"><option>Parent</option><option>Legal Guardian</option><option>Authorized Adult</option></select></div>
+            </div>
+          </div>
+
+          <!-- Booking reference -->
+          <div class="form-row">
+            <label>Booking / Activity reference (optional)</label>
+            <input type="text" id="w-booking-ref" placeholder="e.g. Hunt date, booking ID, guide name"/>
+          </div>
+
+          <!-- Signature pad -->
+          <div style="margin-bottom:16px">
+            <label style="display:block;font-size:12px;font-weight:500;color:#444;margin-bottom:6px">Your signature <span style="color:#ef4444">*</span></label>
+            <div class="sig-canvas-wrap">
+              <canvas id="sig-canvas" width="700" height="120"></canvas>
+              <button type="button" class="sig-clear" onclick="clearSig()">Clear</button>
+            </div>
+            <div class="sig-label">Sign above with mouse or finger</div>
+          </div>
+
+          <!-- Agree checkbox -->
+          <div class="checkbox-agree">
+            <input type="checkbox" id="w-agree" onchange="checkWaiverReady()"/>
+            <label for="w-agree">I have read and fully understand this waiver. I am signing voluntarily and acknowledge that I am giving up substantial legal rights. If signing for a minor, I confirm I am their parent or legal guardian and have the authority to sign on their behalf.</label>
+          </div>
+
+          <button class="waiver-submit-btn" id="waiver-submit-btn" disabled onclick="submitWaiver()">Sign &amp; Submit Waiver</button>
+          <p style="font-size:11px;color:#aaa;text-align:center;margin-top:8px">Your signature is legally binding. A copy will be emailed to you and stored securely in our system with a timestamp and unique ID.</p>
+        </div>
+      </div>
+
+      <!-- Success -->
+      <div class="waiver-success" id="waiver-success">
+        <div class="ws-icon">✅</div>
+        <h3>Waiver signed successfully</h3>
+        <p>A copy has been sent to your email. Your guide or landowner has been notified.</p>
+        <div class="waiver-id" id="waiver-id-display"></div>
+        <button class="guide-btn" style="max-width:200px;margin:14px auto 0;display:block" onclick="resetWaiver()">Sign another waiver</button>
+      </div>
+
+      <!-- Signed waivers list (logged in users) -->
+      <div class="signed-waivers-list" id="signed-waivers-list" style="display:none">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:12px">Your signed waivers</h3>
+        <div id="signed-waivers-feed"></div>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -1064,16 +1223,17 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "912284861913",
   appId:             "1:912284861913:web:d8a7307626c6d68a6545c8"
 };
-const STRIPE_KEY = "pk_test_51Ta6a4KeAOFXKQHi7GNxW6MtAkxeY02ensvAUAxkVM91WVBR9Va6wRjBd7lgKXuvOuNPgzAYT6wAehFP9hAeZJkv00IwlbkeCK";
-const STRIPE_PRICE_MONTHLY = "price_1Ta6dhKeAOFXKQHi8t0yUuTJ";
+const STRIPE_KEY = "pk_live_51Ta6Zf3oZ3CdYqpAxVO0n2kJYxGjmPZhgrc6GmLLKv58AAE21MKZVT1VBud8d3A5B32vgmJcz0z19F9d9fVQYOT000EcPZBd5y";
+const STRIPE_PRICE_MONTHLY = "price_1Te0d23oZ3CdYqpAdoQnVknu";
+const STRIPE_PAYMENT_LINK  = "https://buy.stripe.com/7sY4gsd5JlizgUb6zh0Fi02"; // Guide/Property Rental — variable amount
 const STRIPE_PRICE_YEARLY  = "price_YOUR_YEARLY_PRICE_ID";
 const ADSENSE_PUB_ID = "ca-pub-4020636702596747";
-const ADMOB_APP_ID_IOS     = "ca-app-pub-XXXX~YOUR_IOS_APP_ID";     // AdMob dashboard
-const ADMOB_APP_ID_ANDROID = "ca-app-pub-XXXX~YOUR_ANDROID_APP_ID"; // AdMob dashboard
-const ADMOB_BANNER_IOS     = "ca-app-pub-XXXX/YOUR_IOS_BANNER_UNIT";
-const ADMOB_BANNER_ANDROID = "ca-app-pub-XXXX/YOUR_ANDROID_BANNER_UNIT";
-const ADMOB_INTERSTITIAL_IOS     = "ca-app-pub-XXXX/YOUR_IOS_INTER_UNIT";
-const ADMOB_INTERSTITIAL_ANDROID = "ca-app-pub-XXXX/YOUR_ANDROID_INTER_UNIT";
+const ADMOB_APP_ID_IOS     = "ca-app-pub-5721783953904959~4391623416";
+const ADMOB_APP_ID_ANDROID = "ca-app-pub-5721783953904959~6367353985";
+const ADMOB_BANNER_IOS     = "ca-app-pub-5721783953904959/1903540967";
+const ADMOB_BANNER_ANDROID = "ca-app-pub-5721783953904959/5527925353";
+const ADMOB_INTERSTITIAL_IOS     = "ca-app-pub-5721783953904959/2510879776";
+const ADMOB_INTERSTITIAL_ANDROID = "ca-app-pub-5721783953904959/2901762013";
 // Photos stored in Firebase Storage — free 5GB on Spark plan (already set up)
 const FCM_VAPID_KEY     = "YOUR_VAPID_KEY";
 
@@ -1457,6 +1617,132 @@ function previewFindPhoto(input){
 }
 
 function escH(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+// ══════════════════════════════════════════════════════════════
+// WAIVER SYSTEM
+// ══════════════════════════════════════════════════════════════
+var currentWaiverType=null, sigPad=null, sigDrawing=false, sigHasSig=false;
+
+var WAIVER_CONTENT={
+  guided:{title:"Guided Morel Hunt — Liability Waiver",subtitle:"Melody's Morels · Clay County, Missouri",text:"<h4>ASSUMPTION OF RISK</h4>I understand that morel mushroom hunting involves inherent risks including uneven terrain, falls, weather exposure, insect bites, allergic reactions, contact with plants including poison ivy, and other outdoor hazards. I voluntarily assume all such risks.<h4>RELEASE OF LIABILITY</h4>In consideration of being permitted to participate in a guided morel hunt with Melody's Morels, I hereby release, waive, discharge, and covenant not to sue Melody's Morels, its owners, guides, employees, agents, and successors from any and all liability, claims, or causes of action arising out of any loss, damage, or injury including death sustained while participating in this activity.<h4>INDEMNIFICATION</h4>I agree to indemnify and hold harmless Melody's Morels from any loss, liability, damage, cost, or expense including attorney fees arising from my participation.<h4>MEDICAL AUTHORIZATION</h4>In an emergency I authorize guides to seek medical treatment on my behalf and I accept responsibility for all medical expenses.<h4>RULES OF CONDUCT</h4>I agree to follow all guide instructions, stay within designated areas, respect the land, and leave no trace. Failure to comply may result in removal without refund.<h4>PHOTO/VIDEO RELEASE</h4>I grant Melody's Morels permission to use photos or video of my participation for promotional purposes.<h4>GOVERNING LAW</h4>This waiver is governed by Missouri law. Disputes resolved in Clay County, Missouri."},
+  land:{title:"Private Land Access — Liability Waiver",subtitle:"Melody's Morels Land Access Marketplace",text:"<h4>ASSUMPTION OF RISK</h4>I understand that accessing private land involves inherent risks including uneven terrain, falls, livestock hazards, farm equipment, bodies of water, weather, wildlife, and plant contact. I voluntarily assume all such risks.<h4>PROPERTY RULES</h4>I agree to: stay within booking boundaries, close all gates as found, not disturb livestock or farm operations, pack out all trash, not start fires unless permitted, not hunt any game animals, depart by the agreed time, and treat the property with full respect.<h4>RELEASE OF LIABILITY</h4>I hereby release, waive, discharge, and covenant not to sue the landowner, Melody's Morels, and their agents from any and all liability arising from any loss, damage, or injury including death sustained while on the property or traveling to and from it.<h4>INDEMNIFICATION</h4>I agree to indemnify and hold harmless both the landowner and Melody's Morels from any claims arising from my access to the property including damage I cause.<h4>ADDRESS CONFIDENTIALITY</h4>I agree to keep the exact property address confidential and not share it without landowner permission.<h4>GOVERNING LAW</h4>This waiver is governed by the laws of the state where the property is located."},
+  group:{title:"Group Hunt / Event — Liability Waiver",subtitle:"Melody's Morels · Organized Group Activities",text:"<h4>ASSUMPTION OF RISK</h4>I understand that participating in an organized group morel hunt or foraging event involves inherent risks including uneven terrain, falls, weather, wildlife, insect bites, and allergic reactions. I voluntarily assume all such risks.<h4>RELEASE OF LIABILITY</h4>I hereby release, waive, discharge, and covenant not to sue Melody's Morels, event organizers, guides, landowners, and their agents from any and all liability arising out of my participation in this event.<h4>GROUP CONDUCT</h4>I agree to follow all guide instructions, stay with the group, respect other participants, and not consume any foraged material without guide confirmation.<h4>MUSHROOM IDENTIFICATION WARNING</h4>I acknowledge that misidentification of wild mushrooms can cause serious illness or death. I will not consume any foraged mushroom without explicit confirmation from a qualified guide. Melody's Morels is not responsible for illness resulting from consumption of foraged materials.<h4>INDEMNIFICATION & MEDICAL AUTHORIZATION</h4>I agree to indemnify Melody's Morels and authorize guides to seek emergency medical assistance on my behalf if needed.<h4>GOVERNING LAW</h4>This waiver is governed by Missouri law."},
+  minor:{title:"Minor Participant — Parental Consent & Waiver",subtitle:"Parent or Guardian Must Sign — Melody's Morels",text:"<h4>PARENTAL CONSENT & ASSUMPTION OF RISK</h4>As the parent or legal guardian of the minor named below, I understand that morel hunting involves inherent risks and I voluntarily assume all such risks on behalf of myself and the minor.<h4>PARENTAL RELEASE OF LIABILITY</h4>I hereby release, waive, discharge, and covenant not to sue Melody's Morels, guides, landowners, event organizers, and their agents from any and all liability arising from the minor's participation, including any loss, damage, injury, or death.<h4>AUTHORITY TO SIGN</h4>I represent that I am the parent or legal guardian of the named minor with full legal authority to execute this waiver.<h4>MEDICAL AUTHORIZATION</h4>I authorize Melody's Morels staff to authorize emergency medical treatment for the minor if I cannot be reached. I accept responsibility for all medical expenses.<h4>SUPERVISION</h4>I accept responsibility for the minor's conduct and safety during participation.<h4>MUSHROOM IDENTIFICATION</h4>I confirm the minor will not consume any foraged mushroom without explicit confirmation from a qualified guide.<h4>GOVERNING LAW</h4>This waiver is governed by Missouri law."}
+};
+
+function selectWaiver(type,card){
+  document.querySelectorAll(".waiver-type-card").forEach(function(c){c.classList.remove("selected");});
+  card.classList.add("selected");
+  currentWaiverType=type;
+  var content=WAIVER_CONTENT[type];
+  document.getElementById("wf-title").textContent=content.title;
+  document.getElementById("wf-subtitle").textContent=content.subtitle;
+  document.getElementById("waiver-text-content").innerHTML=content.text;
+  document.getElementById("minor-fields").style.display=type==="minor"?"block":"none";
+  var fw=document.getElementById("waiver-form-wrap");
+  fw.classList.add("visible"); fw.style.display="block";
+  document.getElementById("waiver-success").style.display="none";
+  fw.scrollIntoView({behavior:"smooth",block:"start"});
+  if(!sigPad) initSigPad();
+}
+
+function initSigPad(){
+  var canvas=document.getElementById("sig-canvas"); if(!canvas)return;
+  var wrap=canvas.parentElement;
+  canvas.width=Math.max(wrap.offsetWidth||700,300); canvas.height=120;
+  var ctx=canvas.getContext("2d");
+  ctx.strokeStyle="#1a1a1a"; ctx.lineWidth=2; ctx.lineCap="round"; ctx.lineJoin="round";
+  function getPos(e){var r=canvas.getBoundingClientRect();var src=e.touches?e.touches[0]:e;return{x:(src.clientX-r.left)*(canvas.width/r.width),y:(src.clientY-r.top)*(canvas.height/r.height)};}
+  function start(e){e.preventDefault();sigDrawing=true;var p=getPos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+  function move(e){e.preventDefault();if(!sigDrawing)return;var p=getPos(e);ctx.lineTo(p.x,p.y);ctx.stroke();sigHasSig=true;checkWaiverReady();}
+  function end(e){e.preventDefault();sigDrawing=false;}
+  canvas.addEventListener("mousedown",start);canvas.addEventListener("mousemove",move);canvas.addEventListener("mouseup",end);
+  canvas.addEventListener("touchstart",start,{passive:false});canvas.addEventListener("touchmove",move,{passive:false});canvas.addEventListener("touchend",end);
+  sigPad=ctx;
+}
+
+function clearSig(){
+  if(!sigPad)return;
+  var canvas=document.getElementById("sig-canvas");
+  sigPad.clearRect(0,0,canvas.width,canvas.height);
+  sigHasSig=false; checkWaiverReady();
+}
+
+function checkWaiverReady(){
+  var agreed=document.getElementById("w-agree")&&document.getElementById("w-agree").checked;
+  var btn=document.getElementById("waiver-submit-btn");
+  if(btn) btn.disabled=!(agreed&&sigHasSig);
+}
+
+async function submitWaiver(){
+  var name=document.getElementById("w-name").value.trim();
+  var email=document.getElementById("w-email").value.trim();
+  var dob=document.getElementById("w-dob").value;
+  var ecName=document.getElementById("w-ec-name").value.trim();
+  var ecPhone=document.getElementById("w-ec-phone").value.trim();
+  if(!name||!email||!dob||!ecName||!ecPhone){toast("Please fill in all required fields.");return;}
+  if(!sigHasSig){toast("Please add your signature.");return;}
+  var btn=document.getElementById("waiver-submit-btn");
+  btn.disabled=true; btn.textContent="Submitting…";
+  var canvas=document.getElementById("sig-canvas");
+  var sigDataUrl=canvas.toDataURL("image/png");
+  var wid="WVR-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).substr(2,4).toUpperCase();
+  var ts=new Date().toISOString();
+  var waiverData={id:wid,type:currentWaiverType,title:WAIVER_CONTENT[currentWaiverType].title,
+    signerName:name,signerEmail:email,signerDob:dob,
+    signerPhone:document.getElementById("w-phone").value.trim(),
+    ecName,ecPhone,bookingRef:document.getElementById("w-booking-ref").value.trim(),
+    signedAt:ts,signatureImg:sigDataUrl,userId:currentUser?currentUser.uid:null};
+  if(currentWaiverType==="minor"){
+    waiverData.minorName=document.getElementById("w-minor-name").value.trim();
+    waiverData.minorDob=document.getElementById("w-minor-dob").value;
+    waiverData.relationship=document.getElementById("w-relationship").value;
+  }
+  try{
+    if(db) await db.collection("waivers").add(waiverData);
+    document.getElementById("waiver-form-wrap").style.display="none";
+    var s=document.getElementById("waiver-success"); s.style.display="block";
+    document.getElementById("waiver-id-display").textContent="Waiver ID: "+wid+" · "+new Date(ts).toLocaleString();
+    s.scrollIntoView({behavior:"smooth",block:"start"});
+    toast("✅ Waiver signed!");
+    loadSignedWaivers();
+  }catch(err){btn.disabled=false;btn.textContent="Sign & Submit Waiver";toast("Error: "+err.message);}
+}
+
+function resetWaiver(){
+  currentWaiverType=null; sigHasSig=false; sigPad=null;
+  document.querySelectorAll(".waiver-type-card").forEach(function(c){c.classList.remove("selected");});
+  var fw=document.getElementById("waiver-form-wrap");
+  fw.classList.remove("visible"); fw.style.display="none";
+  document.getElementById("waiver-success").style.display="none";
+  ["w-name","w-email","w-dob","w-phone","w-ec-name","w-ec-phone","w-booking-ref"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
+  var ag=document.getElementById("w-agree"); if(ag)ag.checked=false;
+  var sb=document.getElementById("waiver-submit-btn"); if(sb){sb.disabled=true;sb.textContent="Sign & Submit Waiver";}
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+async function loadSignedWaivers(){
+  if(!currentUser||!db)return;
+  var list=document.getElementById("signed-waivers-list");
+  var feed=document.getElementById("signed-waivers-feed");
+  try{
+    var snap=await db.collection("waivers").where("userId","==",currentUser.uid).orderBy("signedAt","desc").limit(20).get();
+    if(snap.empty){list.style.display="none";return;}
+    list.style.display="block"; feed.innerHTML="";
+    var icons={guided:"🧭",land:"🏡",group:"👥",minor:"👨‍👧"};
+    snap.docs.forEach(function(doc){
+      var w=doc.data();
+      var row=document.createElement("div"); row.className="sw-row";
+      var d=new Date(w.signedAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+      row.innerHTML='<span class="sw-icon">'+(icons[w.type]||"📄")+'</span>'
+        +'<div class="sw-info"><div class="sw-title">'+escH(w.title||"")+'</div>'
+        +'<div class="sw-meta">Signed '+escH(d)+' · ID: '+escH(w.id||"")+'</div></div>'
+        +'<span class="sw-badge">✓ Signed</span>';
+      feed.appendChild(row);
+    });
+  }catch(e){list.style.display="none";}
+}
+document.querySelector('[data-tab="waiver"]').addEventListener("click",function(){setTimeout(loadSignedWaivers,100);});
 
 // ── Formspree contact forms ───────────────────────────────────
 function submitForm(e,sid,formId){
