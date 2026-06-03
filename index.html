@@ -1251,6 +1251,7 @@ const STRIPE_KEY = "pk_live_51Ta6Zf3oZ3CdYqpAxVO0n2kJYxGjmPZhgrc6GmLLKv58AAE21MK
 const STRIPE_PRICE_MONTHLY = "price_1Te0d23oZ3CdYqpAdoQnVknu";
 const STRIPE_PAYMENT_LINK  = "https://buy.stripe.com/7sY4gsd5JlizgUb6zh0Fi02"; // Guide/Property Rental — variable amount
 const STRIPE_PRICE_YEARLY  = "price_YOUR_YEARLY_PRICE_ID";
+const API_BASE = "https://us-central1-melodys-morels.cloudfunctions.net/api"; // Cloud Functions backend
 const ADSENSE_PUB_ID = "ca-pub-4020636702596747";
 const ADMOB_APP_ID_IOS     = "ca-app-pub-5721783953904959~4391623416";
 const ADMOB_APP_ID_ANDROID = "ca-app-pub-5721783953904959~6367353985";
@@ -1282,22 +1283,41 @@ var currentUser = null;
 var isPremium   = false;
 var billingAnnual = false;
 
-if(auth) auth.onAuthStateChanged(async function(user){
+var userDocUnsub = null;
+if(auth) auth.onAuthStateChanged(function(user){
   currentUser = user;
+  if(userDocUnsub){ userDocUnsub(); userDocUnsub=null; }
   if(user){
-    var snap = await db.collection("users").doc(user.uid).get();
-    var data = snap.data()||{};
-    isPremium = data.premium||false;
-    updateAuthUI();
-    if(isPremium) disableAds();
+    // Live listener: premium flips the instant the Stripe webhook writes it — no reload needed.
+    userDocUnsub = db.collection("users").doc(user.uid).onSnapshot(function(snap){
+      var data = (snap && snap.data())||{};
+      var was = isPremium;
+      isPremium = data.premium||false;
+      updateAuthUI();
+      if(isPremium){ disableAds(); if(!was) toast("⭐ Premium active — ads off. Welcome!"); }
+      else { showAds(); }
+    }, function(err){ console.warn("user doc listener:",err); });
     loadFeed();
   } else {
+    isPremium=false;
     updateAuthUI();
     loadFeed();
   }
 });
 
 // ── Auth UI ───────────────────────────────────────────────────
+// Handle the redirect back from Stripe Checkout / Connect.
+(function handleStripeReturn(){
+  try{
+    var p=new URLSearchParams(location.search);
+    if(p.get("upgraded")){ toast("✅ Payment received — activating Premium…"); }
+    else if(p.get("upgrade_cancelled")){ toast("Checkout cancelled — no charge made."); }
+    else if(p.get("booked")){ toast("✅ Booking confirmed! Check your email for the address."); }
+    else if(p.get("booking_cancelled")){ toast("Booking cancelled — no charge made."); }
+    else if(p.get("connect")==="done"){ toast("✅ Stripe connected — you can now receive payouts."); }
+    if(p.toString()){ history.replaceState({}, "", location.pathname); }
+  }catch(e){}
+})();
 function updateAuthUI(){
   var g = document.getElementById("auth-guest");
   var u = document.getElementById("auth-user");
@@ -1508,9 +1528,10 @@ async function startCheckout(){
   // Create checkout session via your backend / Firebase Function
   // For a quick start you can also use a Stripe Payment Link:
   // window.location.href = "https://buy.stripe.com/YOUR_PAYMENT_LINK";
-  var r=await fetch("/api/create-checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,uid:currentUser.uid,email:currentUser.email})});
-  var {sessionId}=await r.json();
-  stripe.redirectToCheckout({sessionId});
+  var r=await fetch(API_BASE+"/create-checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({priceId,uid:currentUser.uid,email:currentUser.email})});
+  var d=await r.json();
+  if(!d.sessionId){ toast(d.error||"Could not start checkout. Try again."); return; }
+  stripe.redirectToCheckout({sessionId:d.sessionId});
 }
 
 // ── Social Feed ───────────────────────────────────────────────
@@ -2239,9 +2260,10 @@ async function connectStripe(){
   toast("Opening Stripe onboarding…");
   // Your Cloud Function creates a Stripe Connect account link
   // See README for the Cloud Function code to add
-  var r=await fetch("/api/stripe-connect-onboard",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({uid:currentUser.uid,email:currentUser.email})});
-  var {url}=await r.json();
-  window.location.href=url;
+  var r=await fetch(API_BASE+"/stripe-connect-onboard",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({uid:currentUser.uid,email:currentUser.email})});
+  var d=await r.json();
+  if(!d.url){ toast(d.error||"Could not open Stripe onboarding."); return; }
+  window.location.href=d.url;
 }
 
 // Booking modal
@@ -2277,10 +2299,11 @@ async function confirmBooking(){
   var guests=parseInt(document.getElementById("bm-guests").value)||1;
   var date=document.getElementById("bm-date").value;
   // Create a Stripe Checkout session via your Cloud Function
-  var r=await fetch("/api/create-land-checkout",{method:"POST",headers:{"Content-Type":"application/json"},
+  var r=await fetch(API_BASE+"/create-land-checkout",{method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({listingId:currentListing.id,guests,date,hunterId:currentUser.uid,hunterEmail:currentUser.email})});
-  var {sessionId}=await r.json();
-  Stripe(STRIPE_KEY).redirectToCheckout({sessionId});
+  var d=await r.json();
+  if(!d.sessionId){ btn.disabled=false; btn.textContent="Pay & confirm booking"; toast(d.error||"Could not start booking."); return; }
+  Stripe(STRIPE_KEY).redirectToCheckout({sessionId:d.sessionId});
 }
 
 // Load listings when tab opened
