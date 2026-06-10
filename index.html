@@ -324,6 +324,7 @@
         <div style="padding:8px 12px 8px;font-size:13px;color:#222;font-weight:600" id="dropdown-name"></div>
         <hr class="ud-sep">
         <button class="ud-item" onclick="switchTab('feed')">My Finds</button>
+        <button class="ud-item" onclick="openMySpots()">📍 My Spots</button>
         <button class="ud-item premium" onclick="switchTab('premium');toggleUserMenu()">⭐ Go Premium</button>
         <hr class="ud-sep">
         <button class="ud-item" onclick="doLogout()">Log out</button>
@@ -915,6 +916,36 @@
   </div>
 </div>
 
+<!-- My Spots modal -->
+<div class="booking-modal" id="spots-modal">
+  <div class="booking-box">
+    <button class="booking-close" onclick="closeMySpots()">×</button>
+    <h3>📍 My Spots</h3>
+    <p class="bsub">Your private saved spots — only you can see these.</p>
+    <div id="spots-gate" style="display:none;text-align:center;padding:16px 6px">
+      <div style="font-size:38px">⭐</div>
+      <p style="font-size:14px;color:#444;margin:8px 0 16px">Saving personal spots is a Premium feature. Upgrade to bookmark unlimited spots, kept private to you.</p>
+      <button class="submit-btn" onclick="closeMySpots();switchTab('premium')">Go Premium</button>
+    </div>
+    <div id="spots-content" style="display:none">
+      <div id="spots-list" style="margin-bottom:14px"></div>
+      <div style="border-top:1px solid #e4e1d8;padding-top:14px">
+        <div class="form-row"><label>Spot name</label><input type="text" id="sp-name" placeholder="e.g. Creek bend by the old oak"/></div>
+        <div class="form-row">
+          <label>Location</label>
+          <div class="loc-row">
+            <input type="text" id="sp-loc" placeholder="lat, lng — or a note"/>
+            <button type="button" class="loc-btn" id="sp-gps-btn" onclick="getSpotGPS()">📍 GPS</button>
+          </div>
+          <input type="hidden" id="sp-lat"/><input type="hidden" id="sp-lng"/>
+        </div>
+        <div class="form-row"><label>Notes (optional)</label><textarea id="sp-notes" rows="2" placeholder="Habitat, what you found, when to return…" style="width:100%;border:1px solid #d8d4c8;border-radius:8px;padding:9px;font-family:inherit;font-size:14px;resize:vertical"></textarea></div>
+        <button class="submit-btn" id="sp-save-btn" onclick="saveSpot()">Save spot</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ── WAIVER TAB ── -->
 <style>
   .waiver-type-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px}
@@ -1250,25 +1281,28 @@ const FIREBASE_CONFIG = {
 };
 const STRIPE_KEY = "pk_live_51Ta6Zf3oZ3CdYqpAxVO0n2kJYxGjmPZhgrc6GmLLKv58AAE21MKZVT1VBud8d3A5B32vgmJcz0z19F9d9fVQYOT000EcPZBd5y";
 const STRIPE_PRICE_MONTHLY = "price_1Te0d23oZ3CdYqpAdoQnVknu";
-const STRIPE_PAYMENT_LINK  = "https://buy.stripe.com/7sY4gsd5JlizgUb6zh0Fi02"; // Guide/Property Rental — variable amount
+const STRIPE_PAYMENT_LINK  = "https://buy.stripe.com/7sY4gsd5J1izgUb6zh0Fi02"; // Guide/Property Rental — variable amount
 const PREMIUM_LINK = "https://buy.stripe.com/dRm5kw6Hle5l6fx3n50Fi01"; // Premium subscription
 const STRIPE_PRICE_YEARLY  = "price_YOUR_YEARLY_PRICE_ID";
 const API_BASE = "https://us-central1-melodys-morels.cloudfunctions.net/api"; // Cloud Functions backend
 const ADSENSE_PUB_ID = "ca-pub-4020636702596747";
 const ADMOB_APP_ID_IOS     = "ca-app-pub-5721783953904959~4391623416";
 const ADMOB_APP_ID_ANDROID = "ca-app-pub-5721783953904959~6367353985";
-const ADMOB_BANNER_IOS     = "ca-app-pub-5721783953904959/1903540967";
-const ADMOB_BANNER_ANDROID = "ca-app-pub-5721783953904959/5527925353";
+const ADMOB_BOTTOM_BANNER_IOS     = "ca-app-pub-5721783953904959/1903540967";
+const ADMOB_BOTTOM_BANNER_ANDROID = "ca-app-pub-5721783953904959/2211129319";
 const ADMOB_INTERSTITIAL_IOS     = "ca-app-pub-5721783953904959/2510879776";
 const ADMOB_INTERSTITIAL_ANDROID = "ca-app-pub-5721783953904959/2901762013";
+const ADMOB_OPEN_AD_IOS     = "ca-app-pub-5721783953904959/1903540967"; // update when iOS open ad created
+const ADMOB_OPEN_AD_ANDROID = "ca-app-pub-5721783953904959/4362183345";
 // Photos stored in Firebase Storage — free 5GB on Spark plan (already set up)
 const FCM_VAPID_KEY     = "YOUR_VAPID_KEY";
 
 // Detect platform: 'ios' | 'android' | 'web'
 const IS_NATIVE  = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 const PLATFORM   = IS_NATIVE ? (window.Capacitor.getPlatform() || "web") : "web";
-const ADMOB_BANNER      = PLATFORM==="ios" ? ADMOB_BANNER_IOS      : ADMOB_BANNER_ANDROID;
+const ADMOB_BANNER      = PLATFORM==="ios" ? ADMOB_BOTTOM_BANNER_IOS      : ADMOB_BOTTOM_BANNER_ANDROID;
 const ADMOB_INTERSTITIAL= PLATFORM==="ios" ? ADMOB_INTERSTITIAL_IOS : ADMOB_INTERSTITIAL_ANDROID;
+const ADMOB_OPEN_AD     = PLATFORM==="ios" ? ADMOB_OPEN_AD_IOS     : ADMOB_OPEN_AD_ANDROID;
 // ══════════════════════════════════════════════════════════════
 
 // ── Firebase init ─────────────────────────────────────────────
@@ -1479,6 +1513,29 @@ async function showInterstitial(){
   }catch(e){ console.warn("Interstitial error:",e); }
 }
 
+// App Open Ad — fires when app comes to foreground (max once per 4 hours)
+var lastOpenAdTs = 0;
+async function showAppOpenAd(){
+  if(isPremium || !IS_NATIVE) return;
+  var now = Date.now();
+  if(now - lastOpenAdTs < 4 * 60 * 60 * 1000) return; // 4-hour cooldown
+  var AdMob = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob;
+  if(!AdMob) return;
+  try{
+    await AdMob.prepareAppOpenAd({adId: ADMOB_OPEN_AD, isTesting: false});
+    await AdMob.showAppOpenAd();
+    lastOpenAdTs = now;
+  }catch(e){ console.warn("App Open ad error:", e); }
+}
+// Hook into Capacitor App plugin for foreground resume
+document.addEventListener("DOMContentLoaded", function(){
+  if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
+    window.Capacitor.Plugins.App.addListener("appStateChange", function(state){
+      if(state.isActive) showAppOpenAd();
+    });
+  }
+});
+
 // ── Toast ─────────────────────────────────────────────────────
 function toast(msg,duration){
   var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
@@ -1661,6 +1718,83 @@ function previewFindPhoto(input){
 }
 
 function escH(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+// ── MY SPOTS (private saved spots — Premium feature) ──
+function openMySpots(){
+  if(!currentUser){ toast("Please sign in to use My Spots."); openAuth("login"); return; }
+  toggleUserMenu();
+  document.getElementById("spots-modal").style.display="flex";
+  if(isPremium){
+    document.getElementById("spots-gate").style.display="none";
+    document.getElementById("spots-content").style.display="block";
+    loadMySpots();
+  } else {
+    document.getElementById("spots-gate").style.display="block";
+    document.getElementById("spots-content").style.display="none";
+  }
+}
+function closeMySpots(){ document.getElementById("spots-modal").style.display="none"; }
+function getSpotGPS(){
+  var btn=document.getElementById("sp-gps-btn"); btn.textContent="Getting…";
+  navigator.geolocation.getCurrentPosition(function(p){
+    document.getElementById("sp-lat").value=p.coords.latitude.toFixed(5);
+    document.getElementById("sp-lng").value=p.coords.longitude.toFixed(5);
+    if(!document.getElementById("sp-loc").value) document.getElementById("sp-loc").value=p.coords.latitude.toFixed(4)+", "+p.coords.longitude.toFixed(4);
+    btn.textContent="✓ Got"; btn.classList.add("got");
+  },function(){ btn.textContent="📍 GPS"; toast("Couldn't get your location."); });
+}
+async function loadMySpots(){
+  var list=document.getElementById("spots-list");
+  list.innerHTML='<p style="font-size:13px;color:#999;text-align:center;padding:8px">Loading…</p>';
+  try{
+    var snap=await db.collection("spots").where("ownerId","==",currentUser.uid).get();
+    var spots=[]; snap.forEach(function(d){ spots.push(Object.assign({id:d.id},d.data())); });
+    spots.sort(function(a,b){ return ((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0); });
+    if(!spots.length){ list.innerHTML='<p style="font-size:13px;color:#999;text-align:center;padding:8px">No saved spots yet — add your first below 👇</p>'; return; }
+    var html="";
+    spots.forEach(function(s){
+      html+='<div style="border:1px solid #e4e1d8;border-radius:10px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;gap:8px">'
+        +'<div style="min-width:0"><div style="font-weight:600;font-size:14px">'+escH(s.name||"Untitled spot")+'</div>'
+        +(s.loc?'<div style="font-size:12px;color:#666">📍 '+escH(s.loc)+'</div>':'')
+        +(s.notes?'<div style="font-size:12px;color:#888;margin-top:2px">'+escH(s.notes)+'</div>':'')
+        +'</div>'
+        +'<button onclick="deleteSpot(\''+s.id+'\')" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:12px;flex-shrink:0;align-self:flex-start">Delete</button>'
+        +'</div>';
+    });
+    list.innerHTML=html;
+  }catch(err){ list.innerHTML='<p style="font-size:13px;color:#c0392b;text-align:center;padding:8px">Couldn\'t load spots: '+escH(err.message)+'</p>'; }
+}
+async function saveSpot(){
+  if(!isPremium){ toast("Saving spots is a Premium feature."); return; }
+  var name=document.getElementById("sp-name").value.trim();
+  if(!name){ toast("Give your spot a name first."); return; }
+  var btn=document.getElementById("sp-save-btn"); btn.disabled=true; btn.textContent="Saving…";
+  var spot={
+    ownerId: currentUser.uid,
+    name: name,
+    loc: document.getElementById("sp-loc").value.trim()||null,
+    lat: parseFloat(document.getElementById("sp-lat").value)||null,
+    lng: parseFloat(document.getElementById("sp-lng").value)||null,
+    notes: document.getElementById("sp-notes").value.trim()||null,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  try{
+    await db.collection("spots").add(spot);
+    document.getElementById("sp-name").value="";
+    document.getElementById("sp-loc").value="";
+    document.getElementById("sp-lat").value=""; document.getElementById("sp-lng").value="";
+    document.getElementById("sp-notes").value="";
+    var g=document.getElementById("sp-gps-btn"); g.textContent="📍 GPS"; g.classList.remove("got");
+    toast("Spot saved 📍");
+    loadMySpots();
+  }catch(err){ toast("Error saving: "+err.message); }
+  btn.disabled=false; btn.textContent="Save spot";
+}
+async function deleteSpot(id){
+  if(!confirm("Delete this spot?")) return;
+  try{ await db.collection("spots").doc(id).delete(); toast("Spot deleted."); loadMySpots(); }
+  catch(err){ toast("Error deleting: "+err.message); }
+}
 
 // ══════════════════════════════════════════════════════════════
 // WAIVER SYSTEM
