@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Morel Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;width:100%;overflow:hidden;background:#f7f5f0;font-family:'Inter',-apple-system,sans-serif}
+    #map{position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%}
+    .zi-panel{position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e4e1d8;padding:14px 16px 20px;transform:translateY(100%);transition:transform 0.25s;z-index:1000;max-height:55%;overflow-y:auto}
+    .zi-panel.visible{transform:translateY(0)}
+    .zi-close{position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280}
+    .zi-name{font-size:16px;font-weight:700;color:#1f2421;margin-bottom:4px;padding-right:30px}
+    .zi-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;margin-bottom:10px}
+    .zi-badge.high{background:#d1fae5;color:#065f46}
+    .zi-badge.med{background:#fef3c7;color:#92400e}
+    .zi-badge.low{background:#fee2e2;color:#991b1b}
+    .zi-row{font-size:13px;color:#374151;margin-bottom:4px}
+    .zi-note{font-size:12px;color:#6b7280;margin-top:6px;font-style:italic}
+    .hmatch{display:inline-block;background:#edf7f1;color:#2d6a4f;padding:2px 8px;border-radius:99px;font-size:11px;margin:2px}
+    .zoom-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,0.92);border:1px solid #e4e1d8;border-radius:12px;padding:16px 22px;font-size:14px;color:#555;text-align:center;pointer-events:none;z-index:500;backdrop-filter:blur(4px);white-space:nowrap}
+    .elev-pill{display:inline-block;font-size:11px;background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:99px;margin-left:8px;font-weight:400}
+    .hab-matches{margin-top:6px}
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<div class="zi-panel" id="zone-info">
+  <button class="zi-close" id="close-zi">×</button>
+  <div class="zi-name" id="zi-name">—</div>
+  <span class="zi-badge" id="zi-badge">—</span>
+  <div class="zi-row"><strong>Region:</strong> <span id="zi-region">—</span></div>
+  <div class="zi-row"><strong>Trees:</strong> <span id="zi-trees">—</span></div>
+  <div class="zi-row"><strong>Terrain:</strong> <span id="zi-topo">—</span></div>
+  <div class="zi-note" id="zi-note"></div>
+  <div class="hab-matches" id="zi-hab-matches"></div>
+</div>
+<!-- fake rain input so scoreSpot doesn't crash -->
+<input id="rain" type="range" value="1.2" style="display:none"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+var tf = 1; // temperature factor default
+const RP={
+  "Missouri Ozarks":   ["White oak, ash, elm, sycamore",      "South-facing limestone hollows, creek draws",    [2,2,2,2]],
+  "NW Missouri":       ["Elm, ash, cottonwood, hackberry",     "Missouri River bluffs, south-facing draws",      [2,2,2,1]],
+  "NE Missouri":       ["Elm, ash, cottonwood, red oak",       "River bottoms, south-facing timber edges",       [1,2,2,1]],
+  "Central Missouri":  ["Elm, ash, sycamore, white oak",       "Creek drainages, south-facing slopes",           [1,2,2,1]],
+  "SW Missouri":       ["White oak, red oak, ash, elm",        "South-facing Ozark ridge hollows",               [2,1,2,2]],
+  "Southern Illinois": ["Elm, ash, tulip poplar",              "River bottoms, south-facing limestone bluffs",   [1,2,2,1]],
+  "Central Illinois":  ["Cottonwood, elm, ash, silver maple",  "River bottom timber, south wood lines",          [1,2,2,0]],
+  "Indiana":           ["Tulip poplar, ash, white oak, elm",   "South-facing ridge faces, creek bottoms",        [2,1,2,2]],
+  "Ohio":              ["Elm, ash, tulip poplar, white oak",   "South-facing hardwood slopes, gorge rims",       [2,1,2,1]],
+  "SE Ohio":           ["Elm, ash, tulip poplar, white oak",   "Ohio River valley, south-facing slopes",         [1,2,2,1]],
+  "Michigan":          ["Ash, poplar, old apple orchards",     "Sandy loam, south-facing orchard edges",         [1,2,1,1]],
+  "Michigan UP":       ["Ash, aspen, mixed hardwoods",         "Sandy soils, south-facing creek edges",          [1,1,2,0]],
+  "Driftless Area":    ["Red oak, ash, elm, basswood",         "South-facing coulee bluffs, trout streams",      [2,1,2,1]],
+  "Wisconsin":         ["White oak, bur oak, elm, ash",        "South-facing glacial hills, oak openings",       [1,2,1,2]],
+  "Minnesota":         ["Elm, ash, red oak, basswood",         "South-facing bluffs, creek bottoms",             [2,1,2,1]],
+  "Iowa":              ["Bur oak, elm, cottonwood, hackberry", "South-facing loess bluffs, creek draws",         [2,2,1,1]],
+  "Kansas":            ["Bur oak, elm, hackberry, persimmon",  "Creek drainages, south-facing woody draws",      [1,2,1,2]],
+  "Nebraska":          ["Cottonwood, elm, hackberry",          "River corridors, south-facing loess bluffs",     [1,1,2,0]],
+  "Arkansas Ozarks":   ["White oak, ash, elm, redbud",         "South-facing limestone hollows, creek bottoms",  [2,1,2,2]],
+  "Oklahoma":          ["White oak, post oak, elm, ash",       "South-facing rocky creek drainages",             [2,1,1,2]],
+  "Kentucky":          ["Tulip poplar, white oak, ash",        "South-facing hollows, ridge noses near water",   [2,1,2,2]],
+  "Tennessee":         ["Tulip poplar, ash, white oak",        "South-facing ridges, cove hardwoods near water", [2,1,2,2]],
+  "Texas":             ["Water oak, willow oak, sweet gum",    "Bottomland hardwood drainages",                  [1,1,2,1]],
+  "West Virginia":     ["Tulip poplar, basswood, ash",         "South-facing gorge walls, hollow heads",         [2,1,2,1]],
+  "Virginia":          ["Tulip poplar, ash, white oak",        "South-facing coves, ridge hollows",              [2,2,1,2]],
+  "NC Smokies":        ["Tulip poplar, buckeye, white oak",    "South-facing cove hardwood forest",              [2,1,2,2]],
+  "Alabama Georgia":   ["White oak, tulip poplar, hickory",    "South-facing mountain coves, stream drainages",  [2,1,2,2]],
+  "Pennsylvania":      ["Elm, ash, apple, white oak",          "South-facing hillsides, old farmsteads",         [2,2,2,1]],
+  "New York":          ["Elm, ash, apple, red oak",            "South-facing hillsides, old orchard edges",      [1,2,1,1]],
+  "New England":       ["Ash, elm, old apple orchards",        "South-facing hillsides, river bottomlands",      [1,2,1,1]],
+  "Oregon":            ["Oregon ash, big-leaf maple, cottonwood","South-facing river terraces, wood line edges", [1,2,2,0]],
+  "Pacific NW":        ["Post-fire conifers, cottonwood, alder","South-facing burn scars near streams",          [1,1,1,0]],
+  "Oregon Siskiyou":   ["Oregon white oak, ponderosa, madrone","South-facing oak woodland edges",                [2,2,1,2]],
+  "Rockies":           ["Aspen, cottonwood, ponderosa",        "South-facing slopes, creek drainages",           [2,1,1,0]],
+  "California":        ["Blue oak, valley oak, ponderosa",     "South-facing oak woodland, post-fire slopes",    [2,2,1,2]],
+};
+const CURATED=[
+  {name:"Missouri City — River Bluffs",lat:39.245,lng:-94.290,base:78,elev:"low",rk:"NW Missouri",notes:"Sitting right on the Missouri River bluff edge in Clay County. South-facing draws where bluff timber breaks toward the bottoms. Peak: mid–late April."},
+  {name:"Fishing River Hollows",lat:39.320,lng:-94.150,base:74,elev:"low",rk:"NW Missouri",notes:"Fishing River drainage off the Missouri bluffs. South-facing hollows where creek timber meets crop ground produce reliably. Peak: mid April."},
+  {name:"Little Platte River Timber",lat:39.400,lng:-94.480,base:70,elev:"low",rk:"NW Missouri",notes:"Little Platte River bottomland timber with south-facing bluff edges. Bur oak on drier south slopes, cottonwood in the bottoms. Peak: mid April."},
+  {name:"Rush Creek — Clay County",lat:39.180,lng:-94.420,base:72,elev:"low",rk:"NW Missouri",notes:"Rush Creek drainage cutting south through Clay County timber. Wood lines on south exposures adjacent to open pasture. Peak: April 15–25."},
+  {name:"Gasconade River Bluffs",lat:37.960,lng:-91.990,base:84,elev:"mid",rk:"Missouri Ozarks",notes:"South exposure and creek draws. White oak mixed with ash on south slopes. One of the most reliable spots in the Ozarks. Peak: late April."},
+  {name:"Big Piney River Corridor",lat:37.510,lng:-92.100,base:82,elev:"mid",rk:"Missouri Ozarks",notes:"South-facing timbered hollows. Confluence zones where tributaries enter from the south are prime. Lots of dying ash and elm. Peak: late April."},
+  {name:"Current River — South Hollows",lat:37.090,lng:-91.550,base:80,elev:"mid",rk:"Missouri Ozarks",notes:"South-facing hollow faces above the creek. Look for hollow heads where south-facing slopes hold warmth above seeps. Peak: late April."},
+  {name:"Bryant Creek Bottoms",lat:36.850,lng:-92.300,base:76,elev:"mid",rk:"Missouri Ozarks",notes:"South-facing ridge noses above creek bottoms with white oak. Field-edge timber on south aspects produces year after year. Peak: late April."},
+  {name:"Cache River Bottoms (IL)",lat:37.150,lng:-89.100,base:80,elev:"low",rk:"Southern Illinois",notes:"Timber edge between bluff and cypress swamp is the precise zone. Peak: mid-April."},
+  {name:"LaRue-Pine Hills (IL)",lat:37.580,lng:-89.370,base:78,elev:"low",rk:"Southern Illinois",notes:"South-facing bluff timber above the swamp with a distinct wood line. Dying elm and ash everywhere. Peak: mid-April."},
+  {name:"Brown County (IN) Ridges",lat:39.200,lng:-86.200,base:75,elev:"mid",rk:"Indiana",notes:"Classic south-facing ridge faces and hollow heads. Work the south sides of ridges systematically. Peak: late April–early May."},
+  {name:"Hocking Hills (OH)",lat:39.440,lng:-82.530,base:70,elev:"mid",rk:"Ohio",notes:"South-facing slopes above gorge rims and hollow faces leading down to creeks. Peak: late April–early May."},
+  {name:"Muskegon River Corridor (MI)",lat:43.650,lng:-85.800,base:74,elev:"low",rk:"Michigan",notes:"Orchard edges backed by second-growth forest on south-facing sandy loam. National Morel Mushroom Festival nearby. Peak: early May."},
+  {name:"Driftless Coulee Country (WI/MN)",lat:43.810,lng:-91.230,base:68,elev:"low",rk:"Driftless Area",notes:"South-facing coulee bluffs above meandering trout streams. Peak: late April–mid May."},
+  {name:"Buffalo River Corridor (AR)",lat:36.030,lng:-92.890,base:80,elev:"mid",rk:"Arkansas Ozarks",notes:"Exceptional south-facing limestone hollow habitat. White oak and ash on south aspects. One of the finest morel landscapes in the South. Peak: late March–mid April."},
+  {name:"Red River Gorge (KY)",lat:37.770,lng:-83.680,base:74,elev:"mid",rk:"Kentucky",notes:"Dramatic south-facing sandstone hollow faces. Hollow heads above rock arches retain moisture and warmth. Peak: mid–late April."},
+  {name:"New River Gorge (WV)",lat:37.900,lng:-81.080,base:72,elev:"mid",rk:"West Virginia",notes:"Gorge walls and tributary hollow faces. Mixed mesophytic forest with tulip poplar and ash. Peak: mid–late April."},
+  {name:"Nantahala Gorge (NC)",lat:35.320,lng:-83.740,base:67,elev:"high",rk:"NC Smokies",notes:"South-facing cove hardwood forest. Tulip poplar and buckeye with white oak near seeps. Peak: mid–late April."},
+  {name:"Bankhead National Forest (AL)",lat:34.270,lng:-87.230,base:64,elev:"mid",rk:"Alabama Georgia",notes:"South-facing coves with white oak and tulip poplar. Among the earliest regions in the East. Peak: late March."},
+  {name:"Laurel Highlands (PA)",lat:40.040,lng:-79.250,base:67,elev:"mid",rk:"Pennsylvania",notes:"South-facing ridge hollows with old farmstead tree remnants. Ash and elm on south aspects. Peak: late April–early May."},
+  {name:"Willamette Valley South (OR)",lat:44.180,lng:-123.100,base:62,elev:"low",rk:"Oregon",notes:"South-facing river terraces with Oregon ash near water. Wood lines where riparian forest edges open farm ground. Peak: March–April."},
+  {name:"Colorado Front Range (CO)",lat:39.720,lng:-105.280,base:50,elev:"high",rk:"Rockies",notes:"Gambel oak on south-facing foothills and post-fire ponderosa zones. Peak: May–June."},
+  {name:"Sierra Nevada Foothills (CA)",lat:38.420,lng:-120.860,base:52,elev:"mid",rk:"California",notes:"Blue oak and valley oak on south-facing foothills. Post-fire ponderosa zones produce burn morels. Peak: February–April."},
+];
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const NP=["North","South","East","West","Upper","Lower","Big","Little","Long","Deep","Cedar","Hickory","Walnut","Elm","Ash","Oak","Sugar","Black","White","Clear","Rock","Dry","Sand","Deer","Bear","Wolf","Coon","Turkey","Goose","Hawk"];
+const NF=["Fork","Run","Branch","Creek","Hollow","Draw","Ridge","Bottom","Bend","Cove","Gap","Knob","Bluff","Flat","Holler","Slough"];
+const NT=["Timber","Bottoms","Bluff","Draw","Drainage","Hollow","Cove","Ridge","Slope","Wood Line","Seep","Ravine","Flat","Bend"];
+function gn(r){var t=~~(r()*3);if(t===0)return NP[~~(r()*NP.length)]+" "+NF[~~(r()*NF.length)];if(t===1)return NF[~~(r()*NF.length)]+" "+NT[~~(r()*NT.length)];return NP[~~(r()*NP.length)]+" "+NF[~~(r()*NF.length)]+" "+NT[~~(r()*NT.length)]}
+// ── Grid-based spot generator — covers every county in morel range ──
+// Produces ~50,000 spots algorithmically. Compact source, computed at runtime.
+
+function regionQuality(lat,lng){
+  if(lat<28||lat>50||lng<-125||lng>-66) return 0;
+  // Desert SW / high Rockies — exclude
+  if(lng<-110&&lat<38) return 0.04;
+  if(lng<-107&&lat<36) return 0.04;
+  if(lng<-104&&lat<35) return 0.04;
+  var q=0;
+  // PRIME ZONES
+  if(lat>36.4&&lat<38.7&&lng>-94.6&&lng<-89.4) q=Math.max(q,0.91); // MO Ozarks
+  if(lat>35.3&&lat<37.0&&lng>-94.6&&lng<-91.4) q=Math.max(q,0.86); // AR Ozarks
+  if(lat>36.9&&lat<38.6&&lng>-90.1&&lng<-87.7) q=Math.max(q,0.84); // S Illinois
+  if(lat>36.4&&lat<38.7&&lng>-89.1&&lng<-81.9) q=Math.max(q,0.81); // Kentucky
+  if(lat>34.8&&lat<37.1&&lng>-89.1&&lng<-81.4) q=Math.max(q,0.79); // Tennessee
+  if(lat>37.7&&lat<41.3&&lng>-87.8&&lng<-84.9) q=Math.max(q,0.79); // Indiana
+  if(lat>38.3&&lat<42.1&&lng>-84.9&&lng<-80.4) q=Math.max(q,0.76); // Ohio
+  if(lat>34.9&&lat<39.6&&lng>-82.6&&lng<-77.4) q=Math.max(q,0.76); // Appalachians
+  if(lat>41.9&&lat<46.6&&lng>-87.1&&lng<-82.4) q=Math.max(q,0.77); // Michigan
+  if(lat>42.9&&lat<44.9&&lng>-92.6&&lng<-89.7) q=Math.max(q,0.75); // Driftless
+  if(lat>38.7&&lat<40.1&&lng>-94.9&&lng<-92.7) q=Math.max(q,0.73); // NW Missouri
+  if(lat>39.4&&lat<41.1&&lng>-92.6&&lng<-90.1) q=Math.max(q,0.69); // NE Missouri
+  if(lat>35.4&&lat<37.1&&lng>-95.6&&lng<-93.7) q=Math.max(q,0.66); // Oklahoma Ozarks
+  if(lat>33.4&&lat<35.6&&lng>-87.6&&lng<-83.4) q=Math.max(q,0.66); // AL/GA mountains
+  if(lat>36.4&&lat<37.6&&lng>-94.6&&lng<-92.4) q=Math.max(q,0.71); // SW Missouri
+  // GOOD ZONES
+  if(lat>39.9&&lat<43.6&&lng>-96.6&&lng<-89.9) q=Math.max(q,0.61); // Iowa
+  if(lat>43.4&&lat<47.1&&lng>-96.1&&lng<-90.9) q=Math.max(q,0.59); // Minnesota
+  if(lat>42.4&&lat<46.6&&lng>-92.6&&lng<-86.9) q=Math.max(q,0.59); // Wisconsin
+  if(lat>45.4&&lat<47.6&&lng>-88.6&&lng<-84.4) q=Math.max(q,0.59); // Michigan UP
+  if(lat>39.4&&lat<42.1&&lng>-80.1&&lng<-74.4) q=Math.max(q,0.63); // Pennsylvania
+  if(lat>40.9&&lat<45.1&&lng>-76.1&&lng<-73.4) q=Math.max(q,0.59); // New York
+  if(lat>41.9&&lat<47.1&&lng>-73.6&&lng<-67.9) q=Math.max(q,0.56); // New England
+  if(lat>36.9&&lat<40.1&&lng>-97.1&&lng<-94.4) q=Math.max(q,0.53); // Kansas
+  if(lat>39.9&&lat<43.1&&lng>-99.6&&lng<-95.4) q=Math.max(q,0.49); // Nebraska
+  if(lat>37.4&&lat<40.0&&lng>-83.1&&lng<-80.5) q=Math.max(q,0.66); // WV/VA
+  if(lat>36.4&&lat<38.6&&lng>-80.6&&lng<-77.4) q=Math.max(q,0.63); // Virginia
+  if(lat>34.9&&lat<36.6&&lng>-84.6&&lng<-81.0) q=Math.max(q,0.67); // NC Smokies
+  if(lat>28.9&&lat<34.1&&lng>-97.1&&lng<-93.4) q=Math.max(q,0.43); // Texas
+  if(lat>29.0&&lat<34.0&&lng>-93.0&&lng<-88.0) q=Math.max(q,0.39); // Deep South
+  if(lat>38.2&&lat<40.2&&lng>-93.6&&lng<-91.1) q=Math.max(q,0.66); // Central MO
+  // WESTERN ZONES
+  if(lat>41.9&&lat<46.6&&lng>-124.1&&lng<-117.4) q=Math.max(q,0.56); // Oregon
+  if(lat>45.4&&lat<49.1&&lng>-124.1&&lng<-116.9) q=Math.max(q,0.53); // Washington
+  if(lat>37.4&&lat<41.1&&lng>-109.1&&lng<-104.4) q=Math.max(q,0.47); // Colorado
+  if(lat>44.4&&lat<49.1&&lng>-117.1&&lng<-110.9) q=Math.max(q,0.49); // MT/ID
+  if(lat>41.4&&lat<45.6&&lng>-111.1&&lng<-104.4) q=Math.max(q,0.45); // Wyoming
+  if(lat>36.4&&lat<41.6&&lng>-123.1&&lng<-118.4) q=Math.max(q,0.49); // CA foothills
+  // Great Plains penalty
+  if(lng<-100&&lng>-104&&lat>37&&lat<47) q=Math.min(q,0.38);
+  if(lng<-97&&lng>-100&&lat>41&&lat<47) q=Math.min(q,0.34);
+  return q;
+}
+
+function getRegionKey(lat,lng){
+  if(lat>36.4&&lat<38.7&&lng>-94.6&&lng<-89.4) return "Missouri Ozarks";
+  if(lat>38.7&&lat<40.2&&lng>-95.2&&lng<-92.7) return "NW Missouri";
+  if(lat>39.4&&lat<41.1&&lng>-92.6&&lng<-90.1) return "NE Missouri";
+  if(lat>38.1&&lat<40.2&&lng>-93.6&&lng<-91.1) return "Central Missouri";
+  if(lat>36.4&&lat<37.6&&lng>-94.6&&lng<-92.4) return "SW Missouri";
+  if(lat>35.3&&lat<37.0&&lng>-94.6&&lng<-91.4) return "Arkansas Ozarks";
+  if(lat>34.4&&lat<36.1&&lng>-91.6&&lng<-88.4) return "Arkansas Ozarks";
+  if(lat>35.4&&lat<37.1&&lng>-95.6&&lng<-93.7) return "Oklahoma";
+  if(lat>36.9&&lat<38.6&&lng>-90.1&&lng<-87.7) return "Southern Illinois";
+  if(lat>38.5&&lat<41.6&&lng>-90.6&&lng<-87.4) return "Central Illinois";
+  if(lat>37.7&&lat<41.3&&lng>-87.8&&lng<-84.9) return "Indiana";
+  if(lat>38.3&&lat<42.1&&lng>-84.9&&lng<-80.4) return "Ohio";
+  if(lat>37.4&&lat<40.0&&lng>-83.1&&lng<-80.5) return "SE Ohio";
+  if(lat>41.9&&lat<46.6&&lng>-87.1&&lng<-82.4) return "Michigan";
+  if(lat>45.4&&lat<47.6&&lng>-88.6&&lng<-84.4) return "Michigan UP";
+  if(lat>42.9&&lat<44.9&&lng>-92.6&&lng<-89.7) return "Driftless Area";
+  if(lat>42.4&&lat<46.6&&lng>-92.6&&lng<-86.9) return "Wisconsin";
+  if(lat>43.4&&lat<47.1&&lng>-96.1&&lng<-90.9) return "Minnesota";
+  if(lat>39.9&&lat<43.6&&lng>-96.6&&lng<-89.9) return "Iowa";
+  if(lat>36.9&&lat<40.1&&lng>-97.1&&lng<-94.4) return "Kansas";
+  if(lat>39.9&&lat<43.1&&lng>-99.6&&lng<-95.4) return "Nebraska";
+  if(lat>36.4&&lat<38.7&&lng>-89.1&&lng<-81.9) return "Kentucky";
+  if(lat>34.8&&lat<37.1&&lng>-89.1&&lng<-81.4) return "Tennessee";
+  if(lat>37.4&&lat<40.0&&lng>-83.1&&lng<-80.5) return "West Virginia";
+  if(lat>36.4&&lat<38.6&&lng>-80.6&&lng<-77.4) return "Virginia";
+  if(lat>34.9&&lat<36.6&&lng>-84.6&&lng<-81.0) return "NC Smokies";
+  if(lat>34.9&&lat<39.6&&lng>-82.6&&lng<-77.4) return "Appalachians";
+  if(lat>33.4&&lat<35.6&&lng>-87.6&&lng<-83.4) return "Alabama Georgia";
+  if(lat>39.4&&lat<42.1&&lng>-80.1&&lng<-74.4) return "Pennsylvania";
+  if(lat>40.9&&lat<45.1&&lng>-76.1&&lng<-73.4) return "New York";
+  if(lat>41.9&&lat<47.1&&lng>-73.6&&lng<-67.9) return "New England";
+  if(lat>28.9&&lat<34.1&&lng>-97.1&&lng<-93.4) return "Texas";
+  if(lat>41.9&&lat<46.6&&lng>-124.1&&lng<-117.4) return "Oregon";
+  if(lat>45.4&&lat<49.1&&lng>-124.1&&lng<-116.9) return "Pacific NW";
+  if(lat>37.4&&lat<41.1&&lng>-109.1&&lng<-104.4) return "Rockies";
+  if(lat>44.4&&lat<49.1&&lng>-117.1&&lng<-110.9) return "Rockies";
+  if(lat>36.4&&lat<41.6&&lng>-123.1&&lng<-118.4) return "California";
+  return "Midwest";
+}
+
+function getElevBand(lat,lng){
+  if(lng<-104) return lat>44?"high":"mid";
+  if(lng>-83&&lng<-77&&lat>35&&lat<40) return "mid";
+  if(lng>-94.6&&lng<-89.4&&lat>36.4&&lat<38.7) return "mid";
+  if(lat>34.9&&lat<39.6&&lng>-82.6&&lng<-77.4) return "mid";
+  return "low";
+}
+
+function generateGridSpots(){
+  var spots=[];
+  var STEP=0.06;
+  var s=7919;
+  function lcg(){s=(s*1664525+1013904223)>>>0; return s/4294967295;}
+  for(var lat=28.5;lat<=49.5;lat+=STEP){
+    for(var lng=-124.5;lng<=-66.5;lng+=STEP){
+      var q=regionQuality(lat,lng);
+      if(q<0.16){lcg();lcg();lcg();continue;}
+      spots.push({
+        name:gn(lcg),
+        lat:+(lat+(lcg()-0.5)*STEP*0.7).toFixed(4),
+        lng:+(lng+(lcg()-0.5)*STEP*0.7).toFixed(4),
+        base:Math.round(q*62+26),
+        elev:getElevBand(lat,lng),
+        rk:getRegionKey(lat,lng),
+        notes:""
+      });
+    }
+  }
+  return spots;
+}
+
+const GENERATED=generateGridSpots();
+const ALL=CURATED.concat(GENERATED);
+document.getElementById("hcount").textContent=ALL.length.toLocaleString()+" spots";
+
+const SEL={early:{low:14,mid:2,high:-20},peak:{low:2,mid:9,high:-4},late:{low:-16,mid:5,high:18}};
+const SF={early:0.76,peak:1.0,late:0.82};
+const HB=[0,6,14];
+var season="peak";
+var hab={ss:false,wl:false,w:false,o:false};
+function visible(s){var anyOn=hab.ss||hab.wl||hab.w||hab.o;if(!anyOn)return true;var h=(RP[s.rk]||["","", [0,0,0,0]])[2];if(hab.ss&&(h[0]||0)<1)return false;if(hab.wl&&(h[1]||0)<1)return false;if(hab.w&&(h[2]||0)<1)return false;if(hab.o&&(h[3]||0)<1)return false;return true;}
+function scoreSpot(s){var rp=RP[s.rk]||["","", [0,0,0,0]];var h=rp[2];var v=s.base;v+=(SEL[season][s.elev]||0);v*=SF[season];var rain=parseFloat(document.getElementById("rain").value);var rf=(rain>=0.5&&rain<=2.5)?1.0:(rain>=0.2)?0.85:(rain>2.5)?0.75:0.50;v*=tf*rf;if(hab.ss)v+=HB[h[0]||0];if(hab.wl)v+=HB[h[1]||0];if(hab.w)v+=HB[h[2]||0];if(hab.o)v+=HB[h[3]||0];return Math.round(Math.min(99,Math.max(5,v)));}
+function scoreCol(sc){return sc>=70?"#1b7a56":sc>=40?"#d97706":"#dc2626";}
+function elevCol(e){return e==="high"?"#8b5cf6":e==="mid"?"#3b82f6":"#22c55e";}
+
+var osmLayer=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',maxZoom:19});
+var topoLayer=L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{attribution:'&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',maxZoom:17});
+var map=L.map("map",{layers:[osmLayer]}).setView([38.5,-92],5);
+L.control.layers({"Streets":osmLayer,"Terrain + Contours":topoLayer},{},{position:"topright"}).addTo(map);
+var renderer=L.canvas({padding:0.5});
+var layers=[];
+
+// Zoom hint overlay — inserted after DOM ready
+var zoomHint=document.createElement("div");
+zoomHint.id="zoom-hint";
+zoomHint.style.cssText="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,0.92);border:1px solid #e4e1d8;border-radius:12px;padding:16px 22px;font-size:14px;color:#555;font-family:inherit;text-align:center;pointer-events:none;z-index:500;backdrop-filter:blur(4px);white-space:nowrap;";
+zoomHint.innerHTML="🍄 <strong style='color:#2d6a4f'>Zoom in</strong> to reveal habitat spots<br><span style='font-size:12px;color:#aaa'>Scroll or pinch to zoom into any region</span>";
+var mapEl=document.getElementById("map");
+if(mapEl){ mapEl.style.position="relative"; mapEl.appendChild(zoomHint); }
+
+var MIN_ZOOM = 9; // dots only appear at zoom 9+
+
+function render(){
+  layers.forEach(function(l){map.removeLayer(l);});
+  layers=[];
+
+  var zoom=map.getZoom();
+
+  // Below threshold — show hint, no dots
+  if(zoom < MIN_ZOOM){
+    zoomHint.style.display="block";
+    return;
+  }
+  zoomHint.style.display="none";
+
+  // Only render spots inside the current viewport (+ 15% buffer)
+  var bounds=map.getBounds().pad(0.15);
+
+  ALL.forEach(function(s){
+    // Viewport cull first — fast
+    if(!bounds.contains(L.latLng(s.lat,s.lng))) return;
+    // Habitat toggle filter — disappear completely if no match
+    if(!visible(s)) return;
+
+    var sc=scoreSpot(s),fc=scoreCol(sc),ec=elevCol(s.elev),r=sc>=70?9:sc>=40?7:6;
+    if(sc>=74){
+      var g=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r+7,weight:0,fillColor:fc,fillOpacity:0.14,interactive:false});
+      g.addTo(map);layers.push(g);
+    }
+    var ring=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r+2.5,weight:1.8,color:ec,opacity:0.65,fillOpacity:0,interactive:false});
+    ring.addTo(map);layers.push(ring);
+    var dot=L.circleMarker([s.lat,s.lng],{renderer:renderer,radius:r,weight:1.5,color:"#fff",opacity:0.85,fillColor:fc,fillOpacity:0.90});
+    dot.on("click",function(){showSpotInfo(s);});
+    dot.addTo(map);layers.push(dot);
+  });
+}
+
+// Re-render whenever map moves or zooms
+map.on("moveend zoomend", debouncedRender);
+function showSpotInfo(s){
+  var sc=scoreSpot(s),cls=sc>=70?"high":sc>=40?"med":"low",lbl=sc>=70?"High likelihood":sc>=40?"Moderate":"Low likelihood";
+  var et={low:"Lowlands",mid:"Mid-elevation",high:"High elevation"}[s.elev];
+  var rp=RP[s.rk]||["Unknown","Unknown",[0,0,0,0]];
+  document.getElementById("zi-name").innerHTML=s.name+'<span class="elev-pill">'+et+'</span>';
+  var b=document.getElementById("zi-badge");b.textContent=sc+"% — "+lbl;b.className="zi-badge "+cls;
+  document.getElementById("zi-region").textContent=s.rk||"—";document.getElementById("zi-trees").textContent=rp[0];document.getElementById("zi-topo").textContent=rp[1];document.getElementById("zi-note").textContent=s.notes||"";
+  var me=document.getElementById("zi-hab-matches");me.innerHTML="";
+  var hLabels={ss:"South-facing slope",wl:"Wood line",w:"Water nearby",o:"Oak trees"};var hKeys=["ss","wl","w","o"];
+  rp[2].forEach(function(v,i){if(v>=1){var c=document.createElement("span");c.className="hmatch";c.textContent=(v===2?"★ ":"")+hLabels[hKeys[i]];me.appendChild(c);}});
+  document.getElementById("zone-info").classList.add("visible");
+  document.getElementById("zone-info").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+document.getElementById("close-zi").addEventListener("click",function(){document.getElementById("zone-info").classList.remove("visible");});
+var debounce=null;
+function debouncedRender(){clearTimeout(debounce);debounce=setTimeout(render,80);}
+document.getElementById("rain").addEventListener("input",function(){document.getElementById("rain-val").textContent=parseFloat(this.value).toFixed(1)+"\"";debouncedRender();});
+document.querySelectorAll(".sbtn").forEach(function(btn){btn.addEventListener("click",function(){document.querySelectorAll(".sbtn").forEach(function(b){b.classList.remove("active");});this.classList.add("active");season=this.dataset.s;render();});});
+document.querySelectorAll(".hab-toggle").forEach(function(el){el.addEventListener("click",function(){var k=this.dataset.hab;hab[k]=!hab[k];this.classList.toggle("active",hab[k]);render();});});
+
+render();
+updateAuthUI();
+initAds();
+
+// Ensure map renders correctly after full page load
+window.addEventListener("load", function(){
+  setTimeout(function(){ if(map){ map.invalidateSize(); render(); } }, 200);
+});
+window.addEventListener("resize", function(){
+  if(map) map.invalidateSize();
+});
+// Override showSpotInfo to use our panel
+function showSpotInfo(s){
+  var sc=scoreSpot(s),cls=sc>=70?"high":sc>=40?"med":"low",lbl=sc>=70?"High likelihood":sc>=40?"Moderate":"Low likelihood";
+  var et={low:"Lowlands",mid:"Mid-elevation",high:"High elevation"}[s.elev];
+  var rp=RP[s.rk]||["Unknown","Unknown",[0,0,0,0]];
+  document.getElementById("zi-name").innerHTML=s.name+'<span class="elev-pill">'+et+'</span>';
+  var b=document.getElementById("zi-badge");b.textContent=sc+"% — "+lbl;b.className="zi-badge "+cls;
+  document.getElementById("zi-region").textContent=s.rk||"—";
+  document.getElementById("zi-trees").textContent=rp[0];
+  document.getElementById("zi-topo").textContent=rp[1];
+  document.getElementById("zi-note").textContent=s.notes||"";
+  var me=document.getElementById("zi-hab-matches");me.innerHTML="";
+  var hLabels={ss:"South-facing slope",wl:"Wood line",w:"Water nearby",o:"Oak trees"};
+  var hKeys=["ss","wl","w","o"];
+  rp[2].forEach(function(v,i){if(v>=1){var c=document.createElement("span");c.className="hmatch";c.textContent=(v===2?"★ ":"")+hLabels[hKeys[i]];me.appendChild(c);}});
+  document.getElementById("zone-info").classList.add("visible");
+}
+document.getElementById("close-zi").addEventListener("click",function(){
+  document.getElementById("zone-info").classList.remove("visible");
+});
+
+// Zoom hint
+var zh=document.createElement("div");zh.className="zoom-hint";zh.id="zoom-hint";
+zh.innerHTML="🍄 <strong style='color:#2d6a4f'>Zoom in</strong> to reveal spots<br><span style='font-size:12px;color:#aaa'>Pinch or scroll to zoom</span>";
+document.getElementById("map").appendChild(zh);
+
+window.addEventListener("resize",function(){ if(map) map.invalidateSize(); });
+window.addEventListener("load",function(){ setTimeout(function(){ map.invalidateSize(); render(); },200); });
+</script>
+</body>
+</html>
