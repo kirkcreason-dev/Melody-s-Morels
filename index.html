@@ -1298,8 +1298,8 @@ const ADMOB_OPEN_AD_ANDROID = "ca-app-pub-5721783953904959/4362183345";
 const FCM_VAPID_KEY     = "YOUR_VAPID_KEY";
 
 // Detect platform: 'ios' | 'android' | 'web'
-const IS_NATIVE  = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-const PLATFORM   = IS_NATIVE ? (window.Capacitor.getPlatform() || "web") : "web";
+const IS_NATIVE  = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || /wv|MelodysMorels/.test(navigator.userAgent);
+const PLATFORM   = IS_NATIVE ? (window.Capacitor ? (window.Capacitor.getPlatform() || "android") : "android") : "web";
 const ADMOB_BANNER      = PLATFORM==="ios" ? ADMOB_BOTTOM_BANNER_IOS      : ADMOB_BOTTOM_BANNER_ANDROID;
 const ADMOB_INTERSTITIAL= PLATFORM==="ios" ? ADMOB_INTERSTITIAL_IOS : ADMOB_INTERSTITIAL_ANDROID;
 const ADMOB_OPEN_AD     = PLATFORM==="ios" ? ADMOB_OPEN_AD_IOS     : ADMOB_OPEN_AD_ANDROID;
