@@ -42,6 +42,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 var tf = 1; // temperature factor default
+document.getElementById('rain').value = 1.2;
 const RP={
   "Missouri Ozarks":   ["White oak, ash, elm, sycamore",      "South-facing limestone hollows, creek draws",    [2,2,2,2]],
   "NW Missouri":       ["Elm, ash, cottonwood, hackberry",     "Missouri River bluffs, south-facing draws",      [2,2,2,1]],
@@ -238,7 +239,7 @@ function generateGridSpots(){
 
 const GENERATED=generateGridSpots();
 const ALL=CURATED.concat(GENERATED);
-document.getElementById("hcount").textContent=ALL.length.toLocaleString()+" spots";
+var hcountEl=document.getElementById("hcount"); if(hcountEl) hcountEl.textContent=ALL.length.toLocaleString()+" spots";
 
 const SEL={early:{low:14,mid:2,high:-20},peak:{low:2,mid:9,high:-4},late:{low:-16,mid:5,high:18}};
 const SF={early:0.76,peak:1.0,late:0.82};
